@@ -128,5 +128,5 @@
     debugLog('system', '自动拦截已启动');
   }
 
-  console.log('深度-叙事引擎 v0.2.0 已启动');
+  console.log('深度-叙事引擎 v0.1.0 已启动');
 })();
