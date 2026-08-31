@@ -1,20 +1,21 @@
 @echo off
+chcp 65001 >nul
 cd /d "%~dp0"
 
-taskkill /F /IM electron.exe >/dev/null 2>nul
+taskkill /F /IM electron.exe >nul 2>nul
 
 cls
 echo =====================================
-echo   Éî¶ÈÐðÊÂÒýÇæ - AI ³ÉÈËÄÚÈÝ´´×÷
+echo   æ·±åº¦-å™äº‹å¼•æ“Ž - AI æˆäººå†…å®¹åˆ›ä½œ
 echo =====================================
 echo.
-echo   [1] Æô¶¯ÔËÐÐÄ£Ê½
-echo   [2] Éú³É±¾µØ°ü
-echo   [3] Éú³É°²×°°ü
-echo   [4] °²×°ÒÀÀµ
-echo   [5] ÍË³ö
+echo   [1] å¯åŠ¨è¿è¡Œæ¨¡å¼
+echo   [2] ç”Ÿæˆæœ¬åœ°åŒ…
+echo   [3] ç”Ÿæˆå®‰è£…åŒ…
+echo   [4] å®‰è£…ä¾èµ–
+echo   [5] é€€å‡º
 echo.
-choice /c 12345 /n /m "ÇëÑ¡Ôñ [1-5]: "
+choice /c 12345 /n /m "è¯·é€‰æ‹© [1-5]: "
 
 if errorlevel 5 exit /b
 if errorlevel 4 goto install
