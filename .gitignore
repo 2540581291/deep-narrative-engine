@@ -1,0 +1,30 @@
+# 构建产物
+dist/
+out/
+*.exe
+
+# Node
+node_modules/
+*.log
+
+# 运行时用户数据 / 自动备份
+保存/
+日志/
+crash-logs/
+*.bak_*
+*.bak
+_备份*/
+*迁移备份*/
+
+# 系统 / 编辑器
+Thumbs.db
+Desktop.ini
+.DS_Store
+.vscode/
+.idea/
+
+# 临时
+*.tmp
+*~
+
+# 临时

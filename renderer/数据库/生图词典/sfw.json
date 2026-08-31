@@ -1,0 +1,2784 @@
+{
+  "version": 4,
+  "items": [
+    {
+      "zh": "红裙少女",
+      "tag": "girl_in_red_dress",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "少女系"
+    },
+    {
+      "zh": "白发御姐",
+      "tag": "white-haired_mature_woman",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "御姐系"
+    },
+    {
+      "zh": "双马尾少女",
+      "tag": "twin_tails_girl",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "少女系"
+    },
+    {
+      "zh": "黑长直少女",
+      "tag": "long_black_hair_girl",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "少女系"
+    },
+    {
+      "zh": "女仆",
+      "tag": "maid",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "职业"
+    },
+    {
+      "zh": "精灵族少女",
+      "tag": "elf_girl",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "幻想种族"
+    },
+    {
+      "zh": "中年熟妇",
+      "tag": "mature_woman",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "御姐系"
+    },
+    {
+      "zh": "御姐",
+      "tag": "mature_seductive_woman",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "御姐系"
+    },
+    {
+      "zh": "人妻",
+      "tag": "milf",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "御姐系"
+    },
+    {
+      "zh": "学生妹",
+      "tag": "schoolgirl",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "少女系"
+    },
+    {
+      "zh": "护士",
+      "tag": "nurse",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "职业"
+    },
+    {
+      "zh": "女教师",
+      "tag": "female_teacher",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "职业"
+    },
+    {
+      "zh": "空姐",
+      "tag": "stewardess",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "职业"
+    },
+    {
+      "zh": "女警",
+      "tag": "policewoman",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "职业"
+    },
+    {
+      "zh": "修女",
+      "tag": "nun",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "职业"
+    },
+    {
+      "zh": "吸血鬼少女",
+      "tag": "vampire_girl",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "幻想种族"
+    },
+    {
+      "zh": "猫耳娘",
+      "tag": "catgirl",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "幻想种族"
+    },
+    {
+      "zh": "狐耳娘",
+      "tag": "fox_girl",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "幻想种族"
+    },
+    {
+      "zh": "兔女郎",
+      "tag": "bunny_girl",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "幻想种族"
+    },
+    {
+      "zh": "偶像",
+      "tag": "idol_girl",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "职业"
+    },
+    {
+      "zh": "舞女",
+      "tag": "dancer",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "职业"
+    },
+    {
+      "zh": "女战士",
+      "tag": "female_warrior",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "职业"
+    },
+    {
+      "zh": "女忍者",
+      "tag": "kunoichi",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "职业"
+    },
+    {
+      "zh": "女骑士",
+      "tag": "female_knight",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "职业"
+    },
+    {
+      "zh": "魔女",
+      "tag": "witch",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "职业"
+    },
+    {
+      "zh": "天使",
+      "tag": "angel_girl",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "幻想种族"
+    },
+    {
+      "zh": "恶魔娘",
+      "tag": "demon_girl",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "幻想种族"
+    },
+    {
+      "zh": "圣女",
+      "tag": "saintess",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "职业"
+    },
+    {
+      "zh": "女王",
+      "tag": "queen",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "职业"
+    },
+    {
+      "zh": "公主",
+      "tag": "princess",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "少女系"
+    },
+    {
+      "zh": "大小姐",
+      "tag": "ojou-sama",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "少女系"
+    },
+    {
+      "zh": "邻家女孩",
+      "tag": "girl_next_door",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "少女系"
+    },
+    {
+      "zh": "清纯少女",
+      "tag": "innocent_girl",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "少女系"
+    },
+    {
+      "zh": "妖艳女人",
+      "tag": "seductive_woman",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "御姐系"
+    },
+    {
+      "zh": "寡妇",
+      "tag": "widow",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "御姐系"
+    },
+    {
+      "zh": "继母",
+      "tag": "stepmother",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "御姐系"
+    },
+    {
+      "zh": "姐姐",
+      "tag": "older_sister",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "关系"
+    },
+    {
+      "zh": "妹妹",
+      "tag": "younger_sister",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "关系"
+    },
+    {
+      "zh": "青梅竹马",
+      "tag": "childhood_friend",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "关系"
+    },
+    {
+      "zh": "同桌",
+      "tag": "deskmate",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "关系"
+    },
+    {
+      "zh": "健身教练",
+      "tag": "fitness_trainer",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "职业"
+    },
+    {
+      "zh": "女医生",
+      "tag": "female_doctor",
+      "cat": "人物",
+      "zone": "SFW",
+      "subcat": "职业"
+    },
+    {
+      "zh": "丰臀",
+      "tag": "plump_ass",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "臀部"
+    },
+    {
+      "zh": "细腰",
+      "tag": "slim_waist",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "躯干"
+    },
+    {
+      "zh": "长腿",
+      "tag": "long_legs",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "腿足"
+    },
+    {
+      "zh": "玉足",
+      "tag": "bare_feet",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "腿足"
+    },
+    {
+      "zh": "白皙肌肤",
+      "tag": "fair_skin",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "肌肤"
+    },
+    {
+      "zh": "完美身材",
+      "tag": "perfect_body",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "肌肤"
+    },
+    {
+      "zh": "深沟",
+      "tag": "cleavage",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "胸部"
+    },
+    {
+      "zh": "美臀",
+      "tag": "beautiful_buttocks",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "臀部"
+    },
+    {
+      "zh": "丰满身材",
+      "tag": "voluptuous_figure",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "肌肤"
+    },
+    {
+      "zh": "纤细身材",
+      "tag": "slender_figure",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "肌肤"
+    },
+    {
+      "zh": "翘臀",
+      "tag": "toned_buttocks",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "臀部"
+    },
+    {
+      "zh": "香肩",
+      "tag": "bare_shoulders",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "躯干"
+    },
+    {
+      "zh": "锁骨",
+      "tag": "collarbone",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "躯干"
+    },
+    {
+      "zh": "美背",
+      "tag": "beautiful_back",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "躯干"
+    },
+    {
+      "zh": "小蛮腰",
+      "tag": "tiny_waist",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "躯干"
+    },
+    {
+      "zh": "修长美腿",
+      "tag": "long_slender_legs",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "腿足"
+    },
+    {
+      "zh": "黑丝美腿",
+      "tag": "legs_in_black_stockings",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "腿足"
+    },
+    {
+      "zh": "高足弓",
+      "tag": "high_arch_feet",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "腿足"
+    },
+    {
+      "zh": "纤细脚踝",
+      "tag": "delicate_ankles",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "腿足"
+    },
+    {
+      "zh": "肉感",
+      "tag": "curvy",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "肌肤"
+    },
+    {
+      "zh": "娇小",
+      "tag": "petite",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "肌肤"
+    },
+    {
+      "zh": "高挑",
+      "tag": "tall_and_slender",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "肌肤"
+    },
+    {
+      "zh": "丰满大腿",
+      "tag": "thick_thighs",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "肌肤"
+    },
+    {
+      "zh": "蜜桃臀",
+      "tag": "peach-shaped_butt",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "臀部"
+    },
+    {
+      "zh": "纤细手指",
+      "tag": "slender_fingers",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "其他"
+    },
+    {
+      "zh": "湿润嘴唇",
+      "tag": "glossy_lips",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "面部"
+    },
+    {
+      "zh": "红唇",
+      "tag": "red_lips",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "面部"
+    },
+    {
+      "zh": "媚眼",
+      "tag": "alluring_eyes",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "面部"
+    },
+    {
+      "zh": "泪痣",
+      "tag": "beauty_mark_under_eye",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "面部"
+    },
+    {
+      "zh": "晶莹汗珠",
+      "tag": "glistening_sweat",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "肌肤"
+    },
+    {
+      "zh": "脸红",
+      "tag": "blushing_cheeks",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "面部"
+    },
+    {
+      "zh": "平坦小腹",
+      "tag": "flat_stomach",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "躯干"
+    },
+    {
+      "zh": "马甲线",
+      "tag": "visible_abs",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "躯干"
+    },
+    {
+      "zh": "肚脐",
+      "tag": "navel",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "躯干"
+    },
+    {
+      "zh": "湿身",
+      "tag": "wet_clothes_clinging_to_body",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "肌肤"
+    },
+    {
+      "zh": "皮肤泛红",
+      "tag": "flushed_skin",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "肌肤"
+    },
+    {
+      "zh": "纤细脖颈",
+      "tag": "neck",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "躯干"
+    },
+    {
+      "zh": "敏感耳垂",
+      "tag": "earlobes",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "肌肤"
+    },
+    {
+      "zh": "腰部曲线",
+      "tag": "waist_curve",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "躯干"
+    },
+    {
+      "zh": "臀部曲线",
+      "tag": "hip_curve",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "臀部"
+    },
+    {
+      "zh": "大腿内侧",
+      "tag": "inner_thigh",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "腿足"
+    },
+    {
+      "zh": "小腿",
+      "tag": "calves",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "腿足"
+    },
+    {
+      "zh": "脚趾",
+      "tag": "toes",
+      "cat": "身体",
+      "zone": "SFW",
+      "subcat": "腿足"
+    },
+    {
+      "zh": "蕾丝内衣",
+      "tag": "lace_lingerie",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "内衣"
+    },
+    {
+      "zh": "女仆装",
+      "tag": "maid_outfit",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "制服"
+    },
+    {
+      "zh": "兔女郎装",
+      "tag": "bunny_girl_outfit",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "制服"
+    },
+    {
+      "zh": "皮衣",
+      "tag": "leather_jacket",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "休闲"
+    },
+    {
+      "zh": "和服",
+      "tag": "kimono",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "传统服饰"
+    },
+    {
+      "zh": "浴衣",
+      "tag": "yukata",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "传统服饰"
+    },
+    {
+      "zh": "旗袍",
+      "tag": "cheongsam",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "传统服饰"
+    },
+    {
+      "zh": "汉服",
+      "tag": "hanfu",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "传统服饰"
+    },
+    {
+      "zh": "水手服",
+      "tag": "sailor_uniform",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "制服"
+    },
+    {
+      "zh": "护士服",
+      "tag": "nurse_uniform",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "制服"
+    },
+    {
+      "zh": "OL西装",
+      "tag": "business_suit",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "制服"
+    },
+    {
+      "zh": "紧身衣",
+      "tag": "tight_bodysuit",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "休闲"
+    },
+    {
+      "zh": "连裤袜",
+      "tag": "pantyhose",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "丝袜配饰"
+    },
+    {
+      "zh": "过膝袜",
+      "tag": "thigh-high_socks",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "丝袜配饰"
+    },
+    {
+      "zh": "高跟鞋",
+      "tag": "high_heels",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "休闲"
+    },
+    {
+      "zh": "细高跟",
+      "tag": "stiletto_heels",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "休闲"
+    },
+    {
+      "zh": "赤足",
+      "tag": "barefoot",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "休闲"
+    },
+    {
+      "zh": "手套",
+      "tag": "gloves",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "丝袜配饰"
+    },
+    {
+      "zh": "长手套",
+      "tag": "long_gloves",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "丝袜配饰"
+    },
+    {
+      "zh": "项圈",
+      "tag": "choker",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "丝袜配饰"
+    },
+    {
+      "zh": "束腰",
+      "tag": "corset",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "丝袜配饰"
+    },
+    {
+      "zh": "蕾丝手套",
+      "tag": "lace_gloves",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "丝袜配饰"
+    },
+    {
+      "zh": "婚纱",
+      "tag": "wedding_dress",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "裙装"
+    },
+    {
+      "zh": "晚礼服",
+      "tag": "evening_gown",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "裙装"
+    },
+    {
+      "zh": "泳装",
+      "tag": "swimsuit",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "休闲"
+    },
+    {
+      "zh": "比基尼",
+      "tag": "bikini",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "休闲"
+    },
+    {
+      "zh": "内衣",
+      "tag": "underwear",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "内衣"
+    },
+    {
+      "zh": "丁字裤",
+      "tag": "thong",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "内衣"
+    },
+    {
+      "zh": "肚兜",
+      "tag": "doudou",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "内衣"
+    },
+    {
+      "zh": "纱衣",
+      "tag": "sheer_dress",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "传统服饰"
+    },
+    {
+      "zh": "半透明衬衫",
+      "tag": "see-through_blouse",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "休闲"
+    },
+    {
+      "zh": "开叉裙",
+      "tag": "slit_skirt",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "裙装"
+    },
+    {
+      "zh": "短裙",
+      "tag": "mini_skirt",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "裙装"
+    },
+    {
+      "zh": "百褶裙",
+      "tag": "pleated_skirt",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "裙装"
+    },
+    {
+      "zh": "皮裤",
+      "tag": "leather_pants",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "休闲"
+    },
+    {
+      "zh": "长靴",
+      "tag": "boots",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "休闲"
+    },
+    {
+      "zh": "军装",
+      "tag": "military_uniform",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "制服"
+    },
+    {
+      "zh": "哥特装",
+      "tag": "gothic_dress",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "风格服饰"
+    },
+    {
+      "zh": "洛丽塔",
+      "tag": "lolita_dress",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "风格服饰"
+    },
+    {
+      "zh": "雨衣",
+      "tag": "raincoat",
+      "cat": "服装",
+      "zone": "SFW",
+      "subcat": "休闲"
+    },
+    {
+      "zh": "卧室",
+      "tag": "bedroom",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "私密"
+    },
+    {
+      "zh": "浴室",
+      "tag": "bathroom",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "私密"
+    },
+    {
+      "zh": "教室",
+      "tag": "classroom",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "校园"
+    },
+    {
+      "zh": "办公室",
+      "tag": "office",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "都市"
+    },
+    {
+      "zh": "樱花树下",
+      "tag": "under_cherry_blossom_tree",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "自然"
+    },
+    {
+      "zh": "海滩",
+      "tag": "beach",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "自然"
+    },
+    {
+      "zh": "车内",
+      "tag": "in_a_car",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "交通住宿"
+    },
+    {
+      "zh": "酒店大床房",
+      "tag": "hotel_room",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "交通住宿"
+    },
+    {
+      "zh": "酒店走廊",
+      "tag": "hotel_corridor",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "交通住宿"
+    },
+    {
+      "zh": "电梯",
+      "tag": "elevator",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "都市"
+    },
+    {
+      "zh": "楼梯间",
+      "tag": "staircase",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "都市"
+    },
+    {
+      "zh": "天台",
+      "tag": "rooftop",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "都市"
+    },
+    {
+      "zh": "阳台",
+      "tag": "balcony",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "都市"
+    },
+    {
+      "zh": "客厅",
+      "tag": "living_room",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "都市"
+    },
+    {
+      "zh": "厨房",
+      "tag": "kitchen",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "都市"
+    },
+    {
+      "zh": "卫生间",
+      "tag": "bathroom_stall",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "私密"
+    },
+    {
+      "zh": "更衣室",
+      "tag": "changing_room",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "私密"
+    },
+    {
+      "zh": "试衣间",
+      "tag": "fitting_room",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "私密"
+    },
+    {
+      "zh": "桑拿房",
+      "tag": "sauna",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "私密"
+    },
+    {
+      "zh": "温泉",
+      "tag": "hot_spring",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "私密"
+    },
+    {
+      "zh": "泳池",
+      "tag": "swimming_pool",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "娱乐"
+    },
+    {
+      "zh": "夜店",
+      "tag": "nightclub",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "娱乐"
+    },
+    {
+      "zh": "KTV包房",
+      "tag": "karaoke_room",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "娱乐"
+    },
+    {
+      "zh": "电影院",
+      "tag": "cinema",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "娱乐"
+    },
+    {
+      "zh": "图书馆",
+      "tag": "library",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "校园"
+    },
+    {
+      "zh": "操场",
+      "tag": "school_playground",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "校园"
+    },
+    {
+      "zh": "医务室",
+      "tag": "school_infirmary",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "校园"
+    },
+    {
+      "zh": "宿舍",
+      "tag": "dormitory",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "校园"
+    },
+    {
+      "zh": "公园",
+      "tag": "park",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "自然"
+    },
+    {
+      "zh": "森林",
+      "tag": "forest",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "自然"
+    },
+    {
+      "zh": "雪山",
+      "tag": "snowy_mountain",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "自然"
+    },
+    {
+      "zh": "竹林",
+      "tag": "bamboo_forest",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "自然"
+    },
+    {
+      "zh": "竹林温泉",
+      "tag": "bamboo_hot_spring",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "自然"
+    },
+    {
+      "zh": "沙漠",
+      "tag": "desert",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "自然"
+    },
+    {
+      "zh": "海边悬崖",
+      "tag": "seaside_cliff",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "自然"
+    },
+    {
+      "zh": "游艇",
+      "tag": "yacht",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "交通住宿"
+    },
+    {
+      "zh": "酒吧",
+      "tag": "bar",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "娱乐"
+    },
+    {
+      "zh": "居酒屋",
+      "tag": "izakaya",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "娱乐"
+    },
+    {
+      "zh": "神社",
+      "tag": "shrine",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "自然"
+    },
+    {
+      "zh": "庙宇",
+      "tag": "temple",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "自然"
+    },
+    {
+      "zh": "教堂",
+      "tag": "church",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "自然"
+    },
+    {
+      "zh": "城堡",
+      "tag": "castle",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "自然"
+    },
+    {
+      "zh": "地下停车场",
+      "tag": "underground_parking",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "都市"
+    },
+    {
+      "zh": "仓库",
+      "tag": "warehouse",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "都市"
+    },
+    {
+      "zh": "工地",
+      "tag": "construction_site",
+      "cat": "场景",
+      "zone": "SFW",
+      "subcat": "都市"
+    },
+    {
+      "zh": "黄昏金光",
+      "tag": "golden_hour_lighting",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "自然光"
+    },
+    {
+      "zh": "逆光",
+      "tag": "backlight",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "光效"
+    },
+    {
+      "zh": "月光",
+      "tag": "moonlight",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "自然光"
+    },
+    {
+      "zh": "霓虹灯",
+      "tag": "neon_lights",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "人造光"
+    },
+    {
+      "zh": "柔光",
+      "tag": "softbox_lighting",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "人造光"
+    },
+    {
+      "zh": "烛光",
+      "tag": "candlelight",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "人造光"
+    },
+    {
+      "zh": "晨光",
+      "tag": "morning_light",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "自然光"
+    },
+    {
+      "zh": "丁达尔光",
+      "tag": "god_rays",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "自然光"
+    },
+    {
+      "zh": "自然光",
+      "tag": "natural_lighting",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "自然光"
+    },
+    {
+      "zh": "窗光",
+      "tag": "window_light",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "自然光"
+    },
+    {
+      "zh": "轮廓光",
+      "tag": "rim_light",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "光效"
+    },
+    {
+      "zh": "顶光",
+      "tag": "top_lighting",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "光效"
+    },
+    {
+      "zh": "侧光",
+      "tag": "side_lighting",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "光效"
+    },
+    {
+      "zh": "聚光灯",
+      "tag": "spotlight",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "人造光"
+    },
+    {
+      "zh": "闪光灯",
+      "tag": "flash_photography",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "人造光"
+    },
+    {
+      "zh": "日光",
+      "tag": "daylight",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "自然光"
+    },
+    {
+      "zh": "日落",
+      "tag": "sunset_glow",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "自然光"
+    },
+    {
+      "zh": "日出",
+      "tag": "sunrise_light",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "自然光"
+    },
+    {
+      "zh": "夜景",
+      "tag": "night_scene",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "自然光"
+    },
+    {
+      "zh": "黄昏",
+      "tag": "dusk",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "自然光"
+    },
+    {
+      "zh": "阴天",
+      "tag": "overcast_sky",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "自然光"
+    },
+    {
+      "zh": "雾天",
+      "tag": "foggy_atmosphere",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "自然光"
+    },
+    {
+      "zh": "雨夜",
+      "tag": "rainy_night",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "自然光"
+    },
+    {
+      "zh": "雪夜",
+      "tag": "snowy_night",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "自然光"
+    },
+    {
+      "zh": "星光",
+      "tag": "starlight",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "自然光"
+    },
+    {
+      "zh": "极光",
+      "tag": "aurora_borealis",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "自然光"
+    },
+    {
+      "zh": "路灯",
+      "tag": "street_lamp",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "人造光"
+    },
+    {
+      "zh": "车灯",
+      "tag": "headlights",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "人造光"
+    },
+    {
+      "zh": "屏幕光",
+      "tag": "screen_glow",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "人造光"
+    },
+    {
+      "zh": "荧光",
+      "tag": "fluorescent_light",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "人造光"
+    },
+    {
+      "zh": "紫外光",
+      "tag": "uv_light",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "人造光"
+    },
+    {
+      "zh": "虹彩光",
+      "tag": "iridescent_lighting",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "人造光"
+    },
+    {
+      "zh": "金色光束",
+      "tag": "golden_beam_of_light",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "人造光"
+    },
+    {
+      "zh": "红光",
+      "tag": "red_light",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "人造光"
+    },
+    {
+      "zh": "蓝光",
+      "tag": "blue_light",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "人造光"
+    },
+    {
+      "zh": "紫光",
+      "tag": "purple_light",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "人造光"
+    },
+    {
+      "zh": "暖光",
+      "tag": "warm_light",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "人造光"
+    },
+    {
+      "zh": "冷光",
+      "tag": "cool_light",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "人造光"
+    },
+    {
+      "zh": "渐变光",
+      "tag": "gradient_lighting",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "人造光"
+    },
+    {
+      "zh": "光斑",
+      "tag": "bokeh_lights",
+      "cat": "光线",
+      "zone": "SFW",
+      "subcat": "人造光"
+    },
+    {
+      "zh": "动漫",
+      "tag": "anime_style",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "绘画"
+    },
+    {
+      "zh": "写实",
+      "tag": "realistic",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "绘画"
+    },
+    {
+      "zh": "油画",
+      "tag": "oil_painting",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "绘画"
+    },
+    {
+      "zh": "水彩",
+      "tag": "watercolor",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "绘画"
+    },
+    {
+      "zh": "赛博朋克",
+      "tag": "cyberpunk",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "流派"
+    },
+    {
+      "zh": "暗黑奇幻",
+      "tag": "dark_fantasy",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "流派"
+    },
+    {
+      "zh": "科幻",
+      "tag": "sci-fi",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "流派"
+    },
+    {
+      "zh": "古风",
+      "tag": "traditional_Chinese_style",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "流派"
+    },
+    {
+      "zh": "日系",
+      "tag": "japanese_style",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "绘画"
+    },
+    {
+      "zh": "欧美",
+      "tag": "western_style",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "绘画"
+    },
+    {
+      "zh": "卡通",
+      "tag": "cartoon_style",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "绘画"
+    },
+    {
+      "zh": "Q版",
+      "tag": "chibi_style",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "绘画"
+    },
+    {
+      "zh": "3D渲染",
+      "tag": "3d_render",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "摄影媒介"
+    },
+    {
+      "zh": "2.5D",
+      "tag": "2.5d_style",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "摄影媒介"
+    },
+    {
+      "zh": "像素风",
+      "tag": "pixel_art",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "摄影媒介"
+    },
+    {
+      "zh": "水墨风",
+      "tag": "ink_wash_painting",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "绘画"
+    },
+    {
+      "zh": "浮世绘",
+      "tag": "ukiyo-e_style",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "绘画"
+    },
+    {
+      "zh": "洛可可",
+      "tag": "rococo_style",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "摄影媒介"
+    },
+    {
+      "zh": "巴洛克",
+      "tag": "baroque_style",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "摄影媒介"
+    },
+    {
+      "zh": "印象派",
+      "tag": "impressionist",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "绘画"
+    },
+    {
+      "zh": "野兽派",
+      "tag": "fauvism",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "绘画"
+    },
+    {
+      "zh": "抽象",
+      "tag": "abstract_art",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "绘画"
+    },
+    {
+      "zh": "极简",
+      "tag": "minimalist",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "绘画"
+    },
+    {
+      "zh": "蒸汽朋克",
+      "tag": "steampunk",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "流派"
+    },
+    {
+      "zh": "废土",
+      "tag": "post-apocalyptic",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "流派"
+    },
+    {
+      "zh": "克苏鲁",
+      "tag": "lovecraftian",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "流派"
+    },
+    {
+      "zh": "哥特",
+      "tag": "gothic_style",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "流派"
+    },
+    {
+      "zh": "古典",
+      "tag": "classical_art",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "流派"
+    },
+    {
+      "zh": "新古典",
+      "tag": "neoclassical",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "流派"
+    },
+    {
+      "zh": "雕塑质感",
+      "tag": "sculpture_style",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "摄影媒介"
+    },
+    {
+      "zh": "摄影写实",
+      "tag": "photorealistic",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "摄影媒介"
+    },
+    {
+      "zh": "胶卷质感",
+      "tag": "film_grain",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "摄影媒介"
+    },
+    {
+      "zh": "宝丽来",
+      "tag": "polaroid",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "摄影媒介"
+    },
+    {
+      "zh": "复古",
+      "tag": "vintage",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "摄影媒介"
+    },
+    {
+      "zh": "昭和风",
+      "tag": "showa_retro",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "流派"
+    },
+    {
+      "zh": "美漫",
+      "tag": "american_comic_style",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "地域"
+    },
+    {
+      "zh": "韩漫",
+      "tag": "korean_manhwa_style",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "地域"
+    },
+    {
+      "zh": "国漫",
+      "tag": "chinese_cartoon_style",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "地域"
+    },
+    {
+      "zh": "厚涂",
+      "tag": "thick_painting",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "绘画"
+    },
+    {
+      "zh": "平涂",
+      "tag": "flat_coloring",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "绘画"
+    },
+    {
+      "zh": "赛璐璐",
+      "tag": "cel_shading",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "绘画"
+    },
+    {
+      "zh": "素描",
+      "tag": "sketch",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "绘画"
+    },
+    {
+      "zh": "线稿",
+      "tag": "line_art",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "绘画"
+    },
+    {
+      "zh": "涂鸦",
+      "tag": "graffiti_style",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "绘画"
+    },
+    {
+      "zh": "超现实",
+      "tag": "surrealism",
+      "cat": "风格",
+      "zone": "SFW",
+      "subcat": "绘画"
+    },
+    {
+      "zh": "杰作",
+      "tag": "masterpiece",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "质量"
+    },
+    {
+      "zh": "最高质量",
+      "tag": "best_quality",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "质量"
+    },
+    {
+      "zh": "8K",
+      "tag": "8k",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "质量"
+    },
+    {
+      "zh": "超精细",
+      "tag": "ultra_detailed",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "质量"
+    },
+    {
+      "zh": "锐利对焦",
+      "tag": "sharp_focus",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "质量"
+    },
+    {
+      "zh": "电影光",
+      "tag": "cinematic_lighting",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "质量"
+    },
+    {
+      "zh": "高分辨率",
+      "tag": "high_resolution",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "质量"
+    },
+    {
+      "zh": "4K",
+      "tag": "4k",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "质量"
+    },
+    {
+      "zh": "高清",
+      "tag": "hd",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "质量"
+    },
+    {
+      "zh": "超清",
+      "tag": "uhd",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "质量"
+    },
+    {
+      "zh": "极致细节",
+      "tag": "extreme_detail",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "质量"
+    },
+    {
+      "zh": "细腻皮肤",
+      "tag": "detailed_skin_texture",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "质量"
+    },
+    {
+      "zh": "真实质感",
+      "tag": "realistic_texture",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "质量"
+    },
+    {
+      "zh": "景深",
+      "tag": "depth_of_field",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "镜头"
+    },
+    {
+      "zh": "浅景深",
+      "tag": "shallow_depth_of_field",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "镜头"
+    },
+    {
+      "zh": "大光圈",
+      "tag": "wide_aperture",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "镜头"
+    },
+    {
+      "zh": "微距",
+      "tag": "macro_shot",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "镜头"
+    },
+    {
+      "zh": "广角",
+      "tag": "wide_angle",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "镜头"
+    },
+    {
+      "zh": "长焦",
+      "tag": "telephoto_lens",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "镜头"
+    },
+    {
+      "zh": "特写",
+      "tag": "close-up",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "镜头"
+    },
+    {
+      "zh": "全身",
+      "tag": "full_body",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "镜头"
+    },
+    {
+      "zh": "全身像",
+      "tag": "full_body_shot",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "镜头"
+    },
+    {
+      "zh": "仰视",
+      "tag": "low_angle_shot",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "镜头"
+    },
+    {
+      "zh": "俯视",
+      "tag": "high_angle_shot",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "镜头"
+    },
+    {
+      "zh": "正面",
+      "tag": "front_view",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "镜头"
+    },
+    {
+      "zh": "侧面",
+      "tag": "side_view",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "镜头"
+    },
+    {
+      "zh": "背面",
+      "tag": "back_view",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "镜头"
+    },
+    {
+      "zh": "四分之三视角",
+      "tag": "three-quarter_view",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "镜头"
+    },
+    {
+      "zh": "动态姿势",
+      "tag": "dynamic_pose",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "镜头"
+    },
+    {
+      "zh": "飘动",
+      "tag": "flowing_motion",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "镜头"
+    },
+    {
+      "zh": "构图精良",
+      "tag": "well_composed",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "构图"
+    },
+    {
+      "zh": "对称构图",
+      "tag": "symmetrical_composition",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "构图"
+    },
+    {
+      "zh": "黄金比例",
+      "tag": "golden_ratio",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "构图"
+    },
+    {
+      "zh": "背景虚化",
+      "tag": "blurred_background",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "构图"
+    },
+    {
+      "zh": "镜头光晕",
+      "tag": "lens_flare",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "构图"
+    },
+    {
+      "zh": "辉光",
+      "tag": "glowing_effects",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "构图"
+    },
+    {
+      "zh": "粒子效果",
+      "tag": "particle_effects",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "构图"
+    },
+    {
+      "zh": "体积光",
+      "tag": "volumetric_lighting",
+      "cat": "画质",
+      "zone": "SFW",
+      "subcat": "构图"
+    },
+    {
+      "zh": "低分辨率",
+      "tag": "lowres",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "画质问题"
+    },
+    {
+      "zh": "模糊",
+      "tag": "blurry",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "画质问题"
+    },
+    {
+      "zh": "畸形",
+      "tag": "deformed",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "解剖错误"
+    },
+    {
+      "zh": "坏解剖",
+      "tag": "bad_anatomy",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "解剖错误"
+    },
+    {
+      "zh": "多余肢体",
+      "tag": "extra_limbs",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "解剖错误"
+    },
+    {
+      "zh": "水印",
+      "tag": "watermark",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "干扰物"
+    },
+    {
+      "zh": "文字",
+      "tag": "text",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "干扰物"
+    },
+    {
+      "zh": "画面外物体",
+      "tag": "out_of_frame",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "干扰物"
+    },
+    {
+      "zh": "坏手",
+      "tag": "bad_hands",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "解剖错误"
+    },
+    {
+      "zh": "坏手指",
+      "tag": "bad_fingers",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "解剖错误"
+    },
+    {
+      "zh": "多余手指",
+      "tag": "extra_fingers",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "解剖错误"
+    },
+    {
+      "zh": "缺失手指",
+      "tag": "missing_fingers",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "解剖错误"
+    },
+    {
+      "zh": "脸变形",
+      "tag": "deformed_face",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "解剖错误"
+    },
+    {
+      "zh": "扭曲",
+      "tag": "distorted",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "解剖错误"
+    },
+    {
+      "zh": "噪点",
+      "tag": "noise",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "画质问题"
+    },
+    {
+      "zh": "颗粒感",
+      "tag": "grainy",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "画质问题"
+    },
+    {
+      "zh": "背景模糊",
+      "tag": "blurry_background",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "画质问题"
+    },
+    {
+      "zh": "景深错误",
+      "tag": "depth_of_field_error",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "画质问题"
+    },
+    {
+      "zh": "失焦",
+      "tag": "out_of_focus",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "画质问题"
+    },
+    {
+      "zh": "过曝",
+      "tag": "overexposed",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "画质问题"
+    },
+    {
+      "zh": "欠曝",
+      "tag": "underexposed",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "画质问题"
+    },
+    {
+      "zh": "过饱和",
+      "tag": "oversaturated",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "画质问题"
+    },
+    {
+      "zh": "偏色",
+      "tag": "color_shift",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "画质问题"
+    },
+    {
+      "zh": "比例错误",
+      "tag": "bad_proportion",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "解剖错误"
+    },
+    {
+      "zh": "双头",
+      "tag": "two_heads",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "解剖错误"
+    },
+    {
+      "zh": "三臂",
+      "tag": "three_arms",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "解剖错误"
+    },
+    {
+      "zh": "重影",
+      "tag": "double_image",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "画质问题"
+    },
+    {
+      "zh": "伪影",
+      "tag": "artifacts",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "画质问题"
+    },
+    {
+      "zh": "JPEG痕迹",
+      "tag": "jpeg_artifacts",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "画质问题"
+    },
+    {
+      "zh": "低质量",
+      "tag": "low_quality",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "画质问题"
+    },
+    {
+      "zh": "草图感",
+      "tag": "sketch_quality",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "画质问题"
+    },
+    {
+      "zh": "未完成",
+      "tag": "unfinished",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "画质问题"
+    },
+    {
+      "zh": "粗糙",
+      "tag": "rough",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "画质问题"
+    },
+    {
+      "zh": "边缘模糊",
+      "tag": "blurry_edges",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "画质问题"
+    },
+    {
+      "zh": "鬼影",
+      "tag": "ghosting",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "画质问题"
+    },
+    {
+      "zh": "花屏",
+      "tag": "screen_tearing",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "画质问题"
+    },
+    {
+      "zh": "像素化",
+      "tag": "pixelated",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "画质问题"
+    },
+    {
+      "zh": "色带",
+      "tag": "color_banding",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "画质问题"
+    },
+    {
+      "zh": "杂讯",
+      "tag": "static",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "画质问题"
+    },
+    {
+      "zh": "多余尾巴",
+      "tag": "extra_tail",
+      "cat": "负面",
+      "zone": "SFW",
+      "subcat": "解剖错误"
+    },
+    {
+      "zh": "OL",
+      "tag": "office lady",
+      "cat": "人物",
+      "subcat": "职业",
+      "zone": "SFW"
+    },
+    {
+      "zh": "人鱼",
+      "tag": "mermaid",
+      "cat": "人物",
+      "subcat": "幻想种族",
+      "zone": "SFW"
+    },
+    {
+      "zh": "巨乳",
+      "tag": "big breasts",
+      "cat": "身体",
+      "subcat": "胸部",
+      "zone": "SFW"
+    },
+    {
+      "zh": "淫纹",
+      "tag": "hentai marks",
+      "cat": "身体",
+      "subcat": "其他",
+      "zone": "SFW"
+    },
+    {
+      "zh": "黑丝",
+      "tag": "black stockings",
+      "cat": "服装",
+      "subcat": "丝袜配饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "白丝",
+      "tag": "white stockings",
+      "cat": "服装",
+      "subcat": "丝袜配饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "校服",
+      "tag": "school uniform",
+      "cat": "服装",
+      "subcat": "制服",
+      "zone": "SFW"
+    },
+    {
+      "zh": "吊带袜",
+      "tag": "garter belt",
+      "cat": "服装",
+      "subcat": "丝袜配饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "渔网袜",
+      "tag": "fishnet stockings",
+      "cat": "服装",
+      "subcat": "丝袜配饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "高细节",
+      "tag": "highly detailed",
+      "cat": "画质",
+      "subcat": "质量",
+      "zone": "SFW"
+    },
+    {
+      "zh": "半身",
+      "tag": "bust shot",
+      "cat": "画质",
+      "subcat": "镜头",
+      "zone": "SFW"
+    },
+    {
+      "zh": "襦裙",
+      "tag": "ruqun_hanfu",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "曲裾",
+      "tag": "quju_hanfu",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "马面裙",
+      "tag": "mamian_skirt",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "直裾",
+      "tag": "zhiju_hanfu",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "齐胸襦裙",
+      "tag": "qixiong_ruqun",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "交领襦裙",
+      "tag": "cross-collar_ruqun",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "对襟襦裙",
+      "tag": "duijin_ruqun",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "宋制汉服",
+      "tag": "song_dynasty_hanfu",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "明制汉服",
+      "tag": "ming_dynasty_hanfu",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "唐制汉服",
+      "tag": "tang_dynasty_hanfu",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "魏晋风",
+      "tag": "wei-jin_style",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "汉服披帛",
+      "tag": "hanfu_pibo",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "汉服外袍",
+      "tag": "hanfu_outer_robe",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "汉服大袖",
+      "tag": "hanfu_wide_sleeves",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "云肩",
+      "tag": "cloud_collar",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "披帛",
+      "tag": "silk_ribbon_pibo",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "绣花鞋",
+      "tag": "embroidered_shoes",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "簪子",
+      "tag": "hairpin",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "步摇",
+      "tag": "buyao_hairpin",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "团扇",
+      "tag": "round_fan",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "折扇",
+      "tag": "folding_fan",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "玉佩",
+      "tag": "jade_pendant",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "香囊",
+      "tag": "sachet",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "中式刺绣",
+      "tag": "chinese_embroidery",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "锦缎",
+      "tag": "brocade_fabric",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "中式古风",
+      "tag": "chinese_ancient_style",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "水墨丹青",
+      "tag": "ink_wash_style",
+      "cat": "服装",
+      "subcat": "传统服饰",
+      "zone": "SFW"
+    },
+    {
+      "zh": "菩萨",
+      "tag": "bodhisattva",
+      "cat": "人物",
+      "subcat": "幻想种族",
+      "zone": "SFW"
+    },
+    {
+      "zh": "观音",
+      "tag": "guanyin",
+      "cat": "人物",
+      "subcat": "幻想种族",
+      "zone": "SFW"
+    },
+    {
+      "zh": "观音菩萨",
+      "tag": "guanyin_bodhisattva",
+      "cat": "人物",
+      "subcat": "幻想种族",
+      "zone": "SFW"
+    },
+    {
+      "zh": "佛陀",
+      "tag": "buddha",
+      "cat": "人物",
+      "subcat": "幻想种族",
+      "zone": "SFW"
+    },
+    {
+      "zh": "女佛",
+      "tag": "female_buddha",
+      "cat": "人物",
+      "subcat": "幻想种族",
+      "zone": "SFW"
+    },
+    {
+      "zh": "尼姑",
+      "tag": "buddhist_nun",
+      "cat": "人物",
+      "subcat": "职业",
+      "zone": "SFW"
+    },
+    {
+      "zh": "僧侣",
+      "tag": "buddhist_monk",
+      "cat": "人物",
+      "subcat": "职业",
+      "zone": "SFW"
+    },
+    {
+      "zh": "比丘尼",
+      "tag": "bhikkhuni",
+      "cat": "人物",
+      "subcat": "职业",
+      "zone": "SFW"
+    },
+    {
+      "zh": "圣女贞德",
+      "tag": "jeanne_darc",
+      "cat": "人物",
+      "subcat": "职业",
+      "zone": "SFW"
+    },
+    {
+      "zh": "女天使",
+      "tag": "female_angel",
+      "cat": "人物",
+      "subcat": "幻想种族",
+      "zone": "SFW"
+    },
+    {
+      "zh": "大天使",
+      "tag": "archangel",
+      "cat": "人物",
+      "subcat": "幻想种族",
+      "zone": "SFW"
+    },
+    {
+      "zh": "炽天使",
+      "tag": "seraph",
+      "cat": "人物",
+      "subcat": "幻想种族",
+      "zone": "SFW"
+    },
+    {
+      "zh": "智天使",
+      "tag": "cherub",
+      "cat": "人物",
+      "subcat": "幻想种族",
+      "zone": "SFW"
+    },
+    {
+      "zh": "堕天使",
+      "tag": "fallen_angel",
+      "cat": "人物",
+      "subcat": "幻想种族",
+      "zone": "SFW"
+    },
+    {
+      "zh": "圣母",
+      "tag": "madonna",
+      "cat": "人物",
+      "subcat": "职业",
+      "zone": "SFW"
+    },
+    {
+      "zh": "女神",
+      "tag": "goddess",
+      "cat": "人物",
+      "subcat": "幻想种族",
+      "zone": "SFW"
+    },
+    {
+      "zh": "女祭司",
+      "tag": "priestess",
+      "cat": "人物",
+      "subcat": "职业",
+      "zone": "SFW"
+    },
+    {
+      "zh": "修道士",
+      "tag": "monk",
+      "cat": "人物",
+      "subcat": "职业",
+      "zone": "SFW"
+    },
+    {
+      "zh": "女武神",
+      "tag": "valkyrie",
+      "cat": "人物",
+      "subcat": "幻想种族",
+      "zone": "SFW"
+    },
+    {
+      "zh": "天女",
+      "tag": "celestial_maiden",
+      "cat": "人物",
+      "subcat": "幻想种族",
+      "zone": "SFW"
+    },
+    {
+      "zh": "仙女",
+      "tag": "fairy_maiden",
+      "cat": "人物",
+      "subcat": "幻想种族",
+      "zone": "SFW"
+    },
+    {
+      "zh": "天使光环",
+      "tag": "halo",
+      "cat": "人物",
+      "subcat": "幻想种族",
+      "zone": "SFW"
+    },
+    {
+      "zh": "天使翅膀",
+      "tag": "angel_wings",
+      "cat": "人物",
+      "subcat": "幻想种族",
+      "zone": "SFW"
+    },
+    {
+      "zh": "圣光",
+      "tag": "holy_light",
+      "cat": "人物",
+      "subcat": "职业",
+      "zone": "SFW"
+    },
+    {
+      "zh": "金色光环",
+      "tag": "golden_halo",
+      "cat": "人物",
+      "subcat": "职业",
+      "zone": "SFW"
+    },
+    {
+      "zh": "十字架项链",
+      "tag": "cross_necklace",
+      "cat": "人物",
+      "subcat": "职业",
+      "zone": "SFW"
+    }
+  ]
+}

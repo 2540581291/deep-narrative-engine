@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self' data: https:; media-src 'self' blob: http://127.0.0.1:3900; connect-src *;">
+  <title>深度叙事引擎</title>
+  <link rel="stylesheet" href="区块-样式/顶层模块-核心/子模块-全局样式/叶子模块-主面板/style.css">
+  <link rel="stylesheet" href="区块-样式/顶层模块-核心/子模块-全局样式/叶子模块-主面板/writing-styles.css">
+  <style>
+    #debugConsole {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 220px;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      z-index: 9998;
+      display: none;
+      flex-direction: column;
+    }
+    #debugConsoleHead {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 12px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg2);
+    }
+    #debugConsoleLog {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+      font-size: 11px;
+      font-family: 'Consolas', 'Monaco', monospace;
+    }
+    #debugConsolePrompts {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+      font-size: 11px;
+    }
+  </style>
+  <!-- ===== 最前置错误捕获：在任意 JS 加载之前注册 ===== -->
+  <script>
+    window.__earlyErrors = [];
+    window.onerror = function(msg, url, line, col, err) {
+      window.__earlyErrors.push({
+        type: 'onerror',
+        message: msg,
+        url: url, line: line, col: col,
+        stack: err && err.stack ? err.stack : ''
+      });
+      return false;
+    };
+    window.addEventListener('unhandledrejection', function(e) {
+      window.__earlyErrors.push({
+        type: 'unhandledrejection',
+        message: e.reason ? (e.reason.message || String(e.reason)) : 'unknown',
+        stack: e.reason && e.reason.stack ? e.reason.stack : ''
+      });
+    });
+  </script>
+</head>
+<body>
+  <div id="topBar" class="topbar">
+    <div class="topbar-left">
+      <div class="logo" onclick="切换页面('home')"><span class="logo-dot"></span><span class="logo-brand">深度叙事引擎</span></div>
+      <div class="topbar-nav">
+        <span class="top-nav-item act" data-pg="home">🏠 首页</span>
+        <span class="top-nav-item" data-pg="character">👤 角色卡</span>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <span class="top-bar-action" onclick="document.querySelectorAll('.pg').forEach(function(e){if(e.style.display!='none')e.scrollTop=0})" title="返回顶部">⬆ 顶部</span>
+      <select id="modelSwitcher" class="topbar-model" onchange="切换模型(this.value)" title="切换当前模型"></select>
+      <span class="top-bar-action usage" onclick="openUsageModal()">💰 Token</span>
+      <span class="top-bar-action" data-pg="settings" onclick="切换页面('settings')" title="设置">⚙ 设置</span>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div id="leftBar" class="left-bar">
+      <!-- 由 JS 动态填充模块列表 -->
+    </div>
+    <div class="main-content">
+      <div id="pg-home" class="pg act" style="display:block;height:100%"><div id="homeContent" class="page-content"></div></div>
+      <div id="pg-novel" class="pg" style="display:none;height:100%"><div id="novelContent" class="page-content"></div></div>
+      <div id="pg-world" class="pg" style="display:none;height:100%"><div id="worldContent" class="page-content"></div></div>
+	      <div id="pg-character" class="pg" style="display:none;height:100%"><div id="characterContent" class="page-content"></div></div>
+  <div id="pg-fap-reference" class="pg pg-fullwidth"><div id="fap-referenceContent"></div></div>
+  <div id="pg-interactive-novel" class="pg"><div id="interactive-novelContent"></div></div>
+  <div id="pg-xing-zheng-zhu-shou" class="pg"><div id="xing-zheng-zhu-shouContent"></div></div>
+  <div id="pg-weixin" class="pg"><div id="weixinContent"></div></div>
+  <div id="pg-qqim" class="pg"><div id="qqimContent"></div></div>
+  <div id="pg-heisha" class="pg"><div id="heishaContent"></div></div>
+  <div id="pg-weibo" class="pg"><div id="weiboContent"></div></div>
+  <div id="pg-douyin" class="pg"><div id="douyinContent"></div></div>
+  <div id="pg-zhihu" class="pg"><div id="zhihuContent"></div></div>
+  <div id="pg-bilibili" class="pg"><div id="bilibiliContent"></div></div>
+  <div id="pg-xiaohongshu" class="pg"><div id="xiaohongshuContent"></div></div>
+  <div id="pg-tianya" class="pg"><div id="tianyaContent"></div></div>
+  <div id="pg-haijiao" class="pg"><div id="haijiaoContent"></div></div>
+  <div id="pg-laowang" class="pg"><div id="laowangContent"></div></div>
+  <div id="pg-tieba" class="pg"><div id="tiebaContent"></div></div>
+  <div id="pg-qidian" class="pg"><div id="qidianContent"></div></div>
+  <div id="pg-social-feed" class="pg"><div id="social-feedContent"></div></div>
+  <div id="pg-fetish-quiz" class="pg"><div id="fetish-quizContent"></div></div>
+  <div id="pg-char-chat" class="pg"><div id="char-chatContent"></div></div>
+  <div id="pg-life-observe" class="pg"><div id="life-observeContent"></div></div>
+  <div id="pg-settings" class="pg"><div id="settingsContent"></div></div>
+  <div id="pg-series-writing" class="pg"><div id="series-writingContent"></div></div>
+  <div id="pg-vignette" class="pg"><div id="vignetteContent"></div></div>
+  <div id="pg-letter-social" class="pg"><div id="letter-socialContent"></div></div>
+  <div id="pg-life-doc" class="pg"><div id="life-docContent"></div></div>
+  <div id="pg-aids" class="pg"><div id="aidsContent"></div></div>
+  <div id="pg-pei-yin-pei-yue" class="pg"><div id="pei-yin-pei-yueContent"></div></div>
+  <div id="pg-sheng-tu-ci-dian" class="pg"><div id="sheng-tu-ci-dianContent"></div></div>
+  <div id="pg-sheng-tu-cheng-guo" class="pg"><div id="sheng-tu-cheng-guoContent"></div></div>
+  <div id="pg-ref-doc" class="pg" style="display:none;height:100%"><div id="ref-docContent" class="page-content"></div></div>
+  <div id="pg-inspiration" class="pg"><div id="inspirationContent"></div></div>
+  <div id="pg-books" class="pg"><div id="booksContent"></div></div>
+  <div id="pg-arts" class="pg"><div id="artsContent"></div></div>
+  <div id="pg-videos" class="pg"><div id="videosContent"></div></div>
+  <div id="pg-games" class="pg"><div id="gamesContent"></div></div>
+  <div id="pg-newspaper" class="pg"><div id="newspaperContent"></div></div>
+  <div id="pg-yin-shi-yan-qu" class="pg"><div id="yin-shi-yan-quContent"></div></div>
+  <div id="pg-lang-yu-sao-ge" class="pg"><div id="lang-yu-sao-geContent"></div></div>
+  <div id="pg-meng-xue-yan-dian" class="pg"><div id="meng-xue-yan-dianContent"></div></div>
+  <div id="pg-sex-script" class="pg"><div id="sex-scriptContent"></div></div>
+  <div id="pg-role-script" class="pg"><div id="role-scriptContent"></div></div>
+  <div id="pg-flash" class="pg"><div id="flashContent"></div></div>
+  <div id="pg-applied" class="pg"><div id="appliedContent"></div></div>
+  <div id="pg-wen-xue-gai-bian" class="pg"><div id="wen-xue-gai-bianContent"></div></div>
+  <div id="pg-dian-ping-shang-xi" class="pg"><div id="dian-ping-shang-xiContent"></div></div>
+  <div id="pg-jin-xiu-wen-zhang" class="pg"><div id="jin-xiu-wen-zhangContent"></div></div>
+  <div id="pg-erotica-pub" class="pg"><div id="erotica-pubContent"></div></div>
+  <div id="pg-erotica-doc" class="pg"><div id="erotica-docContent"></div></div>
+  <div id="pg-erotica-life" class="pg"><div id="erotica-lifeContent"></div></div>
+  </div></div>
+
+  <div id="toastContainer" class="toast-container"></div>
+  <div id="modalOverlay" class="modal-overlay" style="display:none">
+    <div class="modal-box" id="modalBox"></div>
+  </div>
+
+  <script src="区块-引擎/顶层模块-核心/子模块-工具/叶子模块-主面板/entry.js"></script>
+  <script src="区块-引擎/顶层模块-核心/子模块-状态/叶子模块-主面板/entry.js"></script>
+  <script src="区块-引擎/顶层模块-核心/子模块-本地文件系统/叶子模块-主面板/entry.js"></script>
+  <script src="区块-引擎/顶层模块-核心/子模块-命令/叶子模块-主面板/entry.js"></script>
+  <script src="区块-引擎/顶层模块-核心/子模块-路由/叶子模块-主面板/entry.js"></script>
+  <script src="区块-界面/顶层模块-核心/子模块-通用/叶子模块-主面板/entry.js"></script>
+  <script src="区块-界面/顶层模块-核心/子模块-作品选择器/叶子模块-主面板/entry.js"></script>
+  <script src="区块-存储/顶层模块-核心/子模块-目录/叶子模块-主面板/entry.js"></script>
+  <script src="区块-存储/顶层模块-核心/子模块-工厂/叶子模块-主面板/entry.js"></script>
+  <script src="区块-存储/顶层模块-核心/子模块-注册表/叶子模块-主面板/entry.js"></script>
+  <script src="区块-界面/顶层模块-核心/子模块-工坊工厂/叶子模块-主面板/entry.js"></script>
+  <script src="区块-大模型/顶层模块-模板/子模块-模型数据/叶子模块-主面板/entry.js"></script>
+  <script src="区块-大模型/顶层模块-核心/子模块-大模型/叶子模块-主面板/entry.js"></script>
+  <script src="区块-大模型/顶层模块-核心/子模块-配置管理/叶子模块-主面板/entry.js"></script>
+  <script src="区块-大模型/顶层模块-核心/子模块-提供商/叶子模块-开放AI/entry.js"></script>
+  <script src="区块-大模型/顶层模块-核心/子模块-提供商/叶子模块-本地模型/entry.js"></script>
+  <script src="区块-大模型/顶层模块-核心/子模块-提供商/叶子模块-人类/entry.js"></script>
+  <script src="区块-系统/顶层模块-核心/子模块-用量追踪/叶子模块-主面板/entry.js"></script>
+  <script src="区块-系统/顶层模块-核心/子模块-任务进度/叶子模块-主面板/entry.js"></script>
+  <script src="区块-系统/顶层模块-核心/子模块-AI建议/叶子模块-主面板/entry.js"></script>
+  <script src="区块-系统/顶层模块-核心/子模块-调试/叶子模块-主面板/entry.js"></script>
+  <script src="区块-界面/顶层模块-核心/子模块-用量面板/叶子模块-主面板/entry.js"></script>
+  <script src="区块-提示词/顶层模块-核心/子模块-全局函数/叶子模块-主面板/entry.js"></script>
+  <script src="区块-提示词/顶层模块-核心/子模块-注册表/叶子模块-主面板/entry.js"></script>
+  <script src="区块-提示词/顶层模块-核心/子模块-注册表/叶子模块-核心提示词/entry.js"></script>
+  <script src="区块-提示词/顶层模块-核心/子模块-注册表/叶子模块-创作提示词/entry.js"></script>
+  <script src="区块-提示词/顶层模块-核心/子模块-注册表/叶子模块-杂项提示词/entry.js"></script>
+  <script src="区块-提示词/顶层模块-核心/子模块-注册表/叶子模块-小说提取提示词/entry.js"></script>
+  <script src="区块-提示词/顶层模块-核心/子模块-注册表/叶子模块-黄游拔作提示词/entry.js"></script>
+
+  <!-- RunningHub API 服务 -->
+  <script src="业务容器/区块-声图创作/顶层模块-生图识图/子模块-RunningHub/叶子模块-主面板/entry.js"></script>
+
+  <!-- Erotic Literature -->
+  <script src="业务容器/区块-情欲文学/顶层模块-成人小说/子模块-存储/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-成人小说/子模块-主界面/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-成人小说/子模块-列表/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-成人小说/子模块-大纲/叶子模块-状态/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-成人小说/子模块-大纲/叶子模块-上下文/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-成人小说/子模块-大纲/叶子模块-新建/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-成人小说/子模块-大纲/叶子模块-概览/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-成人小说/子模块-大纲/叶子模块-标签系统/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-成人小说/子模块-大纲/叶子模块-保存/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-成人小说/子模块-大纲/叶子模块-参考/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-成人小说/子模块-大纲/叶子模块-正文/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-成人小说/子模块-大纲/叶子模块-笔记/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-成人小说/子模块-大纲/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-成人小说/子模块-AI工坊/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-成人小说/子模块-章节生成/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-成人小说/子模块-AI字段/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-成人小说/子模块-写作/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-成人小说/子模块-阅读/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-成人小说/子模块-AI注册/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-成人小说/子模块-AI注册/叶子模块-概览AI/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-成人小说/子模块-AI注册/叶子模块-章节AI/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-情色短章/子模块-短章提示词/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-情色短章/子模块-列表/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-情色短章/子模块-大纲/叶子模块-状态/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-情色短章/子模块-大纲/叶子模块-上下文/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-情色短章/子模块-大纲/叶子模块-新建/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-情色短章/子模块-大纲/叶子模块-概览/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-情色短章/子模块-大纲/叶子模块-标签系统/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-情色短章/子模块-大纲/叶子模块-保存/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-情色短章/子模块-大纲/叶子模块-参考/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-情色短章/子模块-大纲/叶子模块-正文/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-情色短章/子模块-大纲/叶子模块-笔记/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-情色短章/子模块-大纲/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-情色短章/子模块-AI注册/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-情色短章/子模块-AI工坊/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-情色短章/子模块-章节生成/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-情色短章/子模块-AI生成/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-情色短章/子模块-AI字段/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-情色短章/子模块-写作/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-情色短章/子模块-阅读/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-情色短章/子模块-主界面/叶子模块-主面板/entry.js"></script>
+  <!-- 生活纪实模块 -->
+  <script src="业务容器/区块-情欲文学/顶层模块-生活纪实/子模块-主控/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-生活纪实/子模块-主控/叶子模块-主面板/plan.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-生活纪实/子模块-主控/叶子模块-主面板/writing.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-生活纪实/子模块-主控/叶子模块-主面板/list-char.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-生活纪实/子模块-主控/叶子模块-主面板/writing-ai.js"></script>
+  <!-- 书信社交模块（书信/便条/聊天记录/社交动态 · 共享工厂） -->
+  <script src="业务容器/区块-情欲工坊/顶层模块-书信社交/子模块-共享工厂/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-书信社交/子模块-书信/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-书信社交/子模块-便条/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-书信社交/子模块-聊天记录/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-书信社交/子模块-社交动态/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-书信社交/子模块-主界面/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-系列写作/子模块-主界面/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-系列写作/子模块-列表/叶子模块-主面板/entry.js"></script>
+  <!-- 系列写作 · 大纲规划（12 个叶子模块） -->
+  <script src="业务容器/区块-情欲文学/顶层模块-系列写作/子模块-大纲/叶子模块-状态/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-系列写作/子模块-大纲/叶子模块-上下文/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-系列写作/子模块-大纲/叶子模块-新建/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-系列写作/子模块-大纲/叶子模块-概览/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-系列写作/子模块-大纲/叶子模块-标签系统/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-系列写作/子模块-大纲/叶子模块-保存/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-系列写作/子模块-大纲/叶子模块-参考/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-系列写作/子模块-大纲/叶子模块-正文/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-系列写作/子模块-大纲/叶子模块-笔记/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-系列写作/子模块-大纲/叶子模块-主面板/entry.js"></script>
+  <!-- 系列写作 · AI 注册 -->
+  <script src="业务容器/区块-情欲文学/顶层模块-系列写作/子模块-AI注册/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-系列写作/子模块-AI注册/叶子模块-概览AI/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-系列写作/子模块-AI注册/叶子模块-章节AI/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-系列写作/子模块-写作/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲文学/顶层模块-系列写作/子模块-阅读/叶子模块-主面板/entry.js"></script>
+
+
+  <!-- Adult Workshop · sub-modules -->
+  <script src="业务容器/区块-情色杂物/顶层模块-闲情小品/子模块-段子/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-闲情小品/子模块-歇后语/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-闲情小品/子模块-对联/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-淫诗艳曲/子模块-淫诗/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-闲情小品/子模块-谜语/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-淫诗艳曲/子模块-俳句/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-淫诗艳曲/子模块-共享工厂/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-淫诗艳曲/子模块-词/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-淫诗艳曲/子模块-曲/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-淫诗艳曲/子模块-古体诗/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-淫诗艳曲/子模块-近代诗/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-淫诗艳曲/子模块-现代诗/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-淫诗艳曲/子模块-打油诗/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-浪语骚歌/子模块-流行歌曲/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-浪语骚歌/子模块-民歌山歌/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-浪语骚歌/子模块-军旅战歌/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-浪语骚歌/子模块-儿歌童谣/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-浪语骚歌/子模块-鬼畜神曲/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-浪语骚歌/子模块-影视金曲/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-浪语骚歌/子模块-酒桌欢歌/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-浪语骚歌/子模块-颂歌圣咏/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-浪语骚歌/子模块-嘻哈说唱/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-浪语骚歌/子模块-主界面/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-蒙学艳典/子模块-共享工厂/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-蒙学艳典/子模块-集部名篇/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-蒙学艳典/子模块-经部/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-蒙学艳典/子模块-史部/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-蒙学艳典/子模块-子部/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-蒙学艳典/子模块-兵书/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-蒙学艳典/子模块-笔记/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-蒙学艳典/子模块-医家/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-蒙学艳典/子模块-蒙学/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-蒙学艳典/子模块-主界面/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-淫诗艳曲/子模块-主界面/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-性爱台本/子模块-台本/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-性爱台本/子模块-戏曲唱段/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-性爱台本/子模块-调教对白/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-性爱台本/子模块-暧昧对白/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-性爱台本/子模块-直播对白/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-性爱台本/子模块-相声/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-性爱台本/子模块-快板/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-性爱台本/子模块-主界面/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-角色台本/子模块-共享工厂/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-角色台本/子模块-自述/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-角色台本/子模块-诵读/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-角色台本/子模块-经历/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-角色台本/子模块-关系对话/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-角色台本/子模块-辱骂/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-角色台本/子模块-台词库/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-角色台本/子模块-主界面/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-锦绣文章/子模块-共享工厂/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-锦绣文章/子模块-议论文/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-锦绣文章/子模块-记叙文/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-锦绣文章/子模块-游记文/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-锦绣文章/子模块-辞赋文/叶子模块-主面板/entry.js"></script>
+  <!-- Adult Workshop · group entries -->
+  <script src="业务容器/区块-情色杂物/顶层模块-闲情小品/子模块-主界面/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-文学改编/子模块-共享工厂/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-文学改编/子模块-童话改编/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-文学改编/子模块-历史改编/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-文学改编/子模块-神话改编/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-文学改编/子模块-名著改编/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-文学改编/子模块-寓言改编/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-文学改编/子模块-主界面/叶子模块-主面板/entry.js"></script>
+  <!-- 点评赏析 · 模块拆分（主界面 Tab 壳 → 共享工厂 → 各类型子模块） -->
+  <script src="业务容器/区块-情欲工坊/顶层模块-点评赏析/子模块-主界面/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-点评赏析/子模块-共享工厂/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-点评赏析/子模块-评价赏析/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-点评赏析/子模块-喷子/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-点评赏析/子模块-水军/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-锦绣文章/子模块-主界面/叶子模块-主面板/entry.js"></script>
+
+  <!-- Erotica Misc · 宣传发布（共享工厂 → 主界面 → 各子模块配置） -->
+  <script src="业务容器/区块-情色杂物/顶层模块-宣传发布/子模块-共享工厂/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-宣传发布/子模块-主界面/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-宣传发布/子模块-传单/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-宣传发布/子模块-广告/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-宣传发布/子模块-海报/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-宣传发布/子模块-邀请函/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-生活消费/子模块-共享工厂/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-生活消费/子模块-主界面/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-生活消费/子模块-吃喝/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-生活消费/子模块-穿戴/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-生活消费/子模块-居家/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-生活消费/子模块-情趣/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-生活消费/子模块-玩乐/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-记录文书/子模块-共享工厂/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-记录文书/子模块-主界面/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-记录文书/子模块-性奴契约/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-记录文书/子模块-调教/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-记录文书/子模块-反差表/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-记录文书/子模块-伪娘契约/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-记录文书/子模块-奖惩台账/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-记录文书/子模块-性癖档案/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-记录文书/子模块-绿奴契约/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-记录文书/子模块-淫妻契约/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-记录文书/子模块-宠物契约/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情色杂物/顶层模块-记录文书/子模块-厕奴契约/叶子模块-主面板/entry.js"></script>
+
+  <script src="业务容器/区块-互动创作/顶层模块-互动小说/子模块-数据/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-互动创作/顶层模块-互动小说/子模块-生成/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-互动创作/顶层模块-互动小说/子模块-游玩/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-互动创作/顶层模块-互动小说/子模块-主界面/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-互动创作/顶层模块-性癖问答/子模块-标签/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-互动创作/顶层模块-性癖问答/子模块-题库内容/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-互动创作/顶层模块-性癖问答/子模块-题库/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-互动创作/顶层模块-性癖问答/子模块-考试/叶子模块-主面板/exam-create.js"></script>
+  <script src="业务容器/区块-互动创作/顶层模块-性癖问答/子模块-考试/叶子模块-主面板/exam-question.js"></script>
+  <script src="业务容器/区块-互动创作/顶层模块-性癖问答/子模块-考试/叶子模块-主面板/exam-result.js"></script>
+  <script src="业务容器/区块-互动创作/顶层模块-性癖问答/子模块-问答/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-互动创作/顶层模块-性癖问答/子模块-主界面/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-互动创作/顶层模块-角色聊天/子模块-主界面/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-互动创作/顶层模块-角色聊天/子模块-自由聊天/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-互动创作/顶层模块-角色聊天/子模块-聊天软件/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-互动创作/顶层模块-角色聊天/子模块-历史记录/叶子模块-主面板/entry.js"></script>
+  <!-- 生活观赏 · 角色间互动旁观（情景交集 / 社交动态 / 线上聊天 / 书信便条 / 电话 / 视频通话） -->
+  <script src="业务容器/区块-互动创作/顶层模块-生活观赏/子模块-主界面/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-互动创作/顶层模块-生活观赏/子模块-故事背景/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-互动创作/顶层模块-生活观赏/子模块-朋友圈/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-互动创作/顶层模块-生活观赏/子模块-双人对话/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-互动创作/顶层模块-生活观赏/子模块-通话记录/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-互动创作/顶层模块-生活观赏/子模块-视频通话/叶子模块-主面板/entry.js"></script>
+
+  <!-- Game -->
+  <script>var DATA = {};</script>
+  <script src="区块-数据/顶层模块-角色/子模块-女性/叶子模块-主面板/template.js"></script>
+  <script src="区块-数据/顶层模块-角色/子模块-男性/叶子模块-主面板/template.js"></script>
+  <script src="区块-数据/顶层模块-角色/子模块-扶她/叶子模块-主面板/template.js"></script>
+  <script src="区块-数据/顶层模块-角色/子模块-伪娘/叶子模块-主面板/template.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-世界观/子模块-主界面/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-世界观/子模块-视图列表/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-模板/叶子模块-主面板/outline-female.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-模板/叶子模块-主面板/outline-male.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-模板/叶子模块-主面板/outline-femboy.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-模板/叶子模块-主面板/outline-futa.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-模板/叶子模块-主面板/full-female.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-模板/叶子模块-主面板/full-male.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-模板/叶子模块-主面板/full-femboy.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-模板/叶子模块-主面板/full-futa.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-模板/叶子模块-主面板/eval-female.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-模板/叶子模块-主面板/eval-male.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-模板/叶子模块-主面板/eval-femboy.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-模板/叶子模块-主面板/eval-futa.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-主界面/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-生成/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-角色库/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-暂存/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-审计/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-导入导出/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-角色讨论/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-小说提取/叶子模块-主面板/fields.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-小说提取/叶子模块-主面板/state.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-小说提取/叶子模块-主面板/utils.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-小说提取/叶子模块-主面板/persist.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-小说提取/叶子模块-主面板/persist-rename.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-小说提取/叶子模块-主面板/persist-ops.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-小说提取/叶子模块-主面板/extract-core.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-小说提取/叶子模块-主面板/extract-targeted.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-小说提取/叶子模块-主面板/extract-review.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-小说提取/叶子模块-主面板/extract-alias.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-小说提取/叶子模块-主面板/review-panel.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-小说提取/叶子模块-主面板/desc.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-小说提取/叶子模块-主面板/desc-single.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-小说提取/叶子模块-主面板/desc-re-extract.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-小说提取/叶子模块-主面板/timeline.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-小说提取/叶子模块-主面板/entry-card.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-小说提取/叶子模块-主面板/entry-history.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-小说提取/叶子模块-主面板/overview.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-小说提取/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-档案/叶子模块-主面板/labels.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-档案/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-档案/叶子模块-主面板/female-render.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-档案/叶子模块-主面板/male-render.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-档案/叶子模块-主面板/femboy-render.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-档案/叶子模块-主面板/futa-render.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-初始化/叶子模块-主面板/entry.js"></script>
+  <!-- 角色卡 · 灵感角色库子模块（数据/UI/模板；顺序敏感：模板 → 数据 → UI） -->
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-灵感角色库/叶子模块-主面板/template.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-灵感角色库/叶子模块-主面板/inspire-data.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-角色卡/子模块-灵感角色库/叶子模块-主面板/inspire-ui.js"></script>
+  <!-- 玩法参考模块 - 拆分为数据、渲染、交互三部分 -->
+  <script src="业务容器/区块-创作辅助/顶层模块-玩法参考/子模块-数据/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-玩法参考/子模块-渲染/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-玩法参考/子模块-交互/叶子模块-主面板/entry.js"></script>
+
+  <!-- Analysis Export -->
+  <!-- 生图识图模块 -->
+  <script src="业务容器/区块-声图创作/顶层模块-生图识图/子模块-状态/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-声图创作/顶层模块-生图识图/子模块-通用工具/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-声图创作/顶层模块-生图识图/子模块-文生图/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-声图创作/顶层模块-生图识图/子模块-图生图/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-声图创作/顶层模块-生图识图/子模块-识图/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-声图创作/顶层模块-生图识图/子模块-主界面/叶子模块-主面板/entry.js"></script>
+  <!-- 配音配乐模块 -->
+  <script src="业务容器/区块-声图创作/顶层模块-配音配乐/子模块-主面板/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-声图创作/顶层模块-配音配乐/子模块-语音合成/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-声图创作/顶层模块-配音配乐/子模块-音色库/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-声图创作/顶层模块-配音配乐/子模块-已生成列表/叶子模块-主面板/entry.js"></script>
+  <!-- 生图词典模块 -->
+  <script src="业务容器/区块-声图创作/顶层模块-生图词典/子模块-主面板/叶子模块-主面板/dict-data.js"></script>
+  <script src="业务容器/区块-声图创作/顶层模块-生图词典/子模块-主面板/叶子模块-主面板/dict-ui.js"></script>
+  <!-- 生图词典 · 拆分文件（顺序敏感：入口 → 数据 → 选择器 → 各 tab UI → AI 字段） -->
+  <script src="业务容器/区块-声图创作/顶层模块-生图词典/子模块-主面板/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-声图创作/顶层模块-生图词典/子模块-主面板/叶子模块-主面板/local-data.js"></script>
+  <script src="业务容器/区块-声图创作/顶层模块-生图词典/子模块-主面板/叶子模块-主面板/picker.js"></script>
+  <script src="业务容器/区块-声图创作/顶层模块-生图词典/子模块-主面板/叶子模块-主面板/local-ui.js"></script>
+  <script src="业务容器/区块-声图创作/顶层模块-生图词典/子模块-主面板/叶子模块-主面板/batch-ui.js"></script>
+  <script src="业务容器/区块-声图创作/顶层模块-生图词典/子模块-主面板/叶子模块-主面板/video-ui.js"></script>
+  <script src="业务容器/区块-声图创作/顶层模块-生图词典/子模块-主面板/叶子模块-主面板/cloud-ui.js"></script>
+  <script src="业务容器/区块-声图创作/顶层模块-生图词典/子模块-主面板/叶子模块-主面板/ai-fields.js"></script>
+  <!-- 生图成果模块 -->
+  <script src="业务容器/区块-声图创作/顶层模块-生图成果/子模块-主面板/叶子模块-主面板/entry.js"></script>
+  <!-- 参考文档模块 - 拆分为列表、编辑器、AI生成、导入导出四部分 -->
+  <script src="业务容器/区块-创作辅助/顶层模块-文风分析/子模块-列表/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-文风分析/子模块-编辑器/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-文风分析/子模块-AI生成/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-文风分析/子模块-导入导出/叶子模块-主面板/entry.js"></script>
+  <!-- 灵感板 -->
+  <script src="业务容器/区块-创作辅助/顶层模块-灵感板/子模块-主面板/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-灵感板/子模块-提示词/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-创作辅助/顶层模块-灵感板/子模块-AI注册/叶子模块-主面板/entry.js"></script>
+
+  <!-- 情欲文学 · 学术春宫 -->
+  <script src="业务容器/区块-情欲工坊/顶层模块-学术春宫/子模块-主面板/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-学术春宫/子模块-主面板/叶子模块-学科数据/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-学术春宫/子模块-主面板/叶子模块-规划/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-学术春宫/子模块-主面板/叶子模块-AI字段/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-学术春宫/子模块-作家/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-学术春宫/子模块-写作台/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-新闻媒体/子模块-主面板/叶子模块-主面板/entry.js"></script>
+	  <script src="业务容器/区块-情欲工坊/顶层模块-新闻媒体/子模块-主面板/叶子模块-列表/entry.js"></script>
+	  <script src="业务容器/区块-情欲工坊/顶层模块-新闻媒体/子模块-主面板/叶子模块-规划/entry.js"></script>
+	  <script src="业务容器/区块-情欲工坊/顶层模块-新闻媒体/子模块-主面板/叶子模块-写作台/entry.js"></script>
+	  <script src="业务容器/区块-情欲工坊/顶层模块-新闻媒体/子模块-主面板/叶子模块-记者/entry.js"></script>
+	  <script src="业务容器/区块-情欲工坊/顶层模块-新闻媒体/子模块-主面板/叶子模块-主持/entry.js"></script>
+	  <script src="业务容器/区块-情欲工坊/顶层模块-新闻媒体/子模块-主面板/叶子模块-主播/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-黄图淫册/子模块-主面板/叶子模块-主面板/entry.js"></script>
+	  <script src="业务容器/区块-情欲工坊/顶层模块-黄图淫册/子模块-主面板/叶子模块-列表/entry.js"></script>
+	  <script src="业务容器/区块-情欲工坊/顶层模块-黄图淫册/子模块-主面板/叶子模块-规划/entry.js"></script>
+	  <script src="业务容器/区块-情欲工坊/顶层模块-黄图淫册/子模块-主面板/叶子模块-写作台/entry.js"></script>
+	  <script src="业务容器/区块-情欲工坊/顶层模块-黄图淫册/子模块-主面板/叶子模块-画师/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-影视动画/子模块-主面板/叶子模块-主面板/entry.js"></script>
+	  <script src="业务容器/区块-情欲工坊/顶层模块-影视动画/子模块-主面板/叶子模块-列表/entry.js"></script>
+	  <script src="业务容器/区块-情欲工坊/顶层模块-影视动画/子模块-主面板/叶子模块-规划/entry.js"></script>
+	  <script src="业务容器/区块-情欲工坊/顶层模块-影视动画/子模块-主面板/叶子模块-写作台/entry.js"></script>
+	  <script src="业务容器/区块-情欲工坊/顶层模块-影视动画/子模块-主面板/叶子模块-演员/entry.js"></script>
+	  <script src="业务容器/区块-情欲工坊/顶层模块-影视动画/子模块-主面板/叶子模块-导演/entry.js"></script>
+	  <script src="业务容器/区块-情欲工坊/顶层模块-影视动画/子模块-主面板/叶子模块-声优/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-黄游拔作/子模块-主面板/叶子模块-主面板/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-黄游拔作/子模块-主面板/叶子模块-列表/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-黄游拔作/子模块-主面板/叶子模块-规划/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-黄游拔作/子模块-主面板/叶子模块-写作台/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-黄游拔作/子模块-主面板/叶子模块-开发者/entry.js"></script>
+  <script src="业务容器/区块-情欲工坊/顶层模块-黄游拔作/子模块-主面板/叶子模块-详情页/entry.js"></script>
+
+  <!-- Debug Console -->
+  <div id="debugConsole">
+    <div id="debugConsoleHead" onmousedown="_initDebugDrag(event)">
+      <span class="debug-head-title">🐛 调试控制台</span>
+      <span class="debug-head-sub">模块日志 · 拖拽移动</span>
+      <button class="btn-secondary btn-sm debug-head-close" onclick="document.getElementById('debugConsole').style.display='none'">✕</button>
+    </div>
+    <div style="display:flex;flex:1;overflow:hidden">
+      <div id="debugConsoleLog"></div>
+      <div id="debugConsolePrompts"><div class="debug-empty-state">等待 LLM 调用...</div></div>
+    </div>
+  </div>
+
+  <script src="区块-仪表盘/顶层模块-核心/子模块-首页小部件/叶子模块-主面板/entry.js"></script>
+  <script src="区块-仪表盘/顶层模块-核心/子模块-仪表盘/叶子模块-主面板/entry.js"></script>
+  <script src="区块-界面/顶层模块-核心/子模块-LLM配置/叶子模块-主面板/entry.js"></script>
+  <script src="区块-界面/顶层模块-核心/子模块-生图API/叶子模块-主面板/entry.js"></script>
+  <script src="区块-界面/顶层模块-核心/子模块-通用设置/叶子模块-主面板/entry.js"></script>
+  <script src="区块-界面/顶层模块-核心/子模块-设置/叶子模块-主面板/entry.js"></script>
+  <script src="app.js?t=07101"></script>
+  <!-- 上报 JS 早期加载阶段捕获的错误 -->
+  <script>
+    (function() {
+      if (window.__earlyErrors && window.__earlyErrors.length) {
+        try {
+          window.__earlyErrors.forEach(function(err) {
+            window.narrative.logCrash(err);
+          });
+        } catch(e) {}
+      }
+      // 清除已上报的错误
+      window.__earlyErrors = [];
+    })();
+
+    // 模型快速切换器
+    window.切换模型 = function(val) {
+      if (!val) return;
+      var configs = (window.LLMService && LLMService.getAll()) || [];
+      for (var i = 0; i < configs.length; i++) {
+        if (configs[i].id === val) {
+          S.currentModel = configs[i].model;
+          S.settings.defaultModel = configs[i].id;
+          break;
+        }
+      }
+      if (typeof saveSettings === 'function') saveSettings(S.settings);
+      var _label = configs[i] ? (configs[i].name || configs[i].model) : val;
+      toast('已切换至: ' + _label);
+    };
+
+    window.updateModelSwitcher = function() {
+      var sel = document.getElementById('modelSwitcher');
+      if (!sel) return;
+      var configs = (window.LLMService && LLMService.getAll()) || [];
+      // 从 settings.defaultModel 恢复当前配置 ID
+      if (!S.settings.defaultModel && configs.length) {
+        S.settings.defaultModel = configs[0].id;
+      }
+      var currentId = S.settings.defaultModel || '';
+      sel.innerHTML = '';
+      if (!configs.length) {
+        sel.innerHTML = '<option value="">无配置</option>';
+        return;
+      }
+      var matched = false;
+      for (var i = 0; i < configs.length; i++) {
+        var opt = document.createElement('option');
+        opt.value = configs[i].id;
+        opt.textContent = (configs[i].name || configs[i].model) + ' (' + configs[i].model + ')';
+        if (configs[i].id === currentId) { opt.selected = true; matched = true; S.currentModel = configs[i].model; }
+        sel.appendChild(opt);
+      }
+      if (!matched && configs.length) {
+        S.currentModel = configs[0].model;
+        S.settings.defaultModel = configs[0].id;
+        if (sel.options && sel.options[0]) sel.options[0].selected = true;
+      }
+    };
+
+    // 在 LLMService 方法后自动刷新 switcher
+    (function() {
+      var _origAdd = window.LLMService && LLMService.add;
+      var _origUpdate = window.LLMService && LLMService.update;
+      var _origRemove = window.LLMService && LLMService.remove;
+      if (_origAdd) LLMService.add = function(config) {
+        var r = _origAdd.call(this, config);
+        setTimeout(updateModelSwitcher, 50);
+        return r;
+      };
+      if (_origUpdate) LLMService.update = function(id, updates) {
+        _origUpdate.call(this, id, updates);
+        setTimeout(updateModelSwitcher, 50);
+      };
+      if (_origRemove) LLMService.remove = function(id) {
+        _origRemove.call(this, id);
+        setTimeout(updateModelSwitcher, 50);
+      };
+    })();
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', updateModelSwitcher);
+    } else {
+      updateModelSwitcher();
+    }
+  </script>
+</body>
+</html>

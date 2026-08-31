@@ -1,0 +1,39 @@
+{
+  "name": "deep-narrative-engine",
+  "version": "0.1.0",
+  "description": "AI 驱动的成人内容创作桌面工具",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --win portable",
+    "check": "node check-pack-files.js"
+  },
+  "build": {
+    "appId": "com.deep-narrative.engine",
+    "productName": "深度叙事引擎",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "storage.js",
+      "package.json",
+      "renderer/**",
+      "!renderer/声图创作/配音配乐/tts-engine/**",
+      "!renderer/声图创作/配音配乐/音色库/**"
+    ],
+    "npmRebuild": false,
+    "win": {
+      "target": [
+        "portable"
+      ]
+    }
+  },
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "dependencies": {}
+}

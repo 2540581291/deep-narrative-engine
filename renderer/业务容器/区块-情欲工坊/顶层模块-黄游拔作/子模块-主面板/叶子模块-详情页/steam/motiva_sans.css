@@ -1,0 +1,24 @@
+@font-face {
+	font-family: 'Motiva Sans';
+	src: url('MotivaSans-Regular.ttf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+}
+@font-face {
+	font-family: 'Motiva Sans';
+	src: url('MotivaSans-Light.ttf') format('truetype');
+	font-weight: 300;
+	font-style: normal;
+}
+@font-face {
+	font-family: 'Motiva Sans';
+	src: url('MotivaSans-Medium.ttf') format('truetype');
+	font-weight: 500;
+	font-style: normal;
+}
+@font-face {
+	font-family: 'Motiva Sans';
+	src: url('MotivaSans-Bold.ttf') format('truetype');
+	font-weight: bold;
+	font-style: normal;
+}
