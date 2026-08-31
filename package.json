@@ -11,7 +11,7 @@
   },
   "build": {
     "appId": "com.deep-narrative.engine",
-    "productName": "深度叙事引擎",
+    "productName": "深度-叙事引擎",
     "directories": {
       "output": "dist"
     },

@@ -311,7 +311,7 @@ window.黄游渲染详情 = function(el) {
   h += '<div class="page_content"><div id="yySteamReviewsSection"></div></div>';
 
   // —— 页脚 ——
-  h += '<div class="page_content" style="margin-top:34px"><div class="steam-root-footer" style="border-top:1px solid #2a3f53;padding-top:18px;color:#8f98a0;font-size:11px;display:flex;justify-content:space-between;align-items:center"><span>© ' + new Date().getFullYear() + ' ' + escHtml(info.name) + ' · 基于「深度叙事引擎 · 黄油图鉴」生成</span><span>按下 0–9 键可切换到相应的快捷操作</span></div></div>';
+  h += '<div class="page_content" style="margin-top:34px"><div class="steam-root-footer" style="border-top:1px solid #2a3f53;padding-top:18px;color:#8f98a0;font-size:11px;display:flex;justify-content:space-between;align-items:center"><span>© ' + new Date().getFullYear() + ' ' + escHtml(info.name) + ' · 基于「深度-叙事引擎 · 黄油图鉴」生成</span><span>按下 0–9 键可切换到相应的快捷操作</span></div></div>';
 
   h += '</div>'; // page_content
   h += '</div>'; // steam-root

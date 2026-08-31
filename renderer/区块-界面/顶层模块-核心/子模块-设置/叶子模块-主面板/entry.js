@@ -206,7 +206,7 @@ function clearTestChat() {
 }
 
 function renderAbout(el) {
-  el.innerHTML = '<div style="text-align:center;padding:20px"><h2 style="color:var(--accent);margin-bottom:4px">深度叙事引擎</h2><p style="color:var(--fg2);font-size:0.85em;margin-bottom:12px">版本 0.2.0</p><p style="color:var(--fg2);font-size:0.78em;margin-bottom:20px">AI 驱动的成人内容创作工具</p><div style="font-size:0.78em;color:var(--fg2);line-height:1.8">Electron + 原生 JavaScript<br>支持多厂商 LLM 接入</div></div>';
+  el.innerHTML = '<div style="text-align:center;padding:20px"><h2 style="color:var(--accent);margin-bottom:4px">深度-叙事引擎</h2><p style="color:var(--fg2);font-size:0.85em;margin-bottom:12px">版本 0.2.0</p><p style="color:var(--fg2);font-size:0.78em;margin-bottom:20px">AI 驱动的成人内容创作工具</p><div style="font-size:0.78em;color:var(--fg2);line-height:1.8">Electron + 原生 JavaScript<br>支持多厂商 LLM 接入</div></div>';
 }
 
 function resetLLMState() {
