@@ -82,7 +82,10 @@ function bindInput(id, setter) {
 
 function bindModelSelect(id, setter) {
   var el = document.getElementById(id);
-  if (el) el.addEventListener('change', function() { setter(this.value); });
+  if (!el) return;
+  el.addEventListener('change', function() { setter(this.value); });
+  // 模型字段现在是可自由输入的文本框（不再是 select），边输边同步，避免未失焦就点生成
+  el.addEventListener('input', function() { setter(this.value); });
 }
 
 function bindSizeInputs(state, prefix) {

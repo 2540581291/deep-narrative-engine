@@ -375,6 +375,17 @@ DATA.inspire.template.categoryTree = [
         { name: '蜀山剑派' }, { name: '昆仑仙宗' }, { name: '瑶池圣母宫' },
       ]},
     ]},
+    { name: '幼女武界', children: [
+      { name: '东玄大陆', children: [
+        { name: '天剑宗' }, { name: '万法宗' }, { name: '青云门' },
+      ]},
+      { name: '西武大陆', children: [
+        { name: '铁血堡' }, { name: '武神阁' }, { name: '玄天宗' },
+      ]},
+      { name: '武道境界', children: [
+        { name: '炼体' }, { name: '气宗' }, { name: '神通' }, { name: '武圣' },
+      ]},
+    ]},
     { name: '诸神神界', children: [
       { name: '主神', children: [
         { name: '太阳神' }, { name: '月神' }, { name: '战神' }, { name: '智慧女神' },

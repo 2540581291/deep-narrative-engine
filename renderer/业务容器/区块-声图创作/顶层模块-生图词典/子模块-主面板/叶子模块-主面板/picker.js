@@ -31,6 +31,12 @@ function stcdOpenCharPicker(charId, opts) {
   STCD_CHAR_PICKER.gender = (opts && opts.gender) || '女性';
   STCD_CHAR_PICKER.mode = (opts && opts.card) ? 'card' : 'fill';
   STCD_CHAR_PICKER.onPick = (opts && typeof opts.onPick === 'function') ? opts.onPick : null;
+  // 多选是角色选择界面的标准能力（默认启用；opts.multi === false 可显式关掉）：
+  // 点整行仍是单选（立即 onPick）；行上的「＋ 多选」累加到底部暂存区，点「用这 N 个生成」优先走 onPickMulti，
+  // 没传 onPickMulti 的旧入口则逐个走 onPick（兼容）。
+  STCD_CHAR_PICKER.multi = !(opts && opts.multi === false);
+  STCD_CHAR_PICKER.onPickMulti = (opts && typeof opts.onPickMulti === 'function') ? opts.onPickMulti : null;
+  STCD_CHAR_PICKER.multiList = [];
   // 并行加载两个体系（正式角色卡 + 灵感角色库）
   var loadCards = Store.character.list().then(function(items) {
     STCD_CHAR_PICKER.cards = items || [];
@@ -120,7 +126,10 @@ function stcdCharPickerRender() {
     h += '</div>';
   }
   h += '</div>';
-  // 底部：取消
+  // 底部：多选暂存区（multi 模式）+ 取消
+  if (STCD_CHAR_PICKER.multi) {
+    h += '<div id="stcdCharMultiBar" style="padding:8px 16px;border-top:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;gap:6px;flex-wrap:wrap">' + stcdCharMultiBarHTML() + '</div>';
+  }
   h += '<div style="text-align:right;padding:10px 16px;border-top:1px solid var(--border);flex-shrink:0"><button class="btn-out" onclick="this.closest(\'.ovl\').remove()">取消</button></div>';
   h += '</div>';
 
@@ -199,8 +208,11 @@ function stcdCharPickerRenderCards() {
     h += '<div style="font-size:11px;color:var(--accent2);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;height:16px;line-height:16px">' + escHtml(descText) + '</div>';
     h += '<div style="font-size:11px;color:var(--fg3);display:block;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;height:16px;line-height:16px">' + escHtml(ageText) + '</div>';
     h += '</div>';
-    // 底部档案按钮
-    h += '<div style="display:flex;justify-content:flex-end;padding:4px 8px;border-top:1px solid var(--border)">';
+    // 底部：多选 + 档案
+    h += '<div style="display:flex;justify-content:flex-end;gap:4px;padding:4px 8px;border-top:1px solid var(--border)">';
+    if (STCD_CHAR_PICKER.multi) {
+      h += '<button class="btn-out" style="padding:1px 8px;font-size:9px;color:var(--accent)" title="加入多选（可累加多个角色）" onclick="event.stopPropagation();stcdCharPickAdd(\'' + escHtml(name) + '\',this)">＋ 多选</button>';
+    }
     h += '<button class="btn-out" style="padding:1px 8px;font-size:9px" onclick="event.stopPropagation();stcdCharArchive(this)">📋 档案</button>';
     h += '</div>';
     h += '</div>';
@@ -255,7 +267,15 @@ function stcdInspirePickWorldNextSegs(items, path) {
   return Object.keys(segs);
 }
 
-// 单个可导入的灵感角色卡片（头像 + 名称 + 分类 + 版本 + 导入）
+// 灵感角色卡片上的「📋 档案」：直接开灵感角色自己的那一套档案——stcdInspireView（灵感角色库的三版本详情弹窗），
+// 与「📚 正式角色卡」那边的 📋 档案 位置一致、语义一致。三个分区（世界观 / 典型场景 / 典型角色）共用。
+// 只传 id，档案本体由灵感角色库自己渲染，本弹窗不重复实现。
+function stcdInspireArchiveOpen(id) {
+  if (typeof stcdInspireView !== 'function') { toast('灵感角色档案组件未加载'); return; }
+  stcdInspireView(id);
+}
+
+// 单个可导入的灵感角色卡片（头像 + 名称 + 分类 + 版本 + 档案 + 导入）
 function stcdCharPickerInspireCard(it) {
   var disp = (typeof stcdInspireDisplayName === 'function') ? stcdInspireDisplayName(it) : (it.name || '未命名');
   var cat = it.category || '';
@@ -294,6 +314,10 @@ function stcdCharPickerInspireCard(it) {
     h += '<option value="' + v + '"' + (v === 'normal' ? ' selected' : '') + '>' + (v === 'normal' ? '正常版' : v === 'cool' ? '清凉版' : '深度版') + '</option>';
   });
   h += '</select>';
+  h += '<button class="btn-out" style="padding:1px 8px;font-size:9px" title="查看档案" onclick="event.stopPropagation();stcdInspireArchiveOpen(\'' + escHtml(it.id) + '\')">📋 档案</button>';
+  if (STCD_CHAR_PICKER.multi) {
+    h += '<button class="btn-out" style="padding:1px 8px;font-size:9px;color:var(--accent)" title="加入多选（可累加多个角色）" onclick="event.stopPropagation();stcdCharPickAdd(\'' + escHtml(disp) + '\',this)">＋</button>';
+  }
   h += '<button class="btn-out" style="padding:1px 8px;font-size:9px" onclick="stcdImportInspireChar(this,\'' + STCD_CHAR_PICKER.targetId + '\')">导入</button>';
   h += '</div>';
   h += '</div>';
@@ -393,7 +417,7 @@ function stcdCharPickerRenderInspires() {
       h += '</div>';
       h += '<div style="border-radius:10px;padding:4px 2px 4px;border:1px solid var(--border);background:var(--bg2)">';
       h += '<div style="transform:scale(0.82);transform-origin:top left;width:calc(100%/0.82)">';
-      if (scene && typeof window.stcdInspireSceneDetail === 'function') h += window.stcdInspireSceneDetail(scene, 'stcdCharPickerScenePick', { readOnly: true });
+      if (scene && typeof window.stcdInspireSceneDetail === 'function') h += window.stcdInspireSceneDetail(scene, 'stcdCharPickerScenePick', { readOnly: true, archive: true });
       else h += '<div style="font-size:11px;color:var(--fg3);padding:20px;text-align:center">场景树组件未加载</div>';
       h += '</div></div>';
       h += '</div>';
@@ -418,6 +442,112 @@ function stcdCharPickerRenderInspires() {
 }
 
 // 导入正式角色卡：fill 模式填「角色卡身份与外貌」（只放身份+外貌详情）；card 模式（本地 tab）记录角色卡作为生成上下文
+// ===== 角色选择器 · 多选（multi 模式）：行上「＋」累加到底部暂存区，点「用这 N 个生成」走 onPickMulti =====
+function stcdCharMultiBarHTML() {
+  var list = STCD_CHAR_PICKER.multiList || [];
+  var h = '<span style="font-size:9px;color:var(--fg3)">已选 ' + list.length + ' 个：</span>';
+  if (!list.length) {
+    h += '<span style="font-size:9px;color:var(--fg3)">点角色卡上的「＋ 多选」累加多个角色（点角色卡本身仍是单选即用）</span>';
+    return h;
+  }
+  list.forEach(function(c, i) {
+    h += '<span class="preset-chip preset-active" style="cursor:pointer;font-size:9px" title="点击移除" onclick="stcdCharPickDel(' + i + ')">' + escHtml(c.name) + ' ✕</span>';
+  });
+  h += '<div style="flex:1"></div>';
+  h += '<button class="btn-main" style="padding:1px 10px;font-size:9px" onclick="stcdCharPickConfirm()">✓ 用这 ' + list.length + ' 个角色生成</button>';
+  return h;
+}
+function stcdCharPickRefresh() {
+  var bar = document.getElementById('stcdCharMultiBar');
+  if (bar) bar.innerHTML = stcdCharMultiBarHTML();
+}
+// 按名字找角色（先正式角色卡，再灵感角色库）
+function stcdCharFindByName(name) {
+  var items = STCD_CHAR_PICKER.cards || [];
+  for (var i = 0; i < items.length; i++) {
+    var bi = (items[i].identity && items[i].identity.basicInfo) || {};
+    if ((bi.name || items[i].title || '未命名') === name) return items[i];
+  }
+  var ins = STCD_CHAR_PICKER.inspires || [];
+  for (var j = 0; j < ins.length; j++) {
+    var nm = (typeof stcdInspireDisplayName === 'function') ? stcdInspireDisplayName(ins[j]) : (ins[j].name || '未命名');
+    if (nm === name) return ins[j];
+  }
+  return null;
+}
+// 加入多选暂存：同时算好导出文本（text）并保留角色对象（char），两种回调用法都满足
+window.stcdCharPickAdd = function(name, btn) {
+  var list = STCD_CHAR_PICKER.multiList || (STCD_CHAR_PICKER.multiList = []);
+  if (list.some(function(c) { return c.name === name; })) { toast('已在多选里：' + name); return; }
+  var row = btn ? btn.parentElement : null;
+  var sel = row ? row.querySelector('select[data-char-id]') : null;
+  var text = '';
+  var found = null;
+  if (sel) {
+    // 灵感角色库：按所选版本导出
+    var version = sel.value || 'normal';
+    var ins = STCD_CHAR_PICKER.inspires || [];
+    for (var i = 0; i < ins.length; i++) { if (ins[i].id === sel.getAttribute('data-char-id')) { found = ins[i]; break; } }
+    if (found && typeof window.灵感角色全部 === 'function') text = window.灵感角色全部(found, version);
+  } else {
+    found = stcdCharFindByName(name);
+    if (found && typeof window.角色卡身份与外貌 === 'function') text = window.角色卡身份与外貌(found);
+  }
+  if (!text) { toast('该角色档案为空'); return; }
+  list.push({ name: name, text: text, char: found });
+  stcdCharPickRefresh();
+  toast('已加入多选：' + name);
+};
+window.stcdCharPickDel = function(i) {
+  var list = STCD_CHAR_PICKER.multiList || [];
+  list.splice(i, 1);
+  stcdCharPickRefresh();
+};
+window.stcdCharPickConfirm = function() {
+  var list = STCD_CHAR_PICKER.multiList || [];
+  if (!list.length) { toast('请先加入角色'); return; }
+  var ov = document.querySelector('.ovl[data-stcd-char-picker]');
+  // ① 标准用法：调用方传了 onPickMulti，一次拿到全部选中角色
+  if (STCD_CHAR_PICKER.onPickMulti) {
+    STCD_CHAR_PICKER.onPickMulti(list.slice());
+    if (ov) ov.remove();
+    return;
+  }
+  // ② 兼容旧入口：没传 onPickMulti 的，逐个走该入口的默认应用逻辑（onPick / card / fill）
+  list.forEach(function(c) { if (c && c.char) stcdCharApplyPick(c.char); });
+  if (ov) ov.remove();
+};
+
+// 应用一个被选中的角色：统一处理 onPick 回调 / card 模式 / fill 模式（单选点击与多选确认共用）
+function stcdCharApplyPick(found) {
+  if (!found) return;
+  // 统一回调：其他模块通过 stcdOpenCharPicker(..., { onPick }) 使用同一个弹窗
+  if (STCD_CHAR_PICKER.onPick) { STCD_CHAR_PICKER.onPick(found); return; }
+  var name = '';
+  try {
+    var bi = (found.identity && found.identity.basicInfo) || {};
+    name = bi.name || found.title || found.name || '未命名';
+  } catch (e) { name = found.title || found.name || '未命名'; }
+  if (STCD_CHAR_PICKER.mode === 'card') {
+    // card 模式：仅记录角色卡，作为本地「生成提示词」时的角色上下文
+    var cardJson = '';
+    try { cardJson = JSON.stringify(found); } catch (e2) { cardJson = ''; }
+    var cardText = (typeof window.角色卡身份与外貌 === 'function') ? window.角色卡身份与外貌(found) : '';
+    STCD.localCard = { name: name, json: cardJson, text: cardText, source: 'card' };
+    // 换人了：清空内存方案，并从磁盘恢复该角色保存的「具体方案」
+    STCD.localOptDetail = {};
+    if (typeof stcdLocalSyncCardName === 'function') stcdLocalSyncCardName();
+    if (typeof stcdLocalLoadDetail === 'function') stcdLocalLoadDetail();
+    toast('已导入角色卡：' + name);
+    return;
+  }
+  var ctx = (typeof window.角色卡身份与外貌 === 'function') ? window.角色卡身份与外貌(found) : '';
+  if (!ctx) { toast('该角色档案为空'); return; }
+  var box = document.getElementById(STCD_CHAR_PICKER.targetId);
+  if (box) box.value = ctx;
+  toast('已导入角色卡：' + name);
+}
+
 function stcdImportChar(el, targetId) {
   var row = el.hasAttribute('data-name') ? el : el.closest('[data-name]');
   var name = row ? row.getAttribute('data-name') : '';
@@ -430,32 +560,8 @@ function stcdImportChar(el, targetId) {
   }
   if (!found) { toast('角色数据不存在'); return; }
   var ov = row ? row.closest('.ovl') : null;
-  // 统一回调：其他模块通过 stcdOpenCharPicker(..., { onPick }) 使用同一个弹窗
-  if (STCD_CHAR_PICKER.onPick) {
-    STCD_CHAR_PICKER.onPick(found);
-    if (ov) ov.remove();
-    return;
-  }
-  if (STCD_CHAR_PICKER.mode === 'card') {
-    // card 模式：仅记录角色卡，作为本地「生成提示词」时的角色上下文
-    var cardJson = '';
-    try { cardJson = JSON.stringify(found); } catch(e) { cardJson = ''; }
-    var cardText = (typeof window.角色卡身份与外貌 === 'function') ? window.角色卡身份与外貌(found) : '';
-    STCD.localCard = { name: name, json: cardJson, text: cardText, source: 'card' };
-    // 换人了：清空内存方案，并从磁盘恢复该角色保存的「具体方案」
-    STCD.localOptDetail = {};
-    if (ov) ov.remove();
-    stcdLocalSyncCardName();
-    stcdLocalLoadDetail();
-    toast('已导入角色卡：' + name);
-    return;
-  }
-  var ctx = (typeof window.角色卡身份与外貌 === 'function') ? window.角色卡身份与外貌(found) : '';
-  if (!ctx) { toast('该角色档案为空'); return; }
-  var box = document.getElementById(targetId);
-  if (box) box.value = ctx;
+  stcdCharApplyPick(found);
   if (ov) ov.remove();
-  toast('已导入角色卡：' + name);
 }
 
 // 导入灵感角色：fill 模式填所选版本内容；card 模式（本地 tab）记录角色卡作为生成上下文
@@ -528,6 +634,7 @@ window.stcdCharPickerSource = stcdCharPickerSource;
 window.stcdCharPickerGender = stcdCharPickerGender;
 window.stcdImportChar = stcdImportChar;
 window.stcdImportInspireChar = stcdImportInspireChar;
+window.stcdInspireArchiveOpen = stcdInspireArchiveOpen;
 window.stcdCharPickerSub = stcdCharPickerSub;
 window.stcdCharPickerPathSet = stcdCharPickerPathSet;
 window.stcdCharPickerPathBack = stcdCharPickerPathBack;

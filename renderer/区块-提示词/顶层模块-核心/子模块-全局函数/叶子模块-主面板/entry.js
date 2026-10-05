@@ -191,6 +191,135 @@ function 灵感角色全部(char, version) {
   }
 }
 
+// ============================================================
+// ✨ 灵感角色档案 ——「灵感角色卡的档案内容」的全局入口
+// 输出灵感角色的完整档案【文本】（不是 UI 弹窗）：版本逐个成段，每段按
+// 【区块标题】+「中文标签：值」铺开，与主角色卡的 window.角色卡全部 对位。
+// 它与 window.灵感角色全部 的分工：
+//   - 灵感角色全部 → 只要【一个版本】的原始 JSON（原样喂模型）
+//   - 灵感角色档案 → 【全部版本】的中文标签档案正文（人看的档案 / 需要带字段名的上下文）
+// 字段与标签一律取自灵感角色库自己的模板表（window.stcdInspireGetFields），
+// 灵感角色库加减字段时本函数自动跟上，不必改这里；表取不到时退化为按数据自有键铺开。
+// ⚠️ 只是读取内容，不负责界面。界面上的「📋 档案」按钮不走本函数，
+//    走灵感角色库自己的 stcdInspireView（三版本详情弹窗，灵感角色本来就有的那套档案）。
+// 调用约定：window.灵感角色档案(灵感角色对象, 版本)
+//   - 版本：'normal'（正常版）/ 'cool'（清凉版）/ 'deep'（深度版）；省略 = 三版全出
+//   - 整版为空则跳过该版本；三版全空返回空串
+//   - 空值字段按「无」输出（不隐藏），数组值逐条成行
+// ============================================================
+var 灵感角色版本序 = ['normal', 'cool', 'deep'];
+var 灵感角色版本名 = { normal: '🌿 正常版', cool: '🧊 清凉版', deep: '🔥 深度版' };
+// 灵感角色库未加载时的兜底区块名（正式标签以灵感角色库的 BLOCK_META 为准）
+var 灵感角色兜底区块名 = { identity: '一、基本信息', clothing: '二、主服饰', accessories: '三、配饰', appearance: '四、体貌特征', kinks: '五、性癖标签' };
+
+// 灵感角色取值：优先用灵感角色库自己的路径取值函数，未加载时用同规则回退
+function 灵感角色取值(vdata, path) {
+  if (typeof window.stcdInspireGetField === 'function') return window.stcdInspireGetField(vdata, path);
+  var parts = String(path).split('.');
+  var cur = vdata;
+  for (var i = 0; i < parts.length; i++) {
+    if (cur == null) return '';
+    cur = cur[parts[i]];
+  }
+  return cur == null ? '' : cur;
+}
+
+// 该版本的区块表：优先灵感角色库按版本生成的字段表（中文标签/顺序/动态器官名都在里面），
+// 否则按该版本数据自有的键兜底铺开
+function 灵感角色区块表(version, vdata) {
+  if (typeof window.stcdInspireGetFields === 'function') {
+    var t = window.stcdInspireGetFields(version);
+    if (t && t.length) return t;
+  }
+  var out = [];
+  Object.keys(vdata || {}).forEach(function(bk) {
+    if (!vdata[bk] || typeof vdata[bk] !== 'object') return;
+    out.push({
+      block: bk,
+      blockLabel: 灵感角色兜底区块名[bk] || bk,
+      fields: Object.keys(vdata[bk]).map(function(fk) { return { key: fk, label: fk }; }),
+    });
+  });
+  return out;
+}
+
+// 整版是否为空（用于跳过没生成过的版本）
+function 灵感角色版本空(vdata) {
+  if (!vdata || typeof vdata !== 'object') return true;
+  var bks = Object.keys(vdata);
+  for (var i = 0; i < bks.length; i++) {
+    var b = vdata[bks[i]];
+    if (!b || typeof b !== 'object') continue;
+    var fks = Object.keys(b);
+    for (var j = 0; j < fks.length; j++) {
+      var v = b[fks[j]];
+      if (v == null || v === '') continue;
+      if (Array.isArray(v) && !v.length) continue;
+      return false;
+    }
+  }
+  return true;
+}
+
+// 单个版本的档案正文
+function 灵感角色版本文本(vdata, version) {
+  var blocks = 灵感角色区块表(version, vdata);
+  var gender = 灵感角色取值(vdata, 'identity.gender') || '';
+  var 器官名 = (typeof window.stcdInspireGetGenitalsLabel === 'function')
+    ? window.stcdInspireGetGenitalsLabel(gender) : '生殖器官';
+  var parts = [];
+  blocks.forEach(function(b) {
+    var lines = [];
+    (b.fields || []).forEach(function(f) {
+      // 「生殖器官」按性别动态改名（女→小穴 / 男·伪娘→肉棒 / 扶她→肉棒+小穴）
+      var label = (f.key === 'genitals') ? 器官名 : (f.label || f.key);
+      var val = 灵感角色取值(vdata, b.block + '.' + f.key);
+      if (Array.isArray(val)) {
+        if (!val.length) { lines.push(label + '：无'); return; }
+        lines.push(label + '：');
+        val.forEach(function(x) { lines.push('　' + 角色值转文本(x)); });
+        return;
+      }
+      if (val == null || val === '') { lines.push(label + '：无'); return; }
+      if (val === true) { lines.push(label + '：是'); return; }
+      if (val === false) { lines.push(label + '：否'); return; }
+      lines.push(label + '：' + 角色值转文本(val));
+    });
+    if (lines.length) parts.push('【' + (b.blockLabel || b.block) + '】\n' + lines.join('\n'));
+  });
+  return parts.join('\n\n');
+}
+
+function 灵感角色档案(char, version) {
+  if (!char) return '';
+  var 有版本表 = !!(char.versions && typeof char.versions === 'object');
+  var 取版本 = function(v) {
+    if (有版本表) return char.versions[v] || null;
+    return (v === 'normal') ? char : null;   // 旧格式（单版本平铺字段）视作正常版
+  };
+  var 版本们 = version ? [version] : 灵感角色版本序;
+  // 抬头名字：先在各版本里找 identity.name（正常版优先），再退到显示名函数与顶层 name
+  var 名字 = '';
+  版本们.forEach(function(v) {
+    if (名字) return;
+    var d = 取版本(v);
+    if (d && d.identity && d.identity.name) 名字 = d.identity.name;
+  });
+  if (!名字 && typeof window.stcdInspireDisplayName === 'function') 名字 = window.stcdInspireDisplayName(char);
+  if (!名字 || 名字 === '未命名') 名字 = char.name || 名字 || '';
+  var 段 = [];
+  版本们.forEach(function(v) {
+    var vdata = 取版本(v);
+    if (!vdata || 灵感角色版本空(vdata)) return;
+    var txt = 灵感角色版本文本(vdata, v);
+    if (!txt) return;
+    段.push('===== ' + (灵感角色版本名[v] || v) + ' =====\n' + txt);
+  });
+  if (!段.length) return '';
+  var 抬头 = 名字 + (char.category ? '（' + char.category + '）' : '');
+  return 抬头 + '\n\n' + 段.join('\n\n');
+}
+
 // ===== 函数2：角色卡 · 全部 =====
 // 读取角色卡全部章节（identity + appearance + attire + ... 14章），中文标签格式化
 function 角色卡全部(char) {
@@ -224,3 +353,6 @@ window.charFull = 角色卡全部;
 // 灵感角色库唯一全局入口（仅点名调用灵感角色时使用；默认一律用上面的角色卡函数）
 window.灵感角色全部 = 灵感角色全部;
 window.inspireCharFull = 灵感角色全部;
+// 灵感角色档案内容（三版本中文标签正文；界面上的「📋 档案」走 stcdInspireView，不走这里）
+window.灵感角色档案 = 灵感角色档案;
+window.inspireCharArchive = 灵感角色档案;

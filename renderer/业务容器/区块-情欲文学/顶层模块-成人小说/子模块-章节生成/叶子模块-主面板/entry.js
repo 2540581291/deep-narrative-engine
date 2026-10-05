@@ -208,12 +208,9 @@ function 小说loadWritingChapters() {
 
   debugLog('novel', 'loadWritingChapters', 'calling Store.novel.get(' + title + ')');
 
-  console.log('[Writing] Store.novel.get(', title, ')');
   Store.novel.get(title).then(function(data) {
-    console.log('[Writing] Store.novel.get returned', data ? Object.keys(data) : 'null');
 
     if (data && data.outline && data.outline.length) {
-      console.log('[Writing] outline has', data.outline.length, 'chapters');
       _outlineChapters = data.outline;
       _outlineTitle = novelCurrentTitle;
       _outlineChapters.forEach(function(ch, i) {
@@ -223,10 +220,8 @@ function 小说loadWritingChapters() {
       });
       小说写作章集 = _outlineChapters;
     } else {
-      console.log('[Writing] no outline data in Store', data ? '(data.outline missing/null)' : '(data null)');
       // 如果 Store 中没有数据，尝试从内存恢复
       if (typeof _outlineChapters !== 'undefined' && _outlineChapters.length) {
-        console.log('[Writing] falling back to memory _outlineChapters');
         小说写作章集 = _outlineChapters;
         // 确保数据也被保存到 Store
         _outlineTitle = novelCurrentTitle;
@@ -234,7 +229,6 @@ function 小说loadWritingChapters() {
           m = m || {};
           m.outline = _outlineChapters;
           Store.novel.save(novelCurrentTitle, m);
-          console.log('[Writing] saved _outlineChapters to Store');
         });
       } else {
         小说写作章集 = [];
@@ -371,30 +365,12 @@ function loadChapterContent() {
 
   Store.novel.getChapter(novelCurrentTitle, chName).then(function(content) {
     if (content) {
-      // 调试：查看实际的引号字符（扫描全文）
-      var quoteChars = [];
-      var quoteTypes = {};
-      for (var ci = 0; ci < content.length; ci++) {
-        var code = content.charCodeAt(ci);
-        if (code === 34 || code === 0x201C || code === 0x201D || code === 0x300C || code === 0x300D || code === 0x2018 || code === 0x2019 || code === 0xFF02) {
-          var charName = String.fromCharCode(code);
-          if (!quoteTypes[charName]) quoteTypes[charName] = { char: charName, code: '0x' + code.toString(16), count: 0, first: -1 };
-          quoteTypes[charName].count++;
-          if (quoteTypes[charName].first < 0) quoteTypes[charName].first = ci;
-        }
-      }
-      console.log('[Writing] quote types found:', JSON.stringify(quoteTypes));
-      // 显示前10个非空格字符的编码
-      var sampleChars = [];
-      for (var si = 0; si < Math.min(content.length, 200); si++) {
-        var sc = content[si];
-        if (sc.trim()) sampleChars.push(sc + '(0x' + content.charCodeAt(si).toString(16) + ')');
-      }
-      console.log('[Writing] first 200 non-space chars:', sampleChars.slice(0, 30).join(' '));
-      var html = formatForDisplay(content);
-      console.log('[Writing] formatForDisplay result length:', html.length, 'has green:', html.indexOf('color:#4ecca3') >= 0);
-      editor.innerHTML = html;
-      ch._written = true;
+      // 早期排查引号字符集用的调试扫描（全文字符级扫描 + 控制台打印）已移除：
+      // 它在每次加载章节时都跑一遍、并往控制台喷上百行编码，属于开发期残留。
+      editor.innerHTML = formatForDisplay(content);
+      // 只有正文真的有内容才算「已写」——原来无条件置 true，会把空内容章节也标成已写，
+      // 导致进度统计与实际不符。
+      if (String(content).trim()) ch._written = true;
       ch._wordCount = wordCount(formatForStorage(content));
     } else if (ch.aiContent) {
       editor.innerHTML = formatForDisplay(ch.aiContent);

@@ -11,5 +11,7 @@ var 暧昧对白 = 淫诗体模块工厂({
   默认露骨度: '粗俗荤诗', 默认诗体: '无',
   promptName: 'ai_mei_dui_bai_gen', aiFieldId: 'aiMeiDuiBaiGen', aiLabel: '暧昧对白生成',
   模块独有选题: { label: '关系', 编辑键: 'guanxi', ctx标签: '关系', options: ['暗恋', '前任', '青梅竹马', '师生', '职场', '初识'] },
+  语言风格选项: 语言风格选项_对白,
+  话语行: true,
 });
 Store.aiMeiDuiBai = createStore('aiMeiDuiBai');

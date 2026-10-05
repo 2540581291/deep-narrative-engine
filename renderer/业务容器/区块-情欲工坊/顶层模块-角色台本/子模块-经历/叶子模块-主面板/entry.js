@@ -11,5 +11,6 @@ var 角色经历 = 角色台本工厂({
   主题标签: '台词类型',
   主题选项: ['呻吟与哭喊', '被逼供述', '哀求讨饶', '高潮时的呓语', '事后的抱怨', '内心独白'],
   语气选项: ['破碎断续', '压抑低喘', '哭腔', '高亢失神', '羞愤交加'],
+  语言风格选项: window.语言风格选项_通用,
 });
 if (!Store.roleExperience) Store.roleExperience = createStore('roleExperience');

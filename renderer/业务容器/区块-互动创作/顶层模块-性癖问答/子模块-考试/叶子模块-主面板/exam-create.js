@@ -175,7 +175,8 @@ function 考试组渲染角色(role){
   var cntEl = document.getElementById('examGroupCount_' + role);
   if(!el) return;
   var g = 考试组性别[role];
-  Store.character.list().then(function(items){
+  // 与「角色卡·角色库」同一口径：按创建时间倒序（新建在前）
+  角色卡按创建倒序(Store.character.list()).then(function(items){
     var 性别映射 = { '女性':'👩', '男性':'👨', '伪娘':'👘', '扶她':'⚧' };
     var filtered = (items || []).filter(function(item){
       var gg = item.identity && item.identity.basicInfo && item.identity.basicInfo.gender;

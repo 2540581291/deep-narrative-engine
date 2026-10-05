@@ -289,6 +289,45 @@ function stcdWorkPickerRender() {
   ov.innerHTML = h;
 }
 
+// 拉回来的内容可能是字符串（正文类作品），也可能是**对象**（世界观那种 {板块:{维度:[条目]}}）。
+// 直接 String() 会变成 "[object Object]" —— 所以统一在这里转成人/AI 能读的文本。
+// 规则：字符串原样；条目型对象 →「【条目名】+ 正文」；容器型对象 →「## 键名」分段展开；
+// 都认不出就 JSON 缩进展开（宁可长一点，也不要给 AI 一坨 [object Object]）。
+function stcdWorkPicker内容转文本(v, 深) {
+  深 = 深 || 0;
+  if (v === null || v === undefined) return '';
+  if (typeof v === 'string') return v;
+  if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+  if (深 > 6) return '';
+  if (Array.isArray(v)) {
+    return v.map(function(x) { return stcdWorkPicker内容转文本(x, 深 + 1); }).filter(Boolean).join('\n\n');
+  }
+  if (typeof v === 'object') {
+    var 正文字段 = ['正文', '内容', '文本', 'text', 'content', 'body', '详细描述', '描述', '简介', '概要'];
+    var 正文 = '';
+    for (var i = 0; i < 正文字段.length; i++) {
+      var x = v[正文字段[i]];
+      if (typeof x === 'string' && x.trim()) { 正文 = x; break; }
+    }
+    var 名 = v['条目'] || v['标题'] || v['名称'] || v['title'] || v['name'] || '';
+    if (名 && 正文) return '【' + 名 + '】\n' + 正文;
+    if (正文) return 正文;
+    // 容器型（键下面还是对象 / 数组）：按「## 键名」分段摊开
+    var 容器键 = Object.keys(v).filter(function(k) {
+      var y = v[k];
+      return y && typeof y === 'object' && Object.keys(y).length;
+    });
+    if (容器键.length) {
+      return 容器键.map(function(k) {
+        var 段 = stcdWorkPicker内容转文本(v[k], 深 + 1);
+        return 段 ? '## ' + k + '\n' + 段 : '';
+      }).filter(Boolean).join('\n\n');
+    }
+    try { return JSON.stringify(v, null, 2); } catch (e) { return ''; }
+  }
+  return String(v);
+}
+
 // 选中：尽力拉取原文（内容最佳），统一回调 onPick；未传 onPick 时按 mode 填入 targetId
 function stcdWorkPickerPick(storeKey, title) {
   var items = STCD_WORK_PICKER.groups[storeKey] || [];
@@ -310,12 +349,14 @@ function stcdWorkPickerPick(storeKey, title) {
     toast('已选择：' + title);
   };
   var direct = found.content || found.premise || found.description;
-  if (direct && typeof direct === 'string') { done(String(direct).slice(0, 6000)); return; }
+  // 是字符串又已经有内容 → 直接用；是对象 → 走下面的 loadContent（内容更全）
+  if (direct && typeof direct === 'string' && direct.trim()) { done(direct.slice(0, 6000)); return; }
   var s = Store[storeKey];
   if (s && typeof s.loadContent === 'function') {
     s.loadContent(title).then(function(text) {
-      if (text) { done(String(text).slice(0, 6000)); return; }
-      if (typeof s.get === 'function') s.get(title).then(function(meta) { done(meta ? JSON.stringify(meta, null, 2).slice(0, 6000) : ''); }).catch(function() { done(''); });
+      var 文 = stcdWorkPicker内容转文本(text);
+      if (文 && 文.trim()) { done(文.slice(0, 6000)); return; }
+      if (typeof s.get === 'function') s.get(title).then(function(meta) { done(stcdWorkPicker内容转文本(meta).slice(0, 6000)); }).catch(function() { done(''); });
     }).catch(function() { done(''); });
   } else {
     done('');

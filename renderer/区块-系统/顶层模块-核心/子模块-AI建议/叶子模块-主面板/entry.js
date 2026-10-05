@@ -112,6 +112,68 @@ var AI_QUICK_PRESETS = {
     { label: '🧬 混身世', dir: '重点取各卡的身世/家族/经历，混搭出一个背景丰富的新角色', category: 'story' },
     { label: '🔞 混性爱风格', dir: '重点取各卡的性爱偏好/风格，混搭出一个性爱观独特的新角色', category: 'body' },
   ],
+
+  // ===== 世界观 · 各版块内容生成（板块→子维度）=====
+  // 这一份是「写世界」时最常用的方向：先定写法（志书口吻 / 一阶一段），再定篇幅（一条写透 / 多条并列），最后定补哪里。
+  'world-element': [
+    { label: '🪜 一阶一段', dir: '关键人物带阶次链的，按「第N阶·『称号』」一阶一段写完整条链，每个称号都单独写出来，绝不写成「从 A 到 B」的概括', category: 'world' },
+    { label: '🔞 写得更直白', dir: '情色与堕落的描写要直白具体：身体怎么被用、被谁用、留下什么后患，照这个世界本身的笔调写', category: 'world' },
+    { label: '📜 志书口吻', dir: '用世界内叙述写成世界志的口吻，不要攻略腔、不要资料卡、不要提纲，也不要出现「语料/文本/未见记载」这类关于来源的话', category: 'flavor' },
+    { label: '🧱 多条并列', dir: '生成多条彼此独立、互不重复的条目，每条各写一件事或一个人', category: 'structure' },
+    { label: '📄 一条写透', dir: '只生成一条，把它写透写长（几百到几千字都行，没有上限），内容多就用空行分段', category: 'structure' },
+    { label: '🧩 多写基层细节', dir: '多写制度、场所、日常、人怎么被编入与使用这类基层细节，少写抽象的大道理', category: 'focus' },
+    { label: '🧑 多写具体的人', dir: '多写具体的人：谁、什么位子、落到什么下场，每条都要具体到能被直接引用', category: 'focus' },
+    { label: '🚫 别写泛泛背景', dir: '不要写这个世界通行的泛泛背景（「大陆上有许多河流」这类），只写有明确归属、能被直接引用的东西', category: 'focus' },
+    { label: '🕳 只补空档', dir: '先看已有内容，挑最缺的方向补，别重复已经写过的东西', category: 'structure' },
+  ],
+
+  // ===== 世界观 · 基本设定 / 世界名 / 世界简介 =====
+  'world-basic': [
+    { label: '🌍 突出情色生态', dir: '重点写通行的情色生态：这个世界的「性」是怎么运转的、谁在用谁、有哪些成规', category: 'world' },
+    { label: '👑 突出权力格局', dir: '重点写权力格局：谁掌权、靠什么掌权、底下的人怎么活', category: 'world' },
+    { label: '🎭 突出基调', dir: '重点写这个世界的基调与最诱人的那一面，让人一眼记住', category: 'flavor' },
+    { label: '📄 写长一点', dir: '写厚一些，交代清楚再收尾（不限字数，用空行分段）', category: 'structure' },
+  ],
+  'world-name': [
+    { label: '🀄 中文四字', dir: '取一个中文四字名，念着顺口、有辨识度', category: 'world' },
+    { label: '👁 一眼看出基调', dir: '名字要一眼看出这个世界的基调与最勾人的那一面', category: 'world' },
+    { label: '🚫 别串名', dir: '只取一个名字，不要用「·」把几个名字串起来，不要加解释', category: 'structure' },
+  ],
+  'world-desc': [
+    { label: '🎭 突出基调', dir: '重点写这个世界的基调与故事核心，写清这是个什么样的世界', category: 'world' },
+    { label: '🔞 突出情色生态', dir: '重点写最诱人的情色生态：性在这个世界里以什么方式运转', category: 'world' },
+    { label: '📄 写长一点', dir: '多写几段，把世界的样子交代透（不限字数，用空行分段）', category: 'structure' },
+    { label: '⚖️ 点明法则', dir: '点明这个世界的通行法则与代价：得到什么要付什么', category: 'focus' },
+  ],
+
+  // ===== 世界观 · 军队内部块生成 =====
+  'world-military-group': [
+    { label: '⚔️ 写战法', dir: '重点写它怎么打：阵型、配合、怕什么、克制谁', category: 'world' },
+    { label: '⛓ 写俘获处置', dir: '重点写抓来的人怎么分级使用：生育、献祭、当魔力容器、变卖，越具体越好', category: 'world' },
+    { label: '🪖 写阶序待遇', dir: '重点写军阶与位阶：靠什么升、升上去有什么待遇、位阶和性役怎么对应', category: 'world' },
+    { label: '🩸 写军法', dir: '重点写军规与刑罚：违令、怯战、羞辱刑与示众怎么执行', category: 'world' },
+    { label: '🧱 每条短一点', dir: '每条写短、写实，一条一件事，多给几条', category: 'structure' },
+    { label: '📄 每条写透', dir: '每条写长写透（不限字数，用空行分段）', category: 'structure' },
+  ],
+
+  // ===== 世界观 · 地理内部块生成（六个地点分组）=====
+  'world-geo-group': [
+    { label: '🏛 写地标', dir: '重点写这一带有名字的标志性建筑与胜景：宫室、神殿、塔楼、广场、桥梁，写清是什么、谁造的、如今什么样', category: 'world' },
+    { label: '🌲 写自然景观', dir: '重点写天生的地形与景致：山脉、森林、湖泊、海湾、洞窟、异象，写清形貌与特别之处', category: 'world' },
+    { label: '🛣 写进出的路', dir: '重点写通道：城门、关隘、渡口、桥梁、港口、航路，写清通向哪里、为什么重要', category: 'world' },
+    { label: '🧱 写防御', dir: '重点写守卫这一带的东西：城墙、要塞、哨所、堡垒、封锁线与工事', category: 'world' },
+    { label: '🔞 写情色用处', dir: '每一处都写清它在情色生态里的用处：谁在这里做什么、有什么成规与去处', category: 'world' },
+    { label: '🧱 每条短一点', dir: '每条写短、写实，一处一件事，多给几条', category: 'structure' },
+    { label: '📄 每条写透', dir: '每条写长写透（不限字数，用空行分段）', category: 'structure' },
+  ],
+
+  // ===== 世界观 · 势力关联内容生成 =====
+  'world-faction-related': [
+    { label: '🏴 只写它的东西', dir: '每一条都必须明确是这个势力自己的东西：它占有/使用/驻守/出产/发明的，写清是哪一个、在它手里什么样', category: 'world' },
+    { label: '🧑 多写它的人', dir: '多写这个势力名下具体的人：谁替它办事、什么位子、什么下场', category: 'focus' },
+    { label: '🗺 铺开多个类别', dir: '尽量覆盖多个类别（地理/人物/器物/战事），让这个势力立体起来', category: 'structure' },
+    { label: '🚫 别写通用背景', dir: '不要写与这个势力无关的世界通行设定，那属于世界设定，不归这里', category: 'focus' },
+  ],
 };
 var selectedDirs = {};
 var catInfo = {
@@ -355,8 +417,10 @@ function _runAiDirect(id, direction, count) {
       var rawText = (typeof ctx === 'object' && ctx !== null) ? (ctx.prompt || ctx.user || '') : ctx;
       // 模板变量：contextFn 返回对象时的额外字段（已由 getFieldInfo 存入 vars）
       var extraVars = fieldInfo.vars || {};
-      // 预设方向作为模板变量 {direction} 传入，插入模板主体（而非末尾追加），确保 LLM 优先处理
-      if (direction) extraVars.direction = direction;
+      // 预设方向作为模板变量 {direction} 传入，插入模板主体（而非末尾追加），确保 LLM 优先处理。
+      // 必须【无条件】赋值：{direction} 是全项目 50+ 处模板都在用的占位符，
+      // 若用户没填方向就不赋值，renderPrompt 会跳过替换，提示词里会残留字面 "{direction}"。
+      extraVars.direction = direction || '（无特别要求）';
       if (count) extraVars.count = count;
       rendered = renderPrompt(fieldInfo.suggestPrompt, Object.assign({ text: rawText }, extraVars));
       if (!rendered.system && !rendered.user) rendered = null;

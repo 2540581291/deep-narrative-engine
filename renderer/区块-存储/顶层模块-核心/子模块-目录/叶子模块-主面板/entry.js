@@ -43,6 +43,7 @@ var 存储目录 = {
   roleInsult:    '角色辱骂',
   roleSexInsult: '性辱骂',
   roleExtract:   '角色提取',
+  roleSpeech:    '角色话语',
   dianPingShangXi: '点评赏析',
   yiLunWen:     '锦绣议论',
   jiXuWen:      '锦绣记叙',

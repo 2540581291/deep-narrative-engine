@@ -4,8 +4,8 @@ var 问答出题类型 = 'ai'; // 'ai'=AI自动出题 'bank'=从题库抽题
 function 渲染问答问答(el){
   if(!问答角色){el.innerHTML='<div class="placeholder-text">请先选择角色</div>';return;}
   var h='<div style="display:flex;gap:2px;margin-bottom:8px">'
-    +'<div class="sub-nav-item cur-ptr fs-12'+(问答模式==='user'?' act':'')+'" onclick="问答设置模式(\'user\')">✋ 我来出题</div>'
-    +'<div class="sub-nav-item cur-ptr fs-12'+(问答模式==='ai'?' act':'')+'" onclick="问答设置模式(\'ai\')">✋ 我来回答</div></div>';
+    +'<div class="sub-nav-item cur-ptr fs-12'+(问答模式==='user'?' act':'')+'" onclick="问答设置模式(\'user\')" title="你来提问，角色以角色身份回答你">✋ 我来出题（我问 · TA 答）</div>'
+    +'<div class="sub-nav-item cur-ptr fs-12'+(问答模式==='ai'?' act':'')+'" onclick="问答设置模式(\'ai\')" title="角色出题，你选选项，角色再评价">✋ 我来回答（TA 问 · 我答）</div></div>';
   h+='<div class="flex justify-between mb-8"><span class="fw-600">📋 性癖问答 · '+escHtml(问答角色.name)+'</span><span class="btn-secondary btn-sm" onclick="问答切换视图(\'chars\')">← 换人</span></div>';
   // 身份设定选择器
   h+='<div class="filter-row">'
@@ -18,14 +18,14 @@ function 渲染问答问答(el){
   h+='<div id="fqChatLog" style="border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px;background:var(--bg2);min-height:300px;max-height:420px;overflow-y:auto">';
   if(!问答日志.length){
     if(问答模式==='user'){
-      h+='<div class="text-center py-40"><div style="font-size:24px;margin-bottom:8px">✋</div><div class="text-muted text-sm">向 '+escHtml(问答角色.name)+' 提问，TA 会以角色身份回答你</div></div>';
+      h+='<div class="text-center py-40"><div style="font-size:24px;margin-bottom:8px">✋</div><div class="text-muted text-sm">在下方输入你想问的问题，'+escHtml(问答角色.name)+' 会以角色身份回答你</div></div>';
     }else{
-      h+='<div class="text-center py-40"><div style="font-size:24px;margin-bottom:8px">💬</div><div class="text-muted text-sm">'+escHtml(问答角色.name)+' 开始问你问题了...</div></div>';
+      h+='<div class="text-center py-40"><div style="font-size:24px;margin-bottom:8px">💬</div><div class="text-muted text-sm">点上面「🤖 AI 自动出题」或「📚 从题库随机抽题」，'+escHtml(问答角色.name)+' 出题、你选一个答案，TA 再对你的选择做出评价</div></div>';
     }
   }else{
     问答日志.forEach(function(entry){
       if(entry.question&&entry.choice===undefined){
-        h+='<div class="flex justify-end mb-4"><div style="max-width:75%;padding:8px 12px;border-radius:16px 16px 4px 16px;background:var(--accent);color:#fff;font-size:13px">❓ '+escHtml(entry.question)+'</div></div>';
+        h+='<div class="flex justify-end mb-4"><div class="chat-mine" style="max-width:75%;padding:8px 12px;border-radius:16px 16px 4px 16px;font-size:13px">❓ '+escHtml(entry.question)+'</div></div>';
         if(entry.answer){
           h+='<div style="display:flex;justify-content:flex-start;margin-bottom:6px"><div style="max-width:85%;padding:8px 12px;border-radius:16px 16px 16px 4px;background:var(--bg);font-size:13px">';
           h+='<div class="text-xs mb-2 opacity-7">'+escHtml(问答角色.name)+'</div>';
@@ -39,7 +39,7 @@ function 渲染问答问答(el){
         }
       }else if(entry.question){
         h+='<div style="display:flex;justify-content:flex-start;margin-bottom:6px"><div style="max-width:80%;padding:8px 12px;border-radius:16px 16px 16px 4px;background:var(--bg);font-size:13px"><div class="text-xs mb-2 opacity-7">'+escHtml(问答角色.name)+'</div>'+escHtml(entry.question)+'</div></div>';
-        if(entry.choice){h+='<div class="flex justify-end mb-4"><div style="max-width:70%;padding:8px 12px;border-radius:16px 16px 4px 16px;background:var(--accent);color:#fff;font-size:13px">'+escHtml(entry.choice)+'</div></div>';}
+        if(entry.choice){h+='<div class="flex justify-end mb-4"><div class="chat-mine" style="max-width:70%;padding:8px 12px;border-radius:16px 16px 4px 16px;font-size:13px">'+escHtml(entry.choice)+'</div></div>';}
         // 评价三部分：语言回应 + 反应 + 心理
         if(entry.answer||entry.reaction||entry.mind){
           h+='<div style="display:flex;justify-content:flex-start;margin-bottom:8px"><div style="max-width:85%;padding:8px 12px;border-radius:16px 16px 16px 4px;background:var(--accent-dim);font-size:13px">';
@@ -87,6 +87,10 @@ function 渲染问答问答(el){
     h+='<div class="n-card p-8"><div class="fw-600 fs-13 mb-4">✋ 输入你的问题</div>'
       +'<div class="flex gap-4"><input class="llm-input flex-1 fs-13" id="fqUserQuestion" placeholder="想问'+escHtml(问答角色.name)+'什么？" onkeydown="if(event.key===\'Enter\'){event.preventDefault();问答自定义提问()}">'
       +'<button class="btn-sm bg-accent" onclick="问答自定义提问()">问TA</button></div></div>';
+    // 等回复期间明确提示，避免「点了没反应」的错觉（此时重复发送会被发送中锁忽略）
+    if(问答发送中){
+      h+='<div class="text-xs text-muted" style="text-align:center;padding:6px">⏳ 已发出，正在等 '+escHtml(问答角色.name)+' 回复…</div>';
+    }
   }
   el.innerHTML=h;
   var chat=document.getElementById('fqChatLog');if(chat)chat.scrollTop=chat.scrollHeight;
@@ -137,6 +141,49 @@ function 问答用户出题身份句(){
   return '你是【' + 身份 + '】' + 含义 + '，正在向' + (问答角色 ? 问答角色.name : '角色') + '提问。';
 }
 
+// ===== 前后文（对话记录）=====
+// 性癖问答本身就是一场聊天：每次调用 AI 都要带上此前的问答，
+// 与角色聊天（角色聊天构建对话记录）同一套思路——不带上前后文，角色每次都像第一次开口，
+// 前后不接、还会反复问已经问过的事。
+var 问答上下文轮数 = 20; // 只带最近 20 轮，长会话不至于把提示词撑爆
+
+function 问答构建对话记录(上限){
+  var log = (typeof 问答日志 !== 'undefined' && 问答日志) ? 问答日志 : [];
+  if(!log.length) return '（还没有任何问答记录，这是第一轮）';
+  var 名 = 问答角色 ? 问答角色.name : '角色';
+  var 起 = Math.max(0, log.length - (上限 || 问答上下文轮数));
+  var lines = [];
+  if(起 > 0) lines.push('（更早的 ' + 起 + ' 轮已省略）');
+  log.slice(起).forEach(function(e, i){
+    if(!e || !e.question) return;
+    lines.push('第' + (起 + i + 1) + '轮');
+    if(e.choice == null){
+      // 「我来出题」：我提问 → 角色回答（判定与历史记录页的 entry.choice != null 一致）
+      lines.push('我：' + e.question);
+      if(e.answer) lines.push(名 + '：' + e.answer);
+    }else{
+      // 「我来回答」：角色出题 → 我选择 → 角色评价
+      lines.push(名 + '：' + e.question);
+      if(e.choice) lines.push('我：（选择了）' + e.choice);
+      if(e.answer) lines.push(名 + '：' + e.answer);
+    }
+    if(e.reaction) lines.push('（' + 名 + '的反应：' + e.reaction + '）');
+    if(e.mind) lines.push('（' + 名 + '的心理：' + e.mind + '）');
+  });
+  return lines.join('\n');
+}
+
+// 拼成一段可直接插进 prompt 的上下文（含「据此保持连贯」的指令）
+// 场景：'出题'（生成新题目，要求不与之前重复） / '回答' / '评价'
+function 问答上下文段(场景){
+  var 指引 = (场景 === '出题')
+    ? '以上是你们此前已经进行过的问答。本次出题不得与其中任何一道重复或近义，并顺着此前的进展往下问。'
+    : '以上是你们此前已经进行过的问答（按时间先后排列）。请接着这段关系与话题往下走，保持前后连贯，不要当成第一次见面。';
+  return '【对话记录（前后文）】\n' + 问答构建对话记录() + '\n' + 指引;
+}
+window.问答构建对话记录 = 问答构建对话记录;
+window.问答上下文段 = 问答上下文段;
+
 // ===== AI 出题方向定义 =====
 var 问答出题方向 = [
   { key: 'identity',  label: '🪪 角色身份',   desc: '关于身份、种族、年龄、称号、出身' },
@@ -185,8 +232,8 @@ window.问答按方向出题 = function(dirKey){
     : (问答角色.name || '角色');
   LLM.callJSON({
     label:'AI自动出题',
-    system:'你是角色'+escHtml(问答角色.name)+'。\n\n【角色设定】\n' + charDesc,
-    prompt:'你是一个性癖问答出题专家。请根据以上角色设定出一道贴合角色身份的性癖调查问题，并给出4-6个选项。只输出JSON，不要其他文字。\n'+问答出题身份句()+'\n【出题方向】'+dirDesc+'\n要求：问题中应当直接体现角色的信息——把角色设定里的关键点（身份、称号、经历、特长等）化用进问题，不要原样照抄设定原文；让问题明显是这个角色在问，而不是泛泛而问。同时问题中要包含身份信息——把当前的身份关系（'+问答当前身份+'）也化用进问题，自然地体现，不要直接照抄"前任""主人"这类标签词。\n输出JSON格式：{"q":"问题文本","options":["选项1","选项2","选项3","选项4","选项5"]}'
+    system:'你是角色'+问答角色.name+'。\n\n【角色设定】\n' + charDesc,
+    prompt:'你是一个性癖问答出题专家。请根据以上角色设定出一道贴合角色身份的性癖调查问题，并给出4-6个选项。只输出JSON，不要其他文字。\n'+问答出题身份句()+'\n【出题方向】'+dirDesc+'\n\n'+问答上下文段('出题')+'\n要求：问题中应当直接体现角色的信息——把角色设定里的关键点（身份、称号、经历、特长等）化用进问题，不要原样照抄设定原文；让问题明显是这个角色在问，而不是泛泛而问。同时问题中要包含身份信息——把当前的身份关系（'+问答当前身份+'）也化用进问题，自然地体现，不要直接照抄"前任""主人"这类标签词。\n输出JSON格式：{"q":"问题文本","options":["选项1","选项2","选项3","选项4","选项5"]}'
   }).then(function(d){
     问答正在出题=false;
     if(!d||!d.q){toast('AI 出题失败');渲染问答问答(document.getElementById('fqViewContent'));return;}
@@ -265,8 +312,8 @@ window.问答用户按方向出题 = function(dirKey){
     : (问答角色.name || '角色');
   LLM.callJSON({
     label:'AI自动出题',
-    system:'你是一个性癖问答出题助手，正在帮用户构思要问【'+escHtml(问答角色.name)+'】的问题。用户扮演的身份是【'+(问答当前身份||'陌生人')+'】。以下是'+escHtml(问答角色.name)+'的角色设定，作为出题的参考。\n\n【'+escHtml(问答角色.name)+'角色设定】\n' + charDesc,
-    prompt:'你是一个性癖问答出题专家。请根据以上角色设定出一道贴合角色身份的性癖调查问题，并给出4-6个选项。只输出JSON，不要其他文字。\n'+问答用户出题身份句()+'\n【出题方向】'+dirDesc+'\n要求：问题中应当直接体现角色的信息——把角色设定里的关键点（身份、称号、经历、特长等）化用进问题，不要原样照抄设定原文；让问题明显是在问这个角色，而不是泛泛而问。同时问题中要包含身份信息——把当前的身份关系（'+问答当前身份+'）也化用进问题，自然地体现，不要直接照抄"前任""主人"这类标签词。\n输出JSON格式：{"q":"问题文本","options":["选项1","选项2","选项3","选项4","选项5"]}'
+    system:'你是一个性癖问答出题助手，正在帮用户构思要问【'+问答角色.name+'】的问题。用户扮演的身份是【'+(问答当前身份||'陌生人')+'】。以下是'+问答角色.name+'的角色设定，作为出题的参考。\n\n【'+问答角色.name+'角色设定】\n' + charDesc,
+    prompt:'你是一个性癖问答出题专家。请根据以上角色设定出一道贴合角色身份的性癖调查问题，并给出4-6个选项。只输出JSON，不要其他文字。\n'+问答用户出题身份句()+'\n【出题方向】'+dirDesc+'\n\n'+问答上下文段('出题')+'\n要求：问题中应当直接体现角色的信息——把角色设定里的关键点（身份、称号、经历、特长等）化用进问题，不要原样照抄设定原文；让问题明显是在问这个角色，而不是泛泛而问。同时问题中要包含身份信息——把当前的身份关系（'+问答当前身份+'）也化用进问题，自然地体现，不要直接照抄"前任""主人"这类标签词。\n输出JSON格式：{"q":"问题文本","options":["选项1","选项2","选项3","选项4","选项5"]}'
   }).then(function(d){
     问答正在出题=false;
     if(!d||!d.q){toast('AI 出题失败');渲染问答问答(document.getElementById('fqViewContent'));return;}
@@ -327,7 +374,7 @@ function 问答选择(optIdx){
   // Get AI reaction（三部分：语言回应 + 身体反应 + 内心想法）
   if(问答角色){
     var 角色设定 = (typeof window.角色卡全部 === 'function') ? window.角色卡全部(问答角色) : JSON.stringify(问答角色||{});
-    LLM.callJSON({system:'你是角色'+escHtml(问答角色.name)+'。\n\n【角色设定】\n' + 角色设定, prompt:'请以该角色的身份评价用户的这个选择。评价分三部分：\n1. reply：语言回应（直接说出口的话，对用户的选择表态，可以反讽、敷衍，但不能答非所问）\n2. reaction：身体反应（直接写身体动作、表情、神态等非语言表现，不要写"听到这个问题后"之类的引导语）\n3. mind：内心想法（直接写内心真实想法，不要写"心里想..."。可以与说的不一致）\n'+问答评价身份提示()+'\n只输出JSON，不要其他文字。\n问题：'+q.q+'\n用户选择：'+choice+'\n输出JSON格式：{"reply":"语言回应","reaction":"身体反应","mind":"内心想法"}',label:'问答反应'}).then(function(d){
+    LLM.callJSON({system:'你是角色'+问答角色.name+'。\n\n【角色设定】\n' + 角色设定, prompt:'请以该角色的身份评价用户的这个选择。评价分三部分：\n1. reply：语言回应（直接说出口的话，对用户的选择表态，可以反讽、敷衍，但不能答非所问）\n2. reaction：身体反应（直接写身体动作、表情、神态等非语言表现，不要写"听到这个问题后"之类的引导语）\n3. mind：内心想法（直接写内心真实想法，不要写"心里想..."。可以与说的不一致）\n'+问答评价身份提示()+'\n\n'+问答上下文段('评价')+'\n\n只输出JSON，不要其他文字。\n问题：'+q.q+'\n用户选择：'+choice+'\n输出JSON格式：{"reply":"语言回应","reaction":"身体反应","mind":"内心想法"}',label:'问答反应'}).then(function(d){
       if(d&&d.reply)entry.answer=d.reply;
       if(d&&d.reaction)entry.reaction=d.reaction;
       if(d&&d.mind)entry.mind=d.mind;
@@ -359,14 +406,20 @@ function 问答自定义提问(){
 window.问答自定义提问=问答自定义提问;
 window.fqAskCustom = window.问答自定义提问;
 
+// 发送中锁：防止连点「问TA」或连按回车时并发多条相同问题（与 问答正在出题 同一套思路）
+var 问答发送中 = false;
+
 // 通用发送：把一条问题发给角色 AI，以角色身份回答（"我来出题"模式核心）
 // 角色回答分三部分：语言回答(reply) + 角色反应(reaction) + 角色心理(mind)
 function 问答发送问题(text){
   if(!text)return;
+  if(问答发送中)return;   // 上一条还在等回复，直接忽略本次，避免并发重复提问
+  if(问答角色) 问答发送中 = true;
   var entry={question:text,answer:'',reaction:'',mind:'',comment:'',commentReaction:''};
   if(问答角色){
     var 角色设定 = (typeof window.角色卡全部 === 'function') ? window.角色卡全部(问答角色) : JSON.stringify(问答角色||{});
-    LLM.callJSON({system:'你是角色'+escHtml(问答角色.name)+'。\n\n【角色设定】\n' + 角色设定, prompt:'请以该角色的身份用第一人称回答用户的问题。\n'+问答身份提示('answerer')+'\n回答分三部分：\n1. reply：语言回答（以回答问题为核心，正面回应提问者的问题本身；可以反讽、敷衍，但不能答非所问或自说自话）\n2. reaction：角色反应（直接写身体动作、表情、神态等非语言表现，不要写"听到这个问题后"之类的引导语）\n3. mind：角色心理（直接写内心想法本身，不要写"心里想..."。注意：心理可以想到过去发生的某件事，也可以在心里嘲讽、辱骂提问者，不必与嘴上说的话一致）\n只输出JSON，不要其他文字。\n用户问：'+text+'\n输出JSON格式：{"reply":"语言回答","reaction":"角色反应","mind":"角色心理"}',label:'问答自定义'}).then(function(d){
+    LLM.callJSON({system:'你是角色'+问答角色.name+'。\n\n【角色设定】\n' + 角色设定, prompt:'请以该角色的身份用第一人称回答用户的问题。\n'+问答身份提示('answerer')+'\n回答分三部分：\n1. reply：语言回答（以回答问题为核心，正面回应提问者的问题本身；可以反讽、敷衍，但不能答非所问或自说自话）\n2. reaction：角色反应（直接写身体动作、表情、神态等非语言表现，不要写"听到这个问题后"之类的引导语）\n3. mind：角色心理（直接写内心想法本身，不要写"心里想..."。注意：心理可以想到过去发生的某件事，也可以在心里嘲讽、辱骂提问者，不必与嘴上说的话一致）\n\n'+问答上下文段('回答')+'\n\n只输出JSON，不要其他文字。\n用户问：'+text+'\n输出JSON格式：{"reply":"语言回答","reaction":"角色反应","mind":"角色心理"}',label:'问答自定义'}).then(function(d){
+      问答发送中 = false;
       if(d&&d.reply)entry.answer=d.reply;
       if(d&&d.reaction)entry.reaction=d.reaction;
       if(d&&d.mind)entry.mind=d.mind;
@@ -374,6 +427,7 @@ function 问答发送问题(text){
       问答保存会话();
       渲染问答问答(document.getElementById('fqViewContent'));
     }).catch(function(){
+      问答发送中 = false;
       问答日志.push(entry);
       问答保存会话();
       渲染问答问答(document.getElementById('fqViewContent'));

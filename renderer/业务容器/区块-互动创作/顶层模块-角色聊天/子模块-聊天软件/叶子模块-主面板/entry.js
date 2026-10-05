@@ -31,7 +31,7 @@ function 渲染聊天软件(el) {
       h += '<div style="width:32px;height:32px;border-radius:50%;background:' + (isUser ? 'var(--success)' : 'var(--accent)') + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">' + (isUser ? '我' : (role.data.identity && role.data.identity.basicInfo && role.data.identity.basicInfo.icon || '👤')) + '</div>';
       h += '<div style="max-width:65%;margin:' + (isUser ? '0 8px 0 0' : '0 0 0 8px') + '">';
       if (!isUser) h += '<div class="text-xs text-muted mb-2">' + escHtml(role.name) + '</div>';
-      h += '<div style="padding:8px 12px;border-radius:8px;background:' + (isUser ? 'var(--accent)' : 'var(--bg)') + ';color:' + (isUser ? '#fff' : 'var(--fg)') + ';font-size:13px;line-height:1.5;white-space:pre-wrap">' + escHtml(m.content) + '</div>';
+      h += '<div' + (isUser ? ' class="chat-mine"' : '') + ' style="padding:8px 12px;border-radius:8px;' + (isUser ? '' : 'background:var(--bg);color:var(--fg);') + 'font-size:13px;line-height:1.5;white-space:pre-wrap">' + escHtml(m.content) + '</div>';
       if (t) h += '<div class="text-xs text-muted mt-2" style="' + (isUser ? 'text-align:right' : '') + '">' + escHtml(t) + '</div>';
       h += '</div></div>';
     });

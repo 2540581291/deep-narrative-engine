@@ -11,5 +11,7 @@ var 调教对白 = 淫诗体模块工厂({
   默认露骨度: '粗俗荤诗', 默认诗体: '无',
   promptName: 'tiao_jiao_dui_bai_gen', aiFieldId: 'tiaoJiaoDuiBaiGen', aiLabel: '调教对白生成',
   模块独有选题: { label: '关系', 编辑键: 'guanxi', ctx标签: '关系', options: ['主仆', '师生', '恋人', '陌生人', '青梅竹马'] },
+  语言风格选项: 语言风格选项_对白,
+  话语行: true,
 });
 Store.tiaoJiaoDuiBai = createStore('tiaoJiaoDuiBai');

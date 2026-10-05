@@ -291,9 +291,9 @@ window.题库提问弹出 = function(idx){
   ov.addEventListener('click', function(e) { if (e.target === ov) ov.remove(); });
 };
 
-// 第二步：按性别列出角色
+// 第二步：按性别列出角色（顺序与「角色卡·角色库」同一口径：按创建时间倒序，新建在前）
 window.题库提问选性别 = function(gender){
-  Store.character.list().then(function(items) {
+  角色卡按创建倒序(Store.character.list()).then(function(items) {
     var _genderMap = { 'female': '女性', 'male': '男性', 'femboy': '伪娘', 'futa': '扶她', 'beast': '男性' };
     var h = '<div class="mcard" style="max-width:500px;max-height:500px;overflow-y:auto">';
     h += '<h3 style="font-size:14px;margin-bottom:10px">📂 选择 ' + gender + ' 角色回答</h3>';

@@ -57,7 +57,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px
 
 /* ===== 三栏布局 ===== */
 .layout,.layout,.布局{display:flex;height:calc(100vh - 60px)}
-.left-bar,.left-bar,.左侧栏{width:200px;flex-shrink:0;overflow-y:auto;border-right:1px solid var(--border);padding:12px 0;background:var(--bg)}
+.left-bar,.left-bar,.左侧栏{width:200px;flex-shrink:0;overflow-y:scroll;scrollbar-gutter:stable;border-right:1px solid var(--border);padding:12px 0;background:var(--bg)}
 .left-bar::-webkit-scrollbar,.左侧栏::-webkit-scrollbar{width:4px}
 .left-bar::-webkit-scrollbar-thumb,.左侧栏::-webkit-scrollbar-thumb{background:transparent;border-radius:2px}
 .left-bar:hover::-webkit-scrollbar-thumb,.左侧栏:hover::-webkit-scrollbar-thumb,
@@ -68,7 +68,11 @@ body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px
 .left-bar .cat-block .item:hover,.左侧栏 .cat-block .item:hover{color:var(--fg);background:linear-gradient(90deg,var(--accent-dim),rgba(212,196,240,0.03));border-left-color:var(--accent2)}
 .left-bar .cat-block .item.act,.左侧栏 .cat-block .item.act{color:var(--fg);background:linear-gradient(90deg,var(--accent-dim),rgba(212,196,240,0.02));border-left-color:var(--accent2);border-left-width:2.5px;font-weight:600}
 .main-content,.main-content,.主内容{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
-.pg,.pg,.页面{display:none;height:100%;overflow-y:auto}
+/* 滚动条**预先占位**：主内容区永远留出滚动条那 10px（overflow-y:scroll + scrollbar-gutter:stable）。
+   否则内容短的时候没有滚动条、内容一长滚动条突然出现，正文会整体往左跳 10px——
+   在「列表 → 详情 / 关联界面」这种长短切换的地方尤其明显。
+   轨道是透明的（见下方「滚动条」一节），所以平时只看得到那片空白，不碍眼。 */
+.pg,.pg,.页面{display:none;height:100%;overflow-y:scroll;scrollbar-gutter:stable}
 .pg>div{padding:12px}
 #life-docContent{padding:12px!important}
 #pg-home.pg{display:block}
@@ -261,6 +265,18 @@ input:focus,textarea:focus,select:focus{border-color:var(--accent2);box-shadow:n
 .pg:hover::-webkit-scrollbar-thumb,.页面:hover::-webkit-scrollbar-thumb,.主内容:hover::-webkit-scrollbar-thumb{background:var(--accent2)}
 /* 滚动中（JS 添加 .scrolling）滑块加亮 */
 body.scrolling::-webkit-scrollbar-thumb,.scrolling::-webkit-scrollbar-thumb{background:var(--accent2)}
+
+/* 滚动条**预先占位**（内层容器）：与上面 .pg 同一条理。
+   列表长短一变，滚动条出现／消失会把里面的文字整体横移 10px；
+   下面这些是 App 自己的滚动容器，一次性全都预留出滚动条那一份宽度。
+   轨道是透明的，所以不需要滚动时只是一片空白，看不见。
+   （steam 那套第三方 css 不动——它自己已经处理过。） */
+.wx-content,.qq-content,.xz-content,
+.lw-right-grid,.lw-announce-list,.lw-col-list,.lw-rank-list,.lw-comment-list,
+.tc-archive,.reader-night .reader-body,
+#debugConsoleLog,#debugConsolePrompts,
+.debug-response pre,.debug-pre,.settings-debug-card pre,
+.wx-emoji-panel,.qq-emoji-panel,.overflow-y-auto{scrollbar-gutter:stable}
 
 /* ===== 清理旧布局遗留 ===== */
 #navBar,.nav-bar,.nav-tabs,.nav-tab,.nav-more-wrapper,.nav-dropdown,.nav-dropdown-item,.nav-dropdown-divider,.nav-actions,.nav-brand{display:none!important}
@@ -920,7 +936,8 @@ body.scrolling::-webkit-scrollbar-thumb,.scrolling::-webkit-scrollbar-thumb{back
 .btn-out{border:1px solid var(--border);background:transparent;color:var(--fg);cursor:pointer;border-radius:var(--radius-sm);padding:4px 10px;font-size:12px;font-family:inherit}
 .btn-out:hover{border-color:var(--accent);color:var(--accent)}
 .pg-fullwidth{width:100%;max-width:100%}
-.pg{display:none;height:100%;overflow-y:auto}
+/* 与上面第 71 行同一条规则（历史重复定义），保持一致：滚动条预先占位 */
+.pg{display:none;height:100%;overflow-y:scroll;scrollbar-gutter:stable}
 
 /* ===== AI 建议系统 ===== */
 .ai-field-row{display:flex;gap:4px;align-items:center}
@@ -1083,3 +1100,19 @@ body.scrolling::-webkit-scrollbar-thumb,.scrolling::-webkit-scrollbar-thumb{back
 /* ===== 今日角色小部件 ===== */
 /* 档案区直接复用角色档案渲染器（.n-card/.tag 等），仅需容器滚动 */
 .tc-archive{background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow-y:auto;position:relative}
+
+/* ===== 对话气泡 · 我方（全局统一）=====
+   我方消息原来用粉紫底色填充（var(--accent) + #fff 字），一整片太亮、和深色主题抢眼；
+   现改为：去掉底色 + 一圈发光亮色描边，仍然靠左右对齐区分说话人（对方的气泡不动）。
+   所有聊天界面的我方气泡统一挂 class="chat-mine"——角色聊天（自由聊天 / 聊天软件 / 历史记录）、
+   性癖问答（问答页 + 历史会话）、大纲讨论（成人小说 / 情色短章 / 系列写作）、灵感板、
+   角色卡·角色讨论、设置里的试聊。要再调只改这里，全局一起变。 */
+.chat-mine{
+  background:transparent;
+  border:1px solid rgba(212,196,240,.62);
+  color:var(--fg);
+  box-shadow:0 0 7px rgba(212,196,240,.42),0 0 18px rgba(212,196,240,.2),inset 0 0 10px rgba(212,196,240,.06);
+  transition:border-color .2s,box-shadow .2s}
+.chat-mine:hover{
+  border-color:var(--accent);
+  box-shadow:0 0 10px rgba(212,196,240,.55),0 0 24px rgba(212,196,240,.28),inset 0 0 12px rgba(212,196,240,.09)}

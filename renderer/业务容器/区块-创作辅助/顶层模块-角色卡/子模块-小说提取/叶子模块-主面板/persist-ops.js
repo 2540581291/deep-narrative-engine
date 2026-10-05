@@ -43,6 +43,8 @@ function 小说提取加载记录(key) {
             };
             var fields = 小说提取正文段字段;
             fields.forEach(function(f) { cc[f] = charData[f] || null; });
+            // 角色话语（原话）：独立字段，不属于 14 章字段序，单独带上，否则改存时会丢
+            if (Array.isArray(charData.话语) && charData.话语.length) cc.话语 = charData.话语.slice();
             小说提取角色列表.push(cc);
             if (charData.description) 小说提取角色描述[charData.name] = charData.description;
           });
@@ -90,6 +92,8 @@ function 小说提取删除记录(key) {
   var folderPath = 小说提取存储基路径 + key + '/';
   var p = LocalFS.readJSON(folderPath + '_meta.json').then(function(meta) {
     if (!meta) return;
+    // 角色话语库同步：该书全部角色的原话条目一并删除
+    if (meta.id) 角色话语书删除(meta.id);
     // 直接从磁盘删除整个目录及所有文件
     return LocalFS.delete(folderPath).catch(function(){});
   }).catch(function() {});

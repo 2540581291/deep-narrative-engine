@@ -83,15 +83,20 @@ window.小说提取删除角色 = function(name, isStage) {
   }
 
   delete 小说提取角色描述[name];
+  // 角色话语库同步：删掉该角色的原话条目（阶段卡没有自己的话语，话语只挂在父角色上）
+  if (!isStage && 小说提取当前记录ID) {
+    角色话语删除(角色话语键(小说提取当前记录ID, name));
+  }
   // 从磁盘删除角色文件（阶段角色删除时父角色文件不动；普通角色删除时一并删阶段文件）
   if (小说提取当前记录ID) {
     var _folderName = 本地FS.清理(小说提取当前记录标题) || 小说提取当前记录ID;
     var _delPath = 小说提取存储基路径 + _folderName + "/" + 本地FS.清理(name) + ".json";
     LocalFS.delete(_delPath).then(function() {
-      // 普通角色删除时顺带删其阶段独立文件
+      // 普通角色删除时顺带删其阶段独立文件与话语分块进度文件
       if (!isStage) {
         var _stagePath = 小说提取存储基路径 + _folderName + "/_stages_" + 本地FS.清理(name) + ".json";
         LocalFS.delete(_stagePath).catch(function() {});
+        LocalFS.delete(小说提取话语文件路径(name)).catch(function() {});
       }
       // 删除角色后实时重算该书 genders
       return 小说提取重算genders(小说提取存储基路径 + _folderName + "/");
@@ -152,6 +157,8 @@ function 构建角色数据(c) {
     charData[f] = c[f] || null;
   });
   // 阶段数据已独立存 _stages_<父>.json，角色文件不再含 _lifeStages / _stageDescriptions
+  // 话语（原话）：独立于角色卡 14 章的自有字段，不进「填入生成」，但随角色文件一起存档
+  if (Array.isArray(c.话语) && c.话语.length) charData.话语 = c.话语.slice();
   if (小说提取角色描述[c.name]) {
     charData.description = 小说提取角色描述[c.name];
   }

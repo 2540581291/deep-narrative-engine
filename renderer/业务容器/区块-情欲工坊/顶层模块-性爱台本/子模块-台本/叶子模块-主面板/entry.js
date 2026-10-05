@@ -11,5 +11,7 @@ var 性爱台本 = 淫诗体模块工厂({
   默认露骨度: '粗俗荤诗', 默认诗体: '无',
   promptName: 'script_gen', aiFieldId: 'scriptGen', aiLabel: '台本生成',
   模块独有选题: { label: '风格', 编辑键: 'style', ctx标签: '风格', options: ['正剧', '喜剧', '悲剧', '荒诞', '黑色幽默'] },
+  语言风格选项: 语言风格选项_对白,
+  话语行: true,   // 选题卡渲染「角色话语」行：是否附上所选角色的原话 + 从话语库选取
 });
 Store.sexScript = createStore('script');

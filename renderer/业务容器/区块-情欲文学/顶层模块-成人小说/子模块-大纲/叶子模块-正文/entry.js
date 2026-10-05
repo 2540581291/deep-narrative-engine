@@ -61,7 +61,7 @@ function renderOutlineList() {
         var _isUser = m.role === 'user';
         if (_isUser) {
           h += '<div style="margin-bottom:12px;display:flex;align-items:flex-start;justify-content:flex-end;gap:8px">' +
-          '<div style="max-width:75%;padding:8px 14px;border-radius:12px;background:var(--accent);color:#fff;font-size:12px;line-height:1.6;border-bottom-right-radius:4px;word-break:break-word">' +
+          '<div class="chat-mine" style="max-width:75%;padding:8px 14px;border-radius:12px;font-size:12px;line-height:1.6;border-bottom-right-radius:4px;word-break:break-word">' +
           escHtml(m.content).replace(/\n/g,'<br>') + '</div>' +
           '<div style="width:28px;height:28px;border-radius:50%;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;color:var(--accent)">我</div></div>';
         } else {
@@ -173,7 +173,7 @@ function renderOutlineChat() {
     var _isUser = m.role === 'user';
     if (_isUser) {
       h += '<div style="margin-bottom:12px;display:flex;align-items:flex-start;justify-content:flex-end;gap:8px">' +
-        '<div style="max-width:75%;padding:8px 14px;border-radius:12px;background:var(--accent);color:#fff;font-size:12px;line-height:1.6;border-bottom-right-radius:4px;word-break:break-word">' +
+        '<div class="chat-mine" style="max-width:75%;padding:8px 14px;border-radius:12px;font-size:12px;line-height:1.6;border-bottom-right-radius:4px;word-break:break-word">' +
         escHtml(m.content).replace(/\n/g,'<br>') + '</div>' +
         '<div style="width:28px;height:28px;border-radius:50%;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;color:var(--accent)">我</div></div>';
     } else {

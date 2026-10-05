@@ -161,7 +161,7 @@ function 渲染消息(msg) {
   h += '</div>';
 
   if (isUser) {
-    h += '<div style="padding:8px 14px;border-radius:6px;background:var(--accent);color:#fff;font-size:12px;line-height:1.7;max-width:80%;align-self:flex-end;word-wrap:break-word">' + escHtml(msg.content) + '</div>';
+    h += '<div class="chat-mine" style="padding:8px 14px;border-radius:6px;font-size:12px;line-height:1.7;max-width:80%;align-self:flex-end;word-wrap:break-word">' + escHtml(msg.content) + '</div>';
   } else {
     h += '<div style="padding:8px 14px;border-radius:6px;background:var(--bg);color:var(--fg);font-size:12px;line-height:1.8;max-width:88%;align-self:flex-start;word-wrap:break-word;border-left:2px solid var(--accent2)">';
     var content = msg.content;

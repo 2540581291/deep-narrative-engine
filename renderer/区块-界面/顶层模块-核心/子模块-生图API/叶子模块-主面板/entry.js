@@ -3,8 +3,11 @@
 function renderAiGenConfig(el) {
   _rhConfigEl = el;
   var apiKey = RH.getApiKey();
-  var defaultT2i = S.settings.runninghubDefaultT2i || 'seedream-v4';
-  var defaultI2i = S.settings.runninghubDefaultI2i || 'seedream-v4';
+  var defaultT2i = S.settings.runninghubDefaultT2i || '';
+  var defaultI2i = S.settings.runninghubDefaultI2i || '';
+  var t2iModels = RH.allT2iModels();
+  var i2iModels = RH.allI2iModels();
+  var dynCount = RH.dynamicT2i.length + RH.dynamicI2i.length;
 
   var html = '<p class="settings-card-desc">RunningHub 生图 API 配置。支持文生图（text-to-image）和图生图（image-to-image）两种模式。</p>';
 
@@ -16,39 +19,32 @@ function renderAiGenConfig(el) {
   html += '<button class="btn-new mt-8" style="margin-top:12px" onclick="saveRhApiKey()">💾 保存 API Key</button>';
   html += '</div>';
 
-  // 默认模型
+  // 默认模型（不预设：候选来自官方抓取，也可以直接手输模型 id）
   html += '<div class="settings-card">';
   html += '<div class="settings-card-title">🤖 默认模型</div>';
+  html += '<div class="settings-card-desc">不预设模型。候选由「🔄 获取可用模型」从官方文档站拉取；也可以直接手输模型 id（即 endpoint 路径，如 seedream-v4/text-to-image）。</div>';
   html += '<div class="settings-row">' + label('默认文生图模型');
-  html += '<select id="rhDefaultT2i" class="llm-input llm-select" style="width:100%;max-width:400px">';
-  var t2iModels = RH.allT2iModels();
-  t2iModels.forEach(function(m) {
-    html += '<option value="' + m.id + '"' + (m.id === defaultT2i ? ' selected' : '') + '>' + escHtml(m.provider) + ' — ' + escHtml(m.name) + '</option>';
-  });
-  html += '</select></div>';
+  html += 组合框HTML({ id: 'rhDefaultT2i', value: defaultT2i, placeholder: '点「🔄 获取可用模型」拉取，或手输模型 id', style: 'width:100%;max-width:400px' });
+  html += '</div>';
   html += '<div class="settings-row">' + label('默认图生图模型');
-  html += '<select id="rhDefaultI2i" class="llm-input llm-select" style="width:100%;max-width:400px">';
-  var i2iModels = RH.allI2iModels();
-  i2iModels.forEach(function(m) {
-    html += '<option value="' + m.id + '"' + (m.id === defaultI2i ? ' selected' : '') + '>' + escHtml(m.provider) + ' — ' + escHtml(m.name) + '</option>';
-  });
-  html += '</select></div>';
+  html += 组合框HTML({ id: 'rhDefaultI2i', value: defaultI2i, placeholder: '点「🔄 获取可用模型」拉取，或手输模型 id', style: 'width:100%;max-width:400px' });
+  html += '</div>';
   html += '<button class="btn-new" onclick="saveRhDefaultModels()">💾 保存默认模型</button>';
   html += '</div>';
 
-  // 可用模型参考（静态 + 动态获取）
-  var t2iModels = RH.allT2iModels();
-  var i2iModels = RH.allI2iModels();
-  var dynCount = RH.dynamicT2i.length + RH.dynamicI2i.length;
+  // 可用模型参考（全部来自官方抓取）
   html += '<div class="settings-card">';
   html += '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">';
-  html += '<div class="settings-card-title">📋 可用模型参考' + (dynCount ? ' <span style="color:var(--accent);font-weight:400;font-size:11px">(+' + dynCount + ' 动态获取)</span>' : '') + '</div>';
+  html += '<div class="settings-card-title">📋 可用模型参考' + (dynCount ? ' <span style="color:var(--accent);font-weight:400;font-size:11px">(官方抓取 ' + dynCount + ' 个)</span>' : '') + '</div>';
   html += '<button class="btn-new" onclick="fetchRhModels()">🔄 获取可用模型</button>';
   html += '</div>';
   html += '<div id="rhFetchStatus" style="font-size:0.75em;color:var(--fg2);margin:8px 0 0"></div>';
+  if (!dynCount) {
+    html += '<div style="font-size:0.78em;color:var(--fg3);padding:8px 0">尚未获取模型。点右上「🔄 获取可用模型」从 RunningHub 官方文档站拉取（拉取结果会保存在本机，重启后自动恢复）。</div>';
+  }
   html += '<details><summary style="cursor:pointer;color:var(--accent);font-size:0.82em">文生图模型 (' + t2iModels.length + ' 个)</summary>';
   html += '<table style="width:100%;border-collapse:collapse;font-size:0.78em;margin-top:6px">';
-  html += '<tr class="b-border-bottom"><th class="text-left p-4-6" style="padding:4px 6px">名称</th><th class="text-left p-4-6">厂商</th><th class="text-right p-4-6">最大尺寸</th></tr>';
+  html += '<tr class="b-border-bottom"><th class="text-left p-4-6" style="padding:4px 6px">名称</th><th class="text-left p-4-6">厂商</th><th class="text-right p-4-6">参考尺寸上限</th></tr>';
   t2iModels.forEach(function(m) {
     var limit = RH.getModelLimits(m.id);
     html += '<tr class="b-border-bottom"><td class="p-4-6">' + escHtml(m.name) + '</td><td class="p-4-6 c-fg2">' + escHtml(m.provider) + '</td><td class="p-4-6 c-fg2 text-right">' + limit.maxW + '×' + limit.maxH + '</td></tr>';
@@ -56,14 +52,23 @@ function renderAiGenConfig(el) {
   html += '</table></details>';
   html += '<details class="mt-8"><summary style="cursor:pointer;color:var(--accent);font-size:0.82em">图生图模型 (' + i2iModels.length + ' 个)</summary>';
   html += '<table style="width:100%;border-collapse:collapse;font-size:0.78em;margin-top:6px">';
-  html += '<tr class="b-border-bottom"><th class="text-left p-4-6">名称</th><th class="text-left p-4-6">厂商</th></tr>';
+  html += '<tr class="b-border-bottom"><th class="text-left p-4-6">名称</th><th class="text-left p-4-6">厂商</th><th class="text-left p-4-6">模型 id（endpoint）</th></tr>';
   i2iModels.forEach(function(m) {
-    html += '<tr class="b-border-bottom"><td class="p-4-6">' + escHtml(m.name) + '</td><td class="p-4-6 c-fg2">' + escHtml(m.provider) + '</td></tr>';
+    html += '<tr class="b-border-bottom"><td class="p-4-6">' + escHtml(m.name) + '</td><td class="p-4-6 c-fg2">' + escHtml(m.provider) + '</td><td class="p-4-6 c-fg3" style="font-family:monospace;font-size:0.95em">' + escHtml(m.id) + '</td></tr>';
   });
   html += '</table></details>';
   html += '</div>';
 
   el.innerHTML = html;
+  // 两个默认模型框挂自绘下拉（点开即列出已获取的官方模型）
+  attachCombo('rhDefaultT2i', {
+    getOptions: function() { return RH.modelOptions(RH.allT2iModels()); },
+    emptyHint: '尚未获取模型：点右上「🔄 获取可用模型」拉取官方列表，也可以直接手输模型 id',
+  });
+  attachCombo('rhDefaultI2i', {
+    getOptions: function() { return RH.modelOptions(RH.allI2iModels()); },
+    emptyHint: '尚未获取模型：点右上「🔄 获取可用模型」拉取官方列表，也可以直接手输模型 id',
+  });
 }
 
 // ===== 获取可用模型（官方文档站 llms.txt + 模型 .md） =====

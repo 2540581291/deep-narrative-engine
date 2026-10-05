@@ -1,53 +1,12 @@
 // RunningHub API 服务 · 文生图 / 图生图
 var RH = {};
 
-// ===== 模型定义 =====
-RH.T2I_MODELS = [
-  { id: 'seedream-v4', name: 'Seedream v4', provider: 'MiniMax', maxW: 4096, maxH: 4096 },
-  { id: 'seedream-v4.5', name: 'Seedream v4.5', provider: 'MiniMax', maxW: 4096, maxH: 4096 },
-  { id: 'seedream-v5-lite', name: 'Seedream v5 Lite', provider: 'MiniMax', maxW: 4096, maxH: 4096 },
-  { id: 'rhart-image-x-official', name: '全能图片X', provider: 'RH', maxW: 2048, maxH: 2048 },
-  { id: 'rhart-image-v1-official', name: '全能图片V1', provider: 'RH', maxW: 2048, maxH: 2048 },
-  { id: 'rhart-image-n-pro-official', name: '全能图片PRO', provider: 'RH', maxW: 2048, maxH: 2048 },
-  { id: 'rhart-image-g-1.5-official', name: '全能图片G1.5', provider: 'RH', maxW: 4096, maxH: 4096 },
-  { id: 'rhart-image-g-2-official', name: '全能图片G2', provider: 'RH', maxW: 4096, maxH: 4096 },
-  { id: 'alibaba/qwen-image-2.0', name: '千问 2.0', provider: '阿里', maxW: 2048, maxH: 2048 },
-  { id: 'alibaba/qwen-image-2.0-pro', name: '千问 2.0 Pro', provider: '阿里', maxW: 2048, maxH: 2048 },
-  { id: 'alibaba/wan-2.5-preview', name: '万相 2.5 Preview', provider: '阿里', maxW: 2048, maxH: 2048 },
-  { id: 'alibaba/wan-2.7', name: '万相 2.7', provider: '阿里', maxW: 2048, maxH: 2048 },
-  { id: 'alibaba/wan-2.7', name: '万相 2.7 Pro', provider: '阿里', maxW: 4096, maxH: 4096, endpointSuffix: 'text-to-image-pro' },
-  { id: 'bytedance/jimeng-4.6', name: '即梦 4.6', provider: '字节', maxW: 2048, maxH: 2048 },
-];
-// 悠船系列
-RH.YOUCHUAN_T2I = [
-  { id: 'youchuan/v6', name: '悠船 v6', provider: '优船', endpointSuffix: 'text-to-image-v6' },
-  { id: 'youchuan/v61', name: '悠船 v61', provider: '优船', endpointSuffix: 'text-to-image-v61' },
-  { id: 'youchuan/v7', name: '悠船 v7', provider: '优船', endpointSuffix: 'text-to-image-v7' },
-  { id: 'youchuan/niji6', name: '悠船 Niji 6', provider: '优船', endpointSuffix: 'text-to-image-niji6' },
-  { id: 'youchuan/niji7', name: '悠船 Niji 7', provider: '优船', endpointSuffix: 'text-to-image-niji7' },
-];
-
-RH.I2I_MODELS = [
-  { id: 'seedream-v4', name: 'Seedream v4', provider: 'MiniMax' },
-  { id: 'seedream-v4.5', name: 'Seedream v4.5', provider: 'MiniMax' },
-  { id: 'seedream-v5-lite', name: 'Seedream v5 Lite', provider: 'MiniMax' },
-  { id: 'rhart-image-x-official', name: '全能图片X', provider: 'RH' },
-  { id: 'rhart-image-v1-official', name: '全能图片V1', provider: 'RH' },
-  { id: 'rhart-image-n-pro-official', name: '全能图片PRO', provider: 'RH' },
-  { id: 'rhart-image-g-1.5-official', name: '全能图片G1.5', provider: 'RH' },
-  { id: 'rhart-image-g-2-official', name: '全能图片G2', provider: 'RH' },
-  { id: 'alibaba/qwen-image-2.0', name: '千问 2.0', provider: '阿里' },
-  { id: 'alibaba/qwen-image-2.0-pro', name: '千问 2.0 Pro', provider: '阿里' },
-  { id: 'alibaba/wan-2.5-preview', name: '万相 2.5 Preview', provider: '阿里' },
-  { id: 'alibaba/wan-2.7', name: '万相 2.7', provider: '阿里' },
-  { id: 'bytedance/jimeng-4.6', name: '即梦 4.6', provider: '字节' },
-];
-// 悠系列图生图
-RH.YOUCHUAN_I2I = [
-  { id: 'youchuan/v6', name: '悠船 v6', provider: '优船', endpointSuffix: 'image-to-image-v6' },
-  { id: 'youchuan/v61', name: '悠船 v61', provider: '优船', endpointSuffix: 'image-to-image-v61' },
-  { id: 'youchuan/v7', name: '悠船 v7', provider: '优船', endpointSuffix: 'image-to-image-v7' },
-];
+// ===== 模型清单 =====
+// 不预设任何生图模型：清单只由 设置 → 生图 API 的「🔄 获取可用模型」从 RunningHub 官方文档站
+// （llms.txt 列模型 + 每个模型 .md 里取真实 endpoint）抓取，结果持久化到 settings，重启自动恢复
+// （见 RH.dynamicT2i / RH.dynamicI2i 与 app.js 启动时的 RH.restoreDynamic）。
+// 抓到的模型 id 就是官方 endpoint 路径（如 alibaba/qwen-image-2.0/text-to-image、youchuan/text-to-image-v7），
+// 因此不需要再维护 endpoint 映射表，见 RH.buildEndpoint。
 
 // ===== 常用尺寸 =====
 // 按用途分组：风景（横屏为主）+ 人物（竖屏为主），每类 4 个常用项
@@ -62,18 +21,29 @@ RH.SIZE_PRESETS = [
   { label: '768×1024',  w: 768,  h: 1024, group: 'portrait' },
 ];
 
-// ===== 尺寸限制（按模型） =====
+// ===== 尺寸上限规则 =====
+// 仅用于界面展示（设置页「可用模型参考」的最大尺寸列），不是模型清单：按 endpoint 关键词命中。
+RH.SIZE_LIMIT_RULES = [
+  { test: /seedream|rhart-image-g[-.]\d|text-to-image-pro/, maxW: 4096, maxH: 4096 },
+];
 RH.getModelLimits = function(modelId) {
-  var all = RH.T2I_MODELS.concat(RH.YOUCHUAN_T2I);
-  for (var i = 0; i < all.length; i++) {
-    if (all[i].id === modelId) return { maxW: all[i].maxW || 2048, maxH: all[i].maxH || 2048 };
+  var id = String(modelId || '');
+  for (var i = 0; i < RH.SIZE_LIMIT_RULES.length; i++) {
+    if (RH.SIZE_LIMIT_RULES[i].test.test(id)) return { maxW: RH.SIZE_LIMIT_RULES[i].maxW, maxH: RH.SIZE_LIMIT_RULES[i].maxH };
   }
   return { maxW: 2048, maxH: 2048 };
 };
 
-// ===== 模型合并（静态 + 动态获取的） =====
-RH.allT2iModels = function() { return RH.T2I_MODELS.concat(RH.YOUCHUAN_T2I).concat(RH.dynamicT2i); };
-RH.allI2iModels = function() { return RH.I2I_MODELS.concat(RH.YOUCHUAN_I2I).concat(RH.dynamicI2i); };
+// ===== 模型列表（只含官方抓取结果） =====
+RH.allT2iModels = function() { return RH.dynamicT2i || []; };
+RH.allI2iModels = function() { return RH.dynamicI2i || []; };
+
+// 组合框候选：主文案＝厂商 · 名称，右侧灰色小字＝模型 id（endpoint 路径）
+RH.modelOptions = function(models) {
+  return (models || []).map(function(m) {
+    return { value: m.id, label: (m.provider ? m.provider + ' · ' : '') + (m.name || m.id), meta: m.id };
+  });
+};
 
 // ===== API 基础 =====
 RH.BASE = 'https://www.runninghub.cn/openapi/v2';
@@ -83,18 +53,11 @@ RH.getApiKey = function() {
 };
 
 RH.buildEndpoint = function(modelId, suffix) {
-  // 部分模型有自定义 endpoint
-  var all = RH.T2I_MODELS.concat(RH.YOUCHUAN_T2I).concat(RH.I2I_MODELS).concat(RH.YOUCHUAN_I2I);
-  for (var i = 0; i < all.length; i++) {
-    if (all[i].id === modelId && all[i].endpointSuffix) {
-      // youchuan 的 endpoint 格式: /openapi/v2/youchuan/text-to-image-v6
-      var parts = modelId.split('/');
-      return '/' + parts[0] + '/' + all[i].endpointSuffix;
-    }
-  }
-  // 动态获取的模型: id 即为完整 endpoint 路径
-  if (modelId.indexOf('/') >= 0) return '/' + modelId;
-  return '/' + modelId + '/' + suffix;
+  var id = String(modelId || '');
+  // 官方抓取的模型 id 就是完整 endpoint 路径（含厂商前缀），直接使用
+  if (id.indexOf('/') >= 0) return '/' + id;
+  // 兜底：手输的短模型名 → /<模型名>/<后缀>
+  return '/' + id + '/' + suffix;
 };
 
 RH.submitTask = function(endpoint, body) {

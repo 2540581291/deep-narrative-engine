@@ -1595,3 +1595,11 @@
 .ldw-sb{display:flex;justify-content:space-between;align-items:center;padding:3px 14px;border-top:1px solid var(--ldw-border);font-size:10px;color:var(--ldw-muted);flex-shrink:0}
 .ldw-sbl{display:flex;gap:12px}
 .ldw-sbr{display:flex;gap:8px}
+
+/* 滚动条**预先占位**（写作模块的各个滚动容器）：与 style.css 里那条同一条理——
+   内容长短一变，滚动条出现／消失会让正文整体横移 10px。这里统一预留出那一份宽度。 */
+.writing-left-panel,#writingChapterItems,.writing-right-panel,.writing-ai-studio,
+.writing-root .writing-editor,
+.ldw-sidecol .ldw-side-bd,.ldw-rightcol .ldw-right-bd,
+.ldw-editor-col .ldw-editor-body textarea,.ldw-editor-col .ldw-editor-body .ldw-editor-content,
+.ldw-ll,.ldw-editor{scrollbar-gutter:stable}

@@ -48,12 +48,14 @@ function 问答切换视图(view){
 }
 
 function 渲染问答角色(el){
-  Store.character.list().then(function(items){
+  // 角色列表顺序与「角色卡·角色库」同一口径：按创建时间倒序（新建在前），
+  // 不用 Store 默认的"最近更新在前"，否则编辑过一个老角色它就会跳到最前面。
+  角色卡按创建倒序(Store.character.list()).then(function(items){
     // 性别 tab（照抄角色库 UI）：女性 / 男性 / 伪娘 / 扶她
     var 性别映射 = { '女性': '👩', '男性': '👨', '伪娘': '👘', '扶她': '⚧' };
     var h='<div class="n-card mb-12">';
     h+='<div class="fs-12 fw-600 c-fg mb-8">👤 选择角色</div>';
-    h+='<div class="fs-10 c-fg3 mb-8">选一个角色，TA 会问你关于性癖的问题，并根据你的回答实时做出评价。</div>';
+    h+='<div class="fs-10 c-fg3 mb-8">选一个角色开始性癖问答：「我来出题」是你提问、TA 以角色身份回答；「我来回答」是 TA 出题、你选答案，TA 再评价你的选择。</div>';
     h+='<div class="flex gap-6 mb-0">';
     // 默认选中第一个性别
     if(!问答角色性别) 问答角色性别 = Object.keys(性别映射)[0];
@@ -205,7 +207,7 @@ window.问答查看会话 = function(id){
         h += '<div class="n-card p-8 mb-4" style="background:var(--bg2)">';
         h += '<div class="fs-13 fw-600 mb-4">' + (i+1) + '. ' + escHtml(entry.question || '') + '</div>';
         if(entry.choice != null){
-          h += '<div style="margin-left:12px;padding:4px 8px;background:var(--accent);color:#fff;border-radius:6px;font-size:12px;display:inline-block">' + escHtml(entry.choice) + '</div>';
+          h += '<div class="chat-mine" style="margin-left:12px;padding:4px 8px;border-radius:6px;font-size:12px;display:inline-block">' + escHtml(entry.choice) + '</div>';
         }
         if(entry.answer){ h += '<div class="text-sm mt-2">✋ ' + escHtml(entry.answer) + '</div>'; }
         if(entry.reaction){ h += '<div class="text-sm mt-2" style="font-style:italic;color:var(--fg2)">⚡ 反应：' + escHtml(entry.reaction) + '</div>'; }

@@ -3929,6 +3929,13 @@
       "zone": "NSFW"
     },
     {
+      "zh": "巨乳萝莉",
+      "tag": "oppai_loli",
+      "cat": "身体",
+      "subcat": "胸部",
+      "zone": "NSFW"
+    },
+    {
       "zh": "舞台",
       "tag": "stage",
       "cat": "性场景",
@@ -11857,6 +11864,13 @@
       "tag": "condom_left_inside",
       "cat": "情趣道具",
       "subcat": "辅助类",
+      "zone": "NSFW"
+    },
+    {
+      "zh": "经典洛丽塔",
+      "tag": "classic_lolita",
+      "cat": "身体",
+      "subcat": "臀部",
       "zone": "NSFW"
     },
     {
@@ -29040,6 +29054,13 @@
     {
       "zh": "虐待",
       "tag": "abuse",
+      "cat": "题材",
+      "subcat": "暴力折磨",
+      "zone": "NSFW"
+    },
+    {
+      "zh": "虐待儿童",
+      "tag": "child_abuse",
       "cat": "题材",
       "subcat": "暴力折磨",
       "zone": "NSFW"

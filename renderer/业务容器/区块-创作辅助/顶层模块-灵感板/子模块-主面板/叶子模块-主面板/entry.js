@@ -116,7 +116,7 @@ function 渲染灵感讨论(el) {
       if (m.role === 'system') return;
       if (m.role === 'user') {
         h += '<div style="display:flex;justify-content:flex-end;margin-bottom:10px;gap:8px">' +
-          '<div style="max-width:75%;background:var(--accent);color:#fff;padding:8px 14px;border-radius:12px 12px 4px 12px;font-size:12px;line-height:1.6;word-break:break-word">' + escHtml(m.content).replace(/\n/g,'<br>') + '</div>' +
+          '<div class="chat-mine" style="max-width:75%;padding:8px 14px;border-radius:12px 12px 4px 12px;font-size:12px;line-height:1.6;word-break:break-word">' + escHtml(m.content).replace(/\n/g,'<br>') + '</div>' +
           '<div style="width:28px;height:28px;border-radius:50%;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">我</div></div>';
       } else {
         h += '<div style="display:flex;margin-bottom:10px;gap:8px">' +
@@ -217,7 +217,7 @@ function 渲染讨论消息() {
     if (m.role === 'system') return;
     if (m.role === 'user') {
       h += '<div style="display:flex;justify-content:flex-end;margin-bottom:10px;gap:8px">' +
-        '<div style="max-width:75%;background:var(--accent);color:#fff;padding:8px 14px;border-radius:12px 12px 4px 12px;font-size:12px;line-height:1.6;word-break:break-word">' + escHtml(m.content).replace(/\n/g,'<br>') + '</div>' +
+        '<div class="chat-mine" style="max-width:75%;padding:8px 14px;border-radius:12px 12px 4px 12px;font-size:12px;line-height:1.6;word-break:break-word">' + escHtml(m.content).replace(/\n/g,'<br>') + '</div>' +
         '<div style="width:28px;height:28px;border-radius:50%;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">我</div></div>';
     } else {
       var extra = '';

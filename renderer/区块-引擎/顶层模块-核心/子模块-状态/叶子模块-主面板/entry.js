@@ -14,8 +14,9 @@ function 默认设置() {
     windowHeight: 900,
     moduleModels: {},
     runninghubApiKey: '',
-    runninghubDefaultT2i: 'seedream-v4',
-    runninghubDefaultI2i: 'seedream-v4',
+    // 不预设生图模型：留空，由 设置 → 生图 API 的「🔄 获取可用模型」拉取官方列表后选择
+    runninghubDefaultT2i: '',
+    runninghubDefaultI2i: '',
     runninghubDynamicT2i: [],
     runninghubDynamicI2i: [],
     dingEnabled: true,

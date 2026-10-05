@@ -22,7 +22,7 @@ function stcdRenderLocal(el) {
   h += '<div style="font-size:11px;color:var(--fg2);margin:6px 0 4px">✍️ 创作要求</div>';
   h += '<textarea id="stcd-local-require" class="llm-input" style="width:100%;min-height:110px;resize:vertical" placeholder="例：一个穿红裙的少女，露出大腿，躺在丝绸床单上" oninput="STCD.localRequire=this.value"></textarea>';
 
-  // 字段选择：服装组 + 事件组（各单选；选中后按标签说明进入输入提示词，并在提示词开头注明性别）
+  // 字段选择：普通四组（服装/形态/造型/事件）+ 混沌系列四组（混沌服装/混沌形态/混沌造型/混沌事件），跨组互斥、组内单选
   h += '<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin:10px 0 4px">';
   h += '<span style="font-size:10px;color:var(--fg2)">👕 服装</span>';
   STCD_LOCAL_CHAR_OPTS.forEach(function(k) {
@@ -45,9 +45,60 @@ function stcdRenderLocal(el) {
   });
   h += '</div>';
   h += '<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:4px">';
+  h += '<span style="font-size:10px;color:var(--fg2)">👥 群像</span>';
+  STCD_LOCAL_GROUP_OPTS.forEach(function(k) {
+    var act = STCD.localGroupOpt === k;
+    h += '<span class="preset-chip' + (act ? ' preset-active' : '') + '" data-lopt="' + k + '" style="cursor:pointer" title="' + escHtml(STCD_LOCAL_OPT_DESCS[k]) + '" onclick="stcdLocalOpt(\'' + k + '\')">' + STCD_LOCAL_OPT_LABELS[k] + '</span>';
+  });
+  h += '</div>';
+  h += '<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:4px">';
+  h += '<span style="font-size:10px;color:var(--fg2)">📐 剖面</span>';
+  STCD_LOCAL_SECTION_OPTS.forEach(function(k) {
+    var act = STCD.localSectionOpt === k;
+    h += '<span class="preset-chip' + (act ? ' preset-active' : '') + '" data-lopt="' + k + '" style="cursor:pointer" title="' + escHtml(STCD_LOCAL_OPT_DESCS[k]) + '" onclick="stcdLocalOpt(\'' + k + '\')">' + STCD_LOCAL_OPT_LABELS[k] + '</span>';
+  });
+  h += '</div>';
+  h += '<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:4px">';
   h += '<span style="font-size:10px;color:var(--fg2)">⚡ 事件</span>';
-  ['eventNormal', 'eventErotic', 'eventFallen', 'eventTraining'].forEach(function(k) {
+  ['eventNormal', 'eventErotic', 'eventFallen', 'eventTraining', 'eventGroupSex'].forEach(function(k) {
     var act = STCD.localEventOpt === k;
+    h += '<span class="preset-chip' + (act ? ' preset-active' : '') + '" data-lopt="' + k + '" style="cursor:pointer" title="' + escHtml(STCD_LOCAL_OPT_DESCS[k]) + '" onclick="stcdLocalOpt(\'' + k + '\')">' + STCD_LOCAL_OPT_LABELS[k] + '</span>';
+  });
+  h += '</div>';
+  // 混沌系列（四神，四组：服装/形态/造型/事件）
+  h += '<div style="border-top:1px dashed var(--border);margin:6px 0 6px"></div>';
+  h += '<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:4px">';
+  h += '<span style="font-size:10px;color:var(--fg2)">👹 混沌服装</span>';
+  STCD_LOCAL_CHAOS_OPTS.forEach(function(k) {
+    var act = STCD.localChaosOpt === k;
+    h += '<span class="preset-chip' + (act ? ' preset-active' : '') + '" data-lopt="' + k + '" style="cursor:pointer" title="' + escHtml(STCD_LOCAL_OPT_DESCS[k]) + '" onclick="stcdLocalOpt(\'' + k + '\')">' + STCD_LOCAL_OPT_LABELS[k] + '</span>';
+  });
+  h += '</div>';
+  h += '<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:4px">';
+  h += '<span style="font-size:10px;color:var(--fg2)">🧬 混沌形态</span>';
+  STCD_LOCAL_CHAOS_FORM_OPTS.forEach(function(k) {
+    var act = STCD.localChaosFormOpt === k;
+    h += '<span class="preset-chip' + (act ? ' preset-active' : '') + '" data-lopt="' + k + '" style="cursor:pointer" title="' + escHtml(STCD_LOCAL_OPT_DESCS[k]) + '" onclick="stcdLocalOpt(\'' + k + '\')">' + STCD_LOCAL_OPT_LABELS[k] + '</span>';
+  });
+  h += '</div>';
+  h += '<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:4px">';
+  h += '<span style="font-size:10px;color:var(--fg2)">👁 混沌造型</span>';
+  STCD_LOCAL_CHAOS_STYLE_OPTS.forEach(function(k) {
+    var act = STCD.localChaosStyleOpt === k;
+    h += '<span class="preset-chip' + (act ? ' preset-active' : '') + '" data-lopt="' + k + '" style="cursor:pointer" title="' + escHtml(STCD_LOCAL_OPT_DESCS[k]) + '" onclick="stcdLocalOpt(\'' + k + '\')">' + STCD_LOCAL_OPT_LABELS[k] + '</span>';
+  });
+  h += '</div>';
+  h += '<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:4px">';
+  h += '<span style="font-size:10px;color:var(--fg2)">👥 混沌群像</span>';
+  STCD_LOCAL_CHAOS_GROUP_OPTS.forEach(function(k) {
+    var act = STCD.localChaosGroupOpt === k;
+    h += '<span class="preset-chip' + (act ? ' preset-active' : '') + '" data-lopt="' + k + '" style="cursor:pointer" title="' + escHtml(STCD_LOCAL_OPT_DESCS[k]) + '" onclick="stcdLocalOpt(\'' + k + '\')">' + STCD_LOCAL_OPT_LABELS[k] + '</span>';
+  });
+  h += '</div>';
+  h += '<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:4px">';
+  h += '<span style="font-size:10px;color:var(--fg2)">📐 混沌剖面</span>';
+  STCD_LOCAL_CHAOS_SECTION_OPTS.forEach(function(k) {
+    var act = STCD.localChaosSectionOpt === k;
     h += '<span class="preset-chip' + (act ? ' preset-active' : '') + '" data-lopt="' + k + '" style="cursor:pointer" title="' + escHtml(STCD_LOCAL_OPT_DESCS[k]) + '" onclick="stcdLocalOpt(\'' + k + '\')">' + STCD_LOCAL_OPT_LABELS[k] + '</span>';
   });
   h += '</div>';
@@ -57,7 +108,7 @@ function stcdRenderLocal(el) {
     var act = STCD.localEventOpt === k;
     h += '<span class="preset-chip' + (act ? ' preset-active' : '') + '" data-lopt="' + k + '" style="cursor:pointer" title="' + escHtml(STCD_LOCAL_OPT_DESCS[k]) + '" onclick="stcdLocalOpt(\'' + k + '\')">' + STCD_LOCAL_OPT_LABELS[k] + '</span>';
   });
-  h += '<span style="font-size:10px;color:var(--fg3)">服装、形态、造型、事件只能四选一，作为字段选择进入输入提示词；AI 每段开头注明性别</span>';
+  h += '<span style="font-size:10px;color:var(--fg3)">服装、形态、造型、群像、剖面、事件、混沌服装、混沌形态、混沌造型、混沌群像、混沌剖面只能十一选一，作为字段选择进入输入提示词；AI 每段开头注明性别</span>';
   h += '</div>';
 
   // 服装/事件时间线面板（常驻显示：选定类别后在此生成/追加/勾选方案）
@@ -86,16 +137,30 @@ function stcdLocalSyncTimelines() {
   var h = '';
   if (STCD.localCharOpt) {
     h += stcdLocalSuggestPanelHTML('服装', 'char');
+  } else if (STCD.localChaosOpt) {
+    h += stcdLocalSuggestPanelHTML('混沌服装', 'chaos');
   } else if (STCD.localFormOpt) {
     h += stcdLocalSuggestPanelHTML('形态', 'form');
+  } else if (STCD.localChaosFormOpt) {
+    h += stcdLocalSuggestPanelHTML('混沌形态', 'chaosForm');
+  } else if (STCD.localChaosStyleOpt) {
+    h += stcdLocalSuggestPanelHTML('混沌造型', 'chaosStyle');
   } else if (STCD.localStyleOpt) {
     h += stcdLocalSuggestPanelHTML('造型', 'style');
+  } else if (STCD.localGroupOpt) {
+    h += stcdLocalSuggestPanelHTML('群像', 'group');
+  } else if (STCD.localSectionOpt) {
+    h += stcdLocalSuggestPanelHTML('剖面', 'section');
+  } else if (STCD.localChaosSectionOpt) {
+    h += stcdLocalSuggestPanelHTML('混沌剖面', 'chaosSection');
+  } else if (STCD.localChaosGroupOpt) {
+    h += stcdLocalSuggestPanelHTML('混沌群像', 'chaosGroup');
   } else if (STCD.localEventOpt) {
     h += stcdLocalSuggestPanelHTML('事件', 'event');
   } else {
     h += '<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px;margin:8px 0">';
     h += '<div style="font-size:11px;color:var(--fg);font-weight:600">📋 时间线方案</div>';
-    h += '<div style="font-size:10px;color:var(--fg3);padding:4px 0">请先在上方选择一类（服装/形态/造型/事件，四选一），即可在此生成该类别的时间线方案</div>';
+    h += '<div style="font-size:10px;color:var(--fg3);padding:4px 0">请先在上方选择一类（服装/形态/造型/群像/剖面/事件/混沌服装/混沌形态/混沌造型/混沌群像），即可在此生成该类别的时间线方案</div>';
     h += '</div>';
   }
   el.innerHTML = h;
@@ -103,17 +168,22 @@ function stcdLocalSyncTimelines() {
 
 // 单个字段的时间线面板（fieldPrefix: 'char' 服装 / 'form' 形态 / 'style' 造型 / 'event' 事件）
 function stcdLocalSuggestPanelHTML(fieldLabel, fieldPrefix) {
-  var key = (fieldPrefix === 'char') ? STCD.localCharOpt : (fieldPrefix === 'form' ? STCD.localFormOpt : (fieldPrefix === 'style' ? STCD.localStyleOpt : STCD.localEventOpt));
+  var key = (fieldPrefix === 'char') ? STCD.localCharOpt : (fieldPrefix === 'chaos' ? STCD.localChaosOpt : (fieldPrefix === 'form' ? STCD.localFormOpt : (fieldPrefix === 'chaosForm' ? STCD.localChaosFormOpt : (fieldPrefix === 'chaosStyle' ? STCD.localChaosStyleOpt : (fieldPrefix === 'group' ? STCD.localGroupOpt : (fieldPrefix === 'section' ? STCD.localSectionOpt : (fieldPrefix === 'chaosGroup' ? STCD.localChaosGroupOpt : (fieldPrefix === 'chaosSection' ? STCD.localChaosSectionOpt : (fieldPrefix === 'style' ? STCD.localStyleOpt : STCD.localEventOpt)))))))));
   var usable = !!(key && key.indexOf('Extract') < 0);
   var h = '<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px;margin:8px 0">';
   if (!usable) {
     // 未选类别 / 选了提取类：固定占位 + 引导（四组跨组互斥）
-    var otherKey = (fieldPrefix === 'char') ? (STCD.localFormOpt || STCD.localEventOpt || STCD.localStyleOpt) : (fieldPrefix === 'form' ? (STCD.localCharOpt || STCD.localEventOpt || STCD.localStyleOpt) : (fieldPrefix === 'style' ? (STCD.localCharOpt || STCD.localFormOpt || STCD.localEventOpt) : (STCD.localCharOpt || STCD.localFormOpt || STCD.localStyleOpt)));
+    var otherKey = '';
+    ['char', 'chaos', 'form', 'chaosForm', 'chaosStyle', 'group', 'section', 'chaosGroup', 'chaosSection', 'style', 'event'].forEach(function(fp) {
+      if (fp === fieldPrefix || otherKey) return;
+      var v = (fp === 'char') ? STCD.localCharOpt : (fp === 'chaos') ? STCD.localChaosOpt : (fp === 'form') ? STCD.localFormOpt : (fp === 'chaosForm') ? STCD.localChaosFormOpt : (fp === 'chaosStyle') ? STCD.localChaosStyleOpt : (fp === 'group') ? STCD.localGroupOpt : (fp === 'section') ? STCD.localSectionOpt : (fp === 'chaosGroup') ? STCD.localChaosGroupOpt : (fp === 'chaosSection') ? STCD.localChaosSectionOpt : (fp === 'style') ? STCD.localStyleOpt : STCD.localEventOpt;
+      if (v) otherKey = v;
+    });
     var hint;
     if (key) {
       hint = '该选项为「提取类」，直接原文提取，无需时间线方案';
     } else if (otherKey) {
-      hint = '已选「' + stcdLocalOptField(otherKey) + '」类别，服装/形态/造型/事件只能四选一';
+      hint = '已选「' + stcdLocalOptField(otherKey) + '」类别，服装/形态/造型/群像/剖面/事件/混沌服装/混沌形态/混沌造型/混沌群像/混沌剖面只能十一选一';
     } else {
       hint = '先选择「' + fieldLabel + '」类别（正常/色情/堕落/淑女壶/虫化/调教等），即可在此生成时间线方案';
     }
@@ -143,7 +213,6 @@ function stcdLocalSuggestPanelHTML(fieldLabel, fieldPrefix) {
   h += '</select>';
   h += '<button class="btn-main" style="padding:1px 8px;font-size:9px" onclick="stcdLocalOptSuggestGen(\'init\',\'' + key + '\')">🎯 生成</button>';
   h += '<button class="btn-out" style="padding:1px 8px;font-size:9px" onclick="stcdLocalOptSuggestGen(\'reorder\',\'' + key + '\')">🔄 顺序调整</button>';
-  h += '<button class="btn-out" style="padding:1px 8px;font-size:9px;color:var(--accent)" onclick="stcdLocalOptDeepenAll(\'' + key + '\')" title="对全部方案注入设计感（只改写描述，不改方案名/时间段）">🎨 深化全部</button>';
   h += '</div>';
   // 两栏时间线
   if (!list.actual.length && !list.imagined.length) {
@@ -170,6 +239,12 @@ window.stcdLocalOptSuggestGen = function(mode, key, side, idx) {
   var list = stcdLocalSuggestListOf(key);
   var arr = side ? (list[side] || []) : null;
   var ctx = { key: key, mode: mode, count: count, side: side || null, insertIndex: null, replaceIndex: null, targetText: '初始生成' };
+  // 定点插入类操作必须带上「在实历时间线还是想象时间线里操作」——锚点是点哪一列取的，
+  // AI 不被告知就会把两条独立时间线当成一条，判定插入位置时把实历/想象混着算。
+  // 初始生成与顺序调整是两条线一起处理，不带 track。
+  var 带轨道 = (mode === 'before' || mode === 'after' || mode === 'between' || mode === 'refill' || mode === 'regenerate');
+  ctx.track = (带轨道 && side) ? side : null;
+  var 轨道名 = side === 'imagined' ? '想象' : '实历';
   if (mode === 'init') {
     ctx.targetText = ((list.actual && list.actual.length) || (list.imagined && list.imagined.length))
       ? '在已有时间线基础上继续生成新的方案（与已有不重复、不覆盖原有）'
@@ -180,30 +255,67 @@ window.stcdLocalOptSuggestGen = function(mode, key, side, idx) {
   }
   else if (mode === 'between') {
     ctx.insertIndex = idx + 1;
-    ctx.targetText = '两段之间：『' + stcdLocalOptSuggestSeg(arr && arr[idx]) + '』 与 『' + stcdLocalOptSuggestSeg(arr && arr[idx + 1]) + '』 之间';
+    ctx.targetText = '两段之间（' + 轨道名 + '时间线）：『' + stcdLocalOptSuggestSeg(arr && arr[idx]) + '』 与 『' + stcdLocalOptSuggestSeg(arr && arr[idx + 1]) + '』 之间';
   }
   else if (mode === 'before') {
     ctx.insertIndex = 0;
-    ctx.targetText = '时间线之前：生成早于已有时间线最早阶段的方案（与已有不重复）';
+    ctx.targetText = '时间线之前（' + 轨道名 + '时间线）：生成早于该时间线最早阶段的方案（与已有不重复）';
   }
   else if (mode === 'after') {
     ctx.insertIndex = (arr || []).length;
-    ctx.targetText = '时间线之后：生成晚于已有时间线最晚阶段的方案（与已有不重复）';
+    ctx.targetText = '时间线之后（' + 轨道名 + '时间线）：生成晚于该时间线最晚阶段的方案（与已有不重复）';
   }
   else if (mode === 'refill') {
     ctx.insertIndex = idx + 1;
-    ctx.targetText = '某段补充：在『' + stcdLocalOptSuggestSeg(arr && arr[idx]) + '』时间段内补充生成更多方案';
+    ctx.targetText = '某段补充（' + 轨道名 + '时间线）：在『' + stcdLocalOptSuggestSeg(arr && arr[idx]) + '』时间段内补充生成更多方案';
   }
   else if (mode === 'regenerate') {
     ctx.replaceIndex = idx;
-    ctx.targetText = '单项重生成：重新生成『' + ((arr && arr[idx] && arr[idx].label) || '') + '』（其他方案保持）';
+    ctx.targetText = '单项重生成（' + 轨道名 + '时间线）：重新生成『' + ((arr && arr[idx] && arr[idx].label) || '') + '』（其他方案保持）';
   }
   STCD.localOptSuggestCtx = ctx;
   if (typeof openAiGenPanel === 'function') openAiGenPanel('stcd-local-opt-suggest');
   else toast('AI 生成系统未就绪');
 };
 
-// ===== 深化设计 · 入口（单项 / 全部）=====
+// ===== 多人 · 入口（选角色 → 当场在现有方案基础上加进去，由 AI 自行判断怎么融入）=====
+// 两种取角色方式都保留：点角色卡整行 = 单选即用；点行上「＋ 多选」累加后点「用这 N 个生成」= 多选
+window.stcdLocalOptPickChars = function(key, side, idx) {
+  if (typeof stcdOpenCharPicker !== 'function') { toast('角色选择器未就绪'); return; }
+  var list = stcdLocalSuggestListOf(key);
+  var arr = list[side] || [];
+  var one = arr[idx];
+  if (!one || !one.label) { toast('该方案不存在'); return; }
+  // 用选中的角色（一个或多个）当场重新生成：走 AI 生成链路，直接跑
+  function run(chars) {
+    var valid = (chars || []).filter(function(c) { return c && c.text; });
+    if (!valid.length) { toast('角色档案为空'); return; }
+    STCD.localOptAddCharCtx = {
+      key: key, side: side, idx: idx,
+      charName: valid.map(function(c) { return c.name; }).join('、'),
+      charText: valid.map(function(c) { return '【' + c.name + '】\n' + c.text; }).join('\n\n'),
+    };
+    if (typeof generateAiDirectNow === 'function') generateAiDirectNow('stcd-local-opt-addchar');
+    else if (typeof openAiGenPanel === 'function') openAiGenPanel('stcd-local-opt-addchar');
+    else toast('AI 生成系统未就绪');
+  }
+  function entryOf(found) {
+    var name = '';
+    try {
+      var bi = (found.identity && found.identity.basicInfo) || {};
+      name = bi.name || found.title || found.name || '未命名';
+    } catch (e) { name = found.title || found.name || '未命名'; }
+    var text = (typeof window.角色卡身份与外貌 === 'function') ? window.角色卡身份与外貌(found) : '';
+    return text ? { name: name, text: text } : null;
+  }
+  stcdOpenCharPicker(null, {
+    multi: true,
+    onPick: function(found) { run([entryOf(found)]); },   // 单选：点角色卡整行，立即生成
+    onPickMulti: function(chars) { run(chars); },         // 多选：底部「用这 N 个生成」
+  });
+};
+
+// ===== 深化设计 · 入口（单项）=====
 // 单项深化：只深化时间线中指定的一条方案（ctx.mode='one'，记录 oneLabel 供提示）
 window.stcdLocalOptDeepenOne = function(key, side, idx) {
   var list = stcdLocalSuggestListOf(key);
@@ -211,15 +323,6 @@ window.stcdLocalOptDeepenOne = function(key, side, idx) {
   var one = arr[idx];
   if (!one || !one.label) { toast('该方案不存在'); return; }
   STCD.localOptDeepenCtx = { key: key, mode: 'one', side: side, idx: idx, oneLabel: one.label };
-  if (typeof openAiGenPanel === 'function') openAiGenPanel('stcd-local-opt-deepen');
-  else toast('AI 生成系统未就绪');
-};
-// 全部深化：深化该时间线（选定类别）下的全部方案
-window.stcdLocalOptDeepenAll = function(key) {
-  var list = stcdLocalSuggestListOf(key);
-  var total = ((list.actual || []).length || 0) + ((list.imagined || []).length || 0);
-  if (!total) { toast('该时间线暂无方案，先点「🎯 生成」'); return; }
-  STCD.localOptDeepenCtx = { key: key, mode: 'all' };
   if (typeof openAiGenPanel === 'function') openAiGenPanel('stcd-local-opt-deepen');
   else toast('AI 生成系统未就绪');
 };
@@ -241,20 +344,24 @@ function stcdLocalOptSuggestColumnHTML(key, side, title, items, detArr) {
     var label = o.label || ('方案 ' + (i + 1));
     var on = has(label);
     var seqNo = (stcdLocalSeqNum(o.seq) != null) ? stcdLocalSeqNum(o.seq) : (i + 1);
-    h += '<div style="border:1px solid var(--border);border-radius:6px;padding:5px 6px;margin-bottom:5px;cursor:pointer;' + (on ? 'border-color:var(--accent);background:rgba(78,204,163,0.08)' : '') + '" onclick="stcdLocalOptSuggestToggle(\'' + key + '\',\'' + side + '\',\'' + escHtml(label) + '\')">';
+    // 卡片：不再放 ○/✔ 圈选标记（本面板为单选互斥，勾号是多余的一步）；
+    // 选中态直接由「左侧强调色竖条 + 描边 + 底色 + 方案名变色」表达，一眼可辨且不占位。
+    h += '<div style="border:1px solid ' + (on ? 'var(--accent)' : 'var(--border)') + ';border-left:3px solid ' + (on ? 'var(--accent)' : 'var(--border)') + ';border-radius:6px;padding:5px 7px;margin-bottom:5px;cursor:pointer;transition:border-color .12s,background .12s;' + (on ? 'background:linear-gradient(90deg,var(--accent-dim),rgba(212,196,240,0.02))' : '') + '" onclick="stcdLocalOptSuggestToggle(\'' + key + '\',\'' + side + '\',\'' + escHtml(label) + '\')">';
+    // 第一行：序号 + 时间段 + 来源标记（左）／ 四个操作按钮（右）；方案名不在此行，避免长标题把这一行挤歪
     h += '<div style="display:flex;align-items:center;gap:4px">';
-    h += '<span style="font-size:10px;color:' + (on ? 'var(--accent)' : 'var(--fg3)') + '">' + (on ? '✔' : '○') + '</span>';
-    h += '<span style="font-size:10px;color:var(--fg3);min-width:14px;text-align:right;font-weight:600">' + seqNo + '.</span>';
+    h += '<span style="font-size:9px;font-weight:700;font-variant-numeric:tabular-nums;color:' + (on ? 'var(--accent)' : 'var(--fg3)') + '">' + seqNo + '.</span>';
     if (o.time) h += '<span style="font-size:8px;color:var(--accent2);background:rgba(232,160,180,0.12);border-radius:3px;padding:0 3px;white-space:nowrap">⏱' + escHtml(o.time) + '</span>';
     if (o.origin) h += '<span style="font-size:8px;color:' + (o.origin === '原创' ? 'var(--accent)' : 'var(--fg3)') + ';border:1px solid ' + (o.origin === '原创' ? 'var(--accent)' : 'var(--border)') + ';border-radius:3px;padding:0 3px;white-space:nowrap">' + (o.origin === '原创' ? '🆕 原创' : '📚 参考') + '</span>';
-    h += '<span title="点击复制方案名（同时切换选中）" style="font-size:10px;color:var(--fg);font-weight:600;flex:1;cursor:copy" onclick="复制到剪贴板(\'' + escHtml(label) + '\').then(function(ok){toast(ok ? \'已复制：' + escHtml(label) + '\' : \'复制失败\');})">' + escHtml(label) + '</span>';
-    h += '<button class="btn-out" style="padding:0 4px;font-size:8px;color:#e06c75" title="删除该条方案" onclick="event.stopPropagation();stcdLocalOptSuggestRemoveItem(\'' + key + '\',\'' + side + '\',' + i + ')">🗑</button>';
-    h += '<button class="btn-out" style="padding:0 4px;font-size:8px" title="单项重生成" onclick="event.stopPropagation();stcdLocalOptSuggestGen(\'regenerate\',\'' + key + '\',\'' + side + '\',' + i + ')">↻</button>';
-    h += '<button class="btn-out" style="padding:0 4px;font-size:8px" title="该时间段补充生成" onclick="event.stopPropagation();stcdLocalOptSuggestGen(\'refill\',\'' + key + '\',\'' + side + '\',' + i + ')">➕</button>';
-    h += '<button class="btn-out" style="padding:0 4px;font-size:8px;color:var(--accent)" title="深化设计：给这条方案注入设计感（只改写描述）" onclick="event.stopPropagation();stcdLocalOptDeepenOne(\'' + key + '\',\'' + side + '\',' + i + ')">🎨</button>';
+    h += '<div style="flex:1"></div>';
+    h += '<button class="btn-out" style="padding:0 5px;font-size:8px;line-height:15px;color:#e06c75" title="删除该条方案" onclick="event.stopPropagation();stcdLocalOptSuggestRemoveItem(\'' + key + '\',\'' + side + '\',' + i + ')">🗑</button>';
+    h += '<button class="btn-out" style="padding:0 5px;font-size:8px;line-height:15px" title="单项重生成" onclick="event.stopPropagation();stcdLocalOptSuggestGen(\'regenerate\',\'' + key + '\',\'' + side + '\',' + i + ')">↻</button>';
+    h += '<button class="btn-out" style="padding:0 5px;font-size:8px;line-height:15px" title="该时间段补充生成" onclick="event.stopPropagation();stcdLocalOptSuggestGen(\'refill\',\'' + key + '\',\'' + side + '\',' + i + ')">➕</button>';
+    h += '<button class="btn-out" style="padding:0 5px;font-size:8px;line-height:15px;color:var(--accent)" title="深化设计：给这条方案注入设计感（只改写描述）" onclick="event.stopPropagation();stcdLocalOptDeepenOne(\'' + key + '\',\'' + side + '\',' + i + ')">🎨</button>';
+    h += '<button class="btn-out" style="padding:0 5px;font-size:8px;line-height:15px;color:var(--accent2)" title="多人：挂补充角色（作为场景里的其他人物，随方案进提示词）" onclick="event.stopPropagation();stcdLocalOptPickChars(\'' + key + '\',\'' + side + '\',' + i + ')">👥</button>';
     h += '</div>';
-    if (o.desc) h += '<div style="font-size:9px;color:var(--fg2);margin-top:1px;line-height:1.4">' + escHtml(o.desc) + '</div>';
-    if (o.deepened) h += '<div style="font-size:8px;color:var(--accent);margin-top:1px">🎨 已深化</div>';
+    // 第二行：方案名（卡片正文，单独一行、可自由折行，长标题不再挤压上面那行）
+    h += '<div title="点击复制方案名（同时切换选中）" style="margin-top:3px;font-size:11px;font-weight:600;line-height:1.35;word-break:break-word;cursor:copy;color:' + (on ? 'var(--accent)' : 'var(--fg)') + '" onclick="复制到剪贴板(\'' + escHtml(label) + '\').then(function(ok){toast(ok ? \'已复制：' + escHtml(label) + '\' : \'复制失败\');})">' + escHtml(label) + '</div>';
+    if (o.desc) h += '<div style="font-size:9px;color:var(--fg2);margin-top:2px;line-height:1.45">' + escHtml(o.desc) + '</div>';
     h += '</div>';
     // 两段之间生成
     if (i < items.length - 1) {

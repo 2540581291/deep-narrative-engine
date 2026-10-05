@@ -11,5 +11,7 @@ var 快板 = 淫诗体模块工厂({
   默认露骨度: '粗俗荤诗', 默认诗体: '无',
   promptName: 'kuai_ban_gen', aiFieldId: 'kuaiBanGen', aiLabel: '快板生成',
   模块独有选题: { label: '包袱方向', 编辑键: 'baofu', ctx标签: '包袱方向', options: ['庙会风流', '货郎艳事', '逗趣荤段', '贯口'] },
+  语言风格选项: 语言风格选项_对白,
+  话语行: true,
 });
 Store.kuaiBan = createStore('kuaiBan');

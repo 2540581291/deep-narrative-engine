@@ -164,7 +164,7 @@ window.影视声优添加芯片 = function(field, val) {
 window.影视声优AI生成 = function() {
   var h = '<div class="mcard" style="max-width:500px;width:90vw"><h3 style="font-size:14px;margin-bottom:10px">🤖 AI 生成声优</h3>';
   h += '<div style="margin-bottom:8px;font-size:11px;color:var(--fg2)">选择方向或自定义要求</div><div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">';
-  var dirs = ['御姐音','大叔音','少女音','女王音'];
+  var dirs = ['萝莉音','御姐音','正太音','大叔音','少女音','女王音'];
   dirs.forEach(function(v) { h += '<span class="tag-chip" style="font-size:10px;cursor:pointer" onclick="影视声优切换AI方向(this,\'' + v + '\')">' + v + '</span>'; });
   h += '</div><div class="form-group"><textarea class="llm-input" id="影视声优AI自定义" style="width:100%;min-height:50px;resize:vertical;font-size:12px" placeholder="补充具体要求…"></textarea></div>';
   h += '<div style="display:flex;gap:6px;justify-content:flex-end"><button class="btn-out" onclick="this.closest(\'.ovl\').remove()">取消</button><button class="btn-main" onclick="影视声优执行AI生成()">🎯 生成</button></div></div>';

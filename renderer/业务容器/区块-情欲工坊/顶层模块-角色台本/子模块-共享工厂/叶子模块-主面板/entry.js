@@ -2,6 +2,102 @@
 // 为 自述/诵读/经历/关系对话/辱骂/性辱骂 提供统一的 list/editor/AI 逻辑（以角色卡角色为核心，纯对白/独白生成）
 // 创作界面与淫诗艳曲同构：作品信息 / 选题 / 角色素材 / AI 生成 四卡片式，无正文编辑区——AI 生成结果直接保存
 
+// ===== 选题卡「主题」（台词类型/场景/方向/辱骂类型）释义表：选中哪项就把释义随参数段一起下发给 AI =====
+var 角色台本主题解释表 = {
+  // 🎙 自述主题
+  '人生自述': '从头讲自己这一生——出身、遭遇、怎么一步步变成现在这样，是对着人（或镜头）讲的一整段自述',
+  '最快乐的经历': '挑自己最快乐的那一次讲，讲清当时的人、地方、做了什么、为什么这么快乐',
+  '最羞耻的经历': '挑自己最不愿提的那一次讲，语气里带着羞耻、想遮掩又不得不说',
+  '初次性经历': '第一次的完整经过：跟谁、在哪、怎么开始、什么感觉、事后怎么想',
+  '最难忘的一夜': '印象最深的一夜，不必是第一次，重点讲清那一夜特殊在哪、难忘在哪',
+  '内心隐秘的欲望': '平时说不出口的念头、幻想、癖好，第一次坦白出来，越私密越好',
+  '情感告白': '对某个特定的人说心里话：喜欢、依赖、愧疚、想在一起，把感情说透',
+  // 🗂 台词类型（经历：角色在某段性爱经历中说过的话）
+  '呻吟与哭喊': '当场发出的呻吟、浪叫、哭喊——碎句、短句、喊对方名字，几乎是纯叫声带几个字',
+  '被逼供述': '被逼着一句句回答、招认：问什么答什么，被追问就答得更多、更细、更不要脸',
+  '哀求讨饶': '求对方停下、放过、慢一点、给个痛快，反复求、越求越没底气',
+  '高潮时的呓语': '高潮前后失去理智时说的胡话、断句、重复的短句，语无伦次却露骨',
+  '事后的抱怨': '完事之后带着余韵的抱怨、嗔怪、后怕、算账，语气软、话里还带骚',
+  '内心独白': '在人前不能出声、只能在心里说给自己的话——想喊不敢喊、想骂不敢骂，全在心里说',
+  // 📢 诵读场景（要在公开场合念出来的稿子）
+  '当众宣读': '当着一群人的面念出来的稿子，开头结尾有「众位听好」「念完了」这类诵读用语',
+  '刑台示众': '被绑着、围着人念的认罪稿，一句一顿，念不下去时被人催着接着念',
+  '家族集会': '在自家人面前念的稿子，称呼按辈分来，羞耻感来自「都是熟人」',
+  '直播镜头': '对着镜头、说给弹幕和观众听，边念边看镜头，语气里带表演和讨好',
+  '广场围观': '在公开场合被围观看热闹时念的稿子，人多、嘈杂，声音要放出来',
+  '教会忏悔': '在神像与众人前忏悔告解，句式庄重、有悔罪与祈求宽恕的口吻',
+  '主人面前': '跪着或站着念给主人听的稿子，全程请示、认罪、表忠心',
+  '婚礼致辞': '在婚礼场合念的致辞，仪式感强，体面话里裹着见不得人的内容',
+  // 💬 内容方向（关系对话：对某个关系人物说的话）
+  '调情撩拨': '挑逗、逗弄、撩对方，话里带钩子，不直说要什么却处处暗示',
+  '求饶示弱': '服软、认输、讨饶，把姿态放低，求对方心软',
+  '日常问候': '平常的问候、叮嘱、照料式的话，日常口吻里透出两人的关系和亲近',
+  '深情告白': '把感情说透：喜欢、离不开、想一直在一起，认真而动人',
+  '威胁质问': '逼问、质问、放狠话，要对方给交代或听话，语气有压迫感',
+  '汇报服侍': '向上位者汇报自己的情况、听候指派、请示接下来怎么做',
+  '撒娇任性': '赖着、闹着、耍小性子要东西，语气甜里带缠人',
+  '告别决裂': '分开、断绝、最后一面的狠话或软话，话里有不舍也有决意',
+  // 🗯 普通辱骂类型
+  '人身攻击': '直接攻击对方这个人：长相、身材、蠢笨、下贱，句句冲着本人去',
+  '身份贬损': '踩对方的身份与出身：下人、贱种、外室、没名分，拿地位压人',
+  '亲属辱骂': '骂到对方的父母、妻儿、祖宗，用亲属称呼做辱骂的载体',
+  '市井俚骂': '街头巷尾最难听的那套脏话，粗鄙直接、不讲道理',
+  '诅咒恶言': '希望对方遭殃：断子绝孙、不得好死、烂在泥里，语气恶毒',
+  '揭短打脸': '专揭对方最不愿被提的旧事与短处，当众抖出来让人下不来台',
+  '文雅毒舌': '不用脏字也能骂得刻薄，用讥讽、反话、掉书袋把人刺到骨头里',
+  '阴阳怪气': '不直接骂，拐着弯损、假夸真贬，让对方听着难受又抓不住把柄',
+  '道德批判': '站在道理与规矩上数落对方：不知廉耻、坏了纲常、丧了良心',
+  '冷嘲热讽': '语气淡淡的，一句一句冷着损，比破口大骂更难受',
+  // 💢 性辱骂类型
+  '淫词秽语': '满口最脏的性词：骚穴、贱屄、肉棒、精液，怎么露骨怎么骂',
+  '性羞辱': '把对方的身体与性反应当作羞辱材料：湿成这样、自己送上门、离了男人活不了',
+  '性能力嘲讽': '嘲讽对方床上不行：早泄、软、没力气、伺候不好人，拿性能力贬低他',
+  '身体嘲笑': '专挑身体下手：乳头黑、穴松、奶小、肥、臭，把身体说成不堪入目',
+  '性奴呼称': '用性奴称呼压人：母狗、贱奴、骚货、肉便器，把对方钉在从属位置',
+  '床笫揭短': '抖出对方床上最不愿被提的表现：怎么求的、怎么叫的、怎么去的、谁先撑不住',
+  '淫荡诅咒': '咒对方被操、被轮、被干到烂，用淫荡的后果当诅咒',
+  '贞操攻击': '拿贞洁说事：装什么清高、早不是处女、人尽可夫，句句冲着贞操去',
+  '挑逗式辱骂': '骂里带撩，一边贬损一边勾着对方，让人被骂着还起了反应',
+  '畜生化辱骂': '把人往牲口上贬：母畜、发情的狗、只配配种，剥夺人的身份',
+};
+
+// ===== 选题卡「语气」释义表：选中哪项就把释义随参数段一起下发给 AI =====
+var 角色台本语气解释表 = {
+  // 自述
+  '坦然讲述': '不回避、不遮掩，平平静静地把事讲完，像是早就想开了',
+  '羞涩断续': '说不出口、说到一半停住，用停顿和含糊把一个羞耻的故事讲完',
+  '带着哭腔': '声音发颤、带鼻音，讲到痛处与羞处就压不住哭音',
+  '自嘲苦笑': '拿自己开玩笑，笑着讲自己的不堪，笑意里透着认命',
+  '庄重平静': '用郑重、平稳的口气讲，把再淫的事也讲得像交代正事',
+  '情难自禁': '讲到一半自己先动情，语气越来越软、越来越急，收不住',
+  // 经历
+  '破碎断续': '话被快感和喘息切成碎片，半句一半句地往外挤',
+  '压抑低喘': '不敢出声，压着嗓子低喘，把叫声咽回去再说半个字',
+  '哭腔': '带哭音、带鼻音，疼或爽到哭出来还得接着说',
+  '高亢失神': '声音拔高、失去理智，喊出来的话不成句、不顾体面',
+  '羞愤交加': '又羞又恨，一边被逼着说一边骂自己或骂对方',
+  // 诵读
+  '羞耻颤抖': '明知念出来丢人，声音抖着念，越念越小声',
+  '亢奋得意': '念得眉飞色舞、越念越得意，把自己的不堪当成本事炫耀',
+  '麻木顺从': '没有起伏地照念，认了命，语气平得像念公文',
+  '哭着念完': '一边哭一边把稿子念到底，中间几次念不下去又接着念',
+  '一字一顿': '一个字一个字往外蹦，像被人盯着逼出来的',
+  '庄严宣读': '像宣读正式文书那样庄重，把下流内容念得一本正经',
+  // 关系对话
+  '低声细语': '凑近了小声说，只有对方听得见，气声多、音量低',
+  '咬牙切齿': '从牙缝里挤字，恨意与火气压在语气里',
+  '娇嗔撒娇': '拖着尾音、带着嗔怪地缠人，甜里带赖',
+  '冷若冰霜': '语气冷、字少、不带感情，把对方挡在外面',
+  '温柔缱绻': '放软了口气，慢慢说，字里都是舍不得与亲近',
+  // 辱骂
+  '冷笑讥讽': '先笑一声再开口，用讥笑和反话损人',
+  '暴怒咆哮': '火气压不住，吼出来、骂得又快又响，句子都撞在一起',
+  '阴阳怪气': '不直接骂，拐着弯损、假夸真贬，让对方听着难受又抓不住把柄',
+  '平静恶毒': '语气平平淡淡，内容却句句往死里咒，越平静越可怕',
+  '哭着痛骂': '一边哭一边骂，骂声里混着委屈与恨',
+  '带笑骂人': '笑着骂、骂得亲昵或阴森，笑意比骂词更刺人',
+};
+
 function 角色台本工厂(cfg) {
   // cfg: { storeKey, containerId, viewContentId, prefix, windowPrefix, navLabelList, navLabelEdit,
   //         promptName, aiFieldId, aiLabel, 主题标签, 主题选项, 语气选项, 对象模式, 经历模式, 主题多选 }
@@ -10,6 +106,9 @@ function 角色台本工厂(cfg) {
   var 主题多选 = cfg.主题多选;    // 主题 chips 多选（如辱骂类型可组合多种）
   var 语气选项 = cfg.语气选项 || null;
   var 场合选项 = cfg.场合选项 || null;  // 场合/场景行（如 正在被操时 / 正在被调教时 / 当众对峙）
+  var 语言风格选项 = cfg.语言风格选项 || null;   // 选题卡·语言风格行：显示的技法名数组（来自共享 语言风格库；用于对白/独白类模块）
+  var 语言风格键 = '语言风格';                    // 作品数据字段名
+  var 语言风格字段 = cfg.prefix + 'LangStyleReq'; // 自定义风格输入框 id
   var 双模式 = cfg.双模式 || null;      // 双模式（辱骂/性辱骂合并）：[{ key, label, promptName, 主题选项, 场合选项 }]
   var 双模式默认键 = cfg.默认模式 || (双模式 ? 双模式[0].key : '');  // 默认模式（辱骂默认性辱骂）
   var 对象模式 = cfg.对象模式;    // 关系对话/辱骂：对象人物行（输入 + 导入角色卡 + AI 提取关系）
@@ -20,6 +119,177 @@ function 角色台本工厂(cfg) {
     if (Array.isArray(t)) return t.join('、');
     return t || '';
   }
+  // ===== 语言风格（选题卡·语言风格行）：共用 淫诗体模块工厂 里定义的 语言风格库 =====
+  // 旧风格名 → 现用名（与 淫诗体模块工厂 内的 语言风格改名表 同一份）
+  function 规范化语言风格名(n) {
+    n = String(n == null ? '' : n).trim();
+    var t = (typeof window.语言风格改名表 !== 'undefined') ? window.语言风格改名表 : null;
+    return (t && t[n]) ? t[n] : n;
+  }
+  // 读「已选语言风格」（数组；兼容旧的字符串存档；旧风格名自动迁移到现用名）
+  function 读语言风格() {
+    var v = 编辑状态[语言风格键];
+    if (Array.isArray(v)) return v.map(规范化语言风格名).filter(Boolean);
+    if (typeof v === 'string' && v.trim()) return v.split(/[、,，]/).map(function(x){ return 规范化语言风格名(x); }).filter(Boolean);
+    return [];
+  }
+  function 写语言风格(arr) {
+    编辑状态[语言风格键] = arr;
+    编辑字段(语言风格键, arr);
+  }
+  function 读语言风格自定义() {
+    var el = document.getElementById(语言风格字段);
+    var t = el ? String(el.value || '').trim() : '';
+    读语言风格().forEach(function(s) { t = t.split(s).join(''); });
+    return t.replace(/[、,，；;\s]+/g, ' ').trim();
+  }
+  function 读语言风格全部() {
+    var arr = 读语言风格();
+    var c = 读语言风格自定义();
+    return c ? arr.concat([c]) : arr;
+  }
+  function 语言风格条目查(name) {
+    if (typeof window.语言风格条目 === 'function') return window.语言风格条目(name);
+    var lib = window.语言风格库;
+    if (!lib) return null;
+    for (var i = 0; i < lib.length; i++) { if (lib[i].名 === name) return lib[i]; }
+    return null;
+  }
+  // 语言风格行 HTML：技法 chips（多选）+ 自定义输入 + AI 建议
+  function 语言风格行HTML() {
+    var names = 语言风格选项 || [];
+    var h = '';
+    names.forEach(function(n) {
+      h += '<span class="tag-chip' + (读语言风格().indexOf(n) >= 0 ? ' tag-active' : '') + '" data-lang-style="' + n + '" onclick="' + cfg.windowPrefix + '切换语言风格(\'' + n + '\')">' + n + '</span>';
+    });
+    读语言风格().forEach(function(n) {
+      if (names.indexOf(n) < 0) h += '<span class="tag-chip tag-active" data-lang-style="' + escHtml(n) + '" title="' + escHtml(n) + '" onclick="' + cfg.windowPrefix + '切换语言风格(this.getAttribute(\'data-lang-style\'))">' + escHtml(n.length > 12 ? n.slice(0, 12) + '…' : n) + '</span>';
+    });
+    h += '<input class="llm-input" id="' + 语言风格字段 + '" placeholder="自定义语言风格（可留空）" style="flex:1;min-width:130px" value="">';
+    h += '<button class="ai-suggest-btn" title="AI 按当前选题建议语言风格" onclick="openAiGenPanel(\'' + cfg.aiFieldId + 'LangStyle\')">🤖</button>';
+    h += '<button class="btn-sm" title="把输入框里的自定义风格存入选区" onclick="' + cfg.windowPrefix + '添加语言风格()">＋</button>';
+    return h;
+  }
+  function 切换语言风格(name) {
+    var arr = 读语言风格();
+    var i = arr.indexOf(name);
+    if (i >= 0) arr.splice(i, 1); else arr.push(name);
+    写语言风格(arr);
+    同步chips();
+  }
+  function 添加语言风格() {
+    var el = document.getElementById(语言风格字段);
+    if (!el || !String(el.value || '').trim()) { toast('请先填写自定义语言风格'); return; }
+    var t = 读语言风格自定义();
+    var arr = 读语言风格();
+    if (t && arr.indexOf(t) < 0) arr.push(t);
+    el.value = '';
+    写语言风格(arr);
+    同步chips();
+    toast(t ? '已加入语言风格：' + t : '自定义内容已在选区中');
+  }
+  // 语言风格段（进 AI 参数段）：每种风格是一个整体典型 —— 先给用词与称谓取向，再附上示范台词供体会语感
+  // ⚠️ 示范台词只是「语感参照」：写成「整段…要求整体复现」会让模型整句照抄示范台词，必须明写「禁止照抄整句」。
+  function 语言风格上下文() {
+    var arr = 读语言风格全部();
+    if (!arr.length) return '';
+    var out = '语言风格：' + arr.join('、') + '\n';
+    arr.forEach(function(n) {
+      var e = 语言风格条目查(n);
+      if (e) {
+        out += '　【' + e.名 + '·用词与称谓】' + e.用词 + '\n';
+        out += '　【' + e.名 + '·示范台词（只是语感参照，禁止照抄）】\n' + e.例 + '\n';
+        out += '　　↑ 上面这些句子**只用来体会这套用词与称谓**：同一个词、同一个称谓可以照用，但**任何整句都不许搬进本次台词**，必须按这套用词另写全新的台词。\n';
+      } else {
+        out += '　【' + n + '】按此风格整体行文（自定义风格，需自行把握用词）\n';
+      }
+    });
+    out += '　注意：用词要通篇统一成这一套（同一个性器官、同一个身份称谓自始至终用同一个词），不要中途换成别的说法；用词说明里引号中的句子同样只是参照，禁止整句照搬。\n';
+    return out;
+  }
+  // 选题卡·角色话语行：是否把所选角色的「原话」附进提示词 + 从话语库选一个角色（默认渲染，等价于默认启用）
+  var 话语行 = cfg.话语行 !== false;
+
+  // ===== 角色话语行 =====
+  // 「角色话语」= 小说提取摘出的该角色原话，独立于角色卡数据（不进 角色卡全部 的 14 章）。
+  // 这里只做两件事：① 是否附进提示词（默认启用）；② 从话语库选一个角色的原话（不必是当前的 char）。
+  // 未手选过时自动跟随当前角色匹配同名条目（话语已手选 一旦为真就不再自动改写）。
+  function 读使用话语() { return 编辑状态.使用角色话语 !== false; }
+  function 读话语键() { return 编辑状态.话语角色键 || ''; }
+  function 写话语选中(d) {
+    编辑状态.使用角色话语 = true;
+    编辑状态.话语角色键 = d ? (d.键 || '') : '';
+    编辑状态.话语角色名 = d ? (d.char || '') : '';
+    编辑状态.话语书 = d ? (d.book || '') : '';
+    编辑状态.话语条数 = d ? ((d.lines || []).length) : 0;
+    编辑字段('使用角色话语', true);
+    编辑字段('话语角色键', 编辑状态.话语角色键);
+    编辑字段('话语角色名', 编辑状态.话语角色名);
+    编辑字段('话语书', 编辑状态.话语书);
+    编辑字段('话语条数', 编辑状态.话语条数);
+  }
+  function 切换使用角色话语() {
+    编辑状态.使用角色话语 = !读使用话语();
+    编辑字段('使用角色话语', 编辑状态.使用角色话语);
+    刷新话语行();
+    同步chips();
+  }
+  function 刷新话语行() {
+    var el = document.getElementById(cfg.prefix + 'SpeechRow');
+    if (el) el.innerHTML = 话语行HTML();
+  }
+  function 话语行HTML() {
+    var h = '';
+    var use = 读使用话语();
+    h += '<span class="tag-chip' + (use ? ' tag-active' : '') + '" data-speech-use="1" onclick="' + cfg.windowPrefix + '切换使用角色话语()" title="生成时是否把所选角色的原话附进提示词（只作说话调子的参照）">使用角色话语</span>';
+    var 键 = 读话语键();
+    var 摘要 = 键 ? 角色话语摘要(键) : null;
+    if (摘要 && 摘要.count) {
+      h += '<span class="tag-chip tag-active" title="' + escHtml('《' + 摘要.book + '》' + 摘要.char + '：' + 摘要.count + ' 条原话') + '">💬 ' + escHtml(摘要.char) + '（' + 摘要.count + ' 条）</span>';
+      h += '<span class="tag-chip" style="color:var(--fg3)" title="清除已选话语" onclick="' + cfg.windowPrefix + '清除话语()">✕ 清除</span>';
+    } else if (键) {
+      h += '<span class="tag-chip" style="color:var(--warning)" title="所选条目已不在话语库里">💬 已选条目已失效</span>';
+      h += '<span class="tag-chip" style="color:var(--fg3)" onclick="' + cfg.windowPrefix + '清除话语()">✕ 清除</span>';
+    } else {
+      h += '<span class="tag-chip" style="color:var(--fg3)">未选（选好角色后自动匹配同名话语）</span>';
+    }
+    h += '<button class="btn-sm" onclick="' + cfg.windowPrefix + '选取话语()" title="从角色话语库里选一个角色的原话">📚 选取话语</button>';
+    return h;
+  }
+  function 选取话语() {
+    if (typeof stcdOpenSpeechPicker !== 'function') { toast('角色话语库未就绪'); return; }
+    stcdOpenSpeechPicker({
+      默认角色名: 编辑状态.char || '',
+      onPick: function(d) {
+        if (!d) return;
+        写话语选中(d);
+        编辑状态.话语已手选 = true;
+        编辑字段('话语已手选', true);
+        刷新话语行();
+        同步chips();
+        toast('已选用「' + (d.char || '') + '」的原话 ' + ((d.lines || []).length) + ' 条');
+      }
+    });
+  }
+  function 清除话语() {
+    写话语选中(null);
+    编辑状态.话语已手选 = true;
+    编辑字段('话语已手选', true);
+    刷新话语行();
+    toast('已清除所选角色话语（开关仍为开，但未选话语时不会附加原话）');
+  }
+  // 自动匹配：未手选过时，按当前角色名在话语库里找同名条目（取最近更新的一条）
+  function 自动匹配话语() {
+    if (!话语行 || 编辑状态.话语已手选) return;
+    var name = 编辑状态.char || '';
+    if (!name) return;
+    角色话语找角色([name], 读话语键()).then(function(d) {
+      if (!d || d.键 === 读话语键()) return;
+      写话语选中(d);
+      刷新话语行();
+    });
+  }
+
   // 双模式：当前模式（编辑状态.kind 指定，缺省取第一个）
   function 当前模式() {
     if (!双模式) return null;
@@ -107,6 +377,7 @@ function 角色台本工厂(cfg) {
           if (item.kind) h += '<span class="badge-tag">' + escHtml(item.kind === '性' ? '💢 性辱骂' : '🗯 普通辱骂') + '</span>';
           if (item.scene) h += '<span class="badge-tag">📍 ' + escHtml(item.scene) + '</span>';
           if (item.tone) h += '<span class="badge-tag">' + escHtml(item.tone) + '</span>';
+          if (语言风格选项 && Array.isArray(item[语言风格键]) && item[语言风格键].length) h += '<span class="badge-tag">🎙 ' + escHtml(item[语言风格键].join('、')) + '</span>';
           if (item.target) h += '<span class="badge-tag">→ ' + escHtml(item.target) + '</span>';
           if (item.experience) h += '<span class="badge-tag" style="white-space:normal">📌 ' + escHtml(item.experience) + '</span>';
           h += '</div>';
@@ -166,7 +437,8 @@ function 角色台本工厂(cfg) {
     + '4. 注意角色的年龄层次，语言风格、断句、语气词要随年龄明显不同，贴合角色的年龄。\n'
     + '5. 保持连续感：上下句要衔接自然，有承接、递进、因果，语气连贯，像一段不间断的话语流，勿使各句各自断裂、前后跳跃。\n'
     + '6. 若该角色要面对多个对象人物（涉及多人），该角色要逐一对着每个对象说话、都照顾到——是主角分别向每位对象开口、把话分头说给每个人，而非让对象人物自己也开口说话。\n'
-    + '7. 正文务必达到所设的最小字数，宁长勿短，不要因篇幅短而省略内容。\n';
+    + '7. 正文务必达到所设的最小字数，宁长勿短，不要因篇幅短而省略内容。\n'
+    + '8. ' + ((typeof window.省略号通用规则 !== 'undefined') ? window.省略号通用规则 : '省略号要用，但不要频繁地使用，务必尽量少用：只在真正停顿、喘息、话被快感打断的地方用，其余地方一律用逗号、顿号或直接连上，绝不要句句都拖一串省略号。') + '\n';
 
   // ===== 创作页现代化样式（作用域在 .rsc-creator 下，不改动全局类名，避免影响 chip 选中/保存逻辑）=====
   var 角色台本样式文本 = ''
@@ -310,6 +582,7 @@ function 角色台本工厂(cfg) {
       刷新关系chips();
       刷新经历详情();
       刷新关系详情();
+      自动匹配话语();   // 换角色后重新按同名匹配原话（手选过则不动）
     });
   }
   function 选择角色(name) {
@@ -465,6 +738,16 @@ function 角色台本工厂(cfg) {
       relations: Array.isArray(data.relations) ? data.relations : [],
       content: data.content||'', tags: Array.isArray(data.tags) ? data.tags : [],
     };
+    // 语言风格（多选，数组存档；兼容旧的字符串存档）
+    // 默认不启用：新作品为空数组、不预选任何风格，只有用户点 chip / 🤖 建议 / ＋ 自定义才会注入参数段（随机灵感也不再替用户选）
+    编辑状态[语言风格键] = Array.isArray(data[语言风格键]) ? data[语言风格键].slice() : (data[语言风格键] ? String(data[语言风格键]).split(/[、,，]/).map(function(x){return x.trim();}).filter(Boolean) : []);
+    // 角色话语（独立字段）：使用开关默认启用；未手选过 → 选好角色后自动匹配同名话语
+    编辑状态.使用角色话语 = data.使用角色话语 === undefined ? true : !!data.使用角色话语;
+    编辑状态.话语角色键 = data.话语角色键 || '';
+    编辑状态.话语角色名 = data.话语角色名 || '';
+    编辑状态.话语书 = data.话语书 || '';
+    编辑状态.话语条数 = data.话语条数 || 0;
+    编辑状态.话语已手选 = !!data.话语已手选;
     var s = 编辑状态;
     var h = '<div class="rsc-creator">';
     // ① 作品信息卡：角色 + 标题
@@ -515,6 +798,10 @@ function 角色台本工厂(cfg) {
     if (有效场合选项()) h += 参数行('场合', 有效场合选项().map(function(t) {
       return '<span class="tag-chip' + (s.scene === t ? ' tag-active' : '') + '" data-scene="' + t + '" onclick="' + cfg.windowPrefix + '切换场合(\'' + t + '\');' + cfg.windowPrefix + '同步chips()">' + t + '</span>';
     }).join(''));
+    // 语言风格行：技法 chips（多选，来自共享 语言风格库）+ 自定义输入 + AI 建议
+    if (语言风格选项) h += 参数行('语言风格', 语言风格行HTML());
+    // 角色话语行（紧接语言风格之下，与之平级）：使用角色话语 开关 + 选取某个角色的原话
+    if (话语行) h += 参数行('角色话语', '<span id="' + cfg.prefix + 'SpeechRow" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">' + 话语行HTML() + '</span>');
     h += 参数行('灵感', '<button class="btn-sm" onclick="' + cfg.windowPrefix + '随机灵感()">🎲 随机灵感</button>');
     h += '</div>';
     // ④ AI 生成卡
@@ -541,6 +828,7 @@ function 角色台本工厂(cfg) {
     }
     刷新关系chips();
     刷新经历详情();
+    if (话语行) 自动匹配话语();   // 首次进创作页：按当前角色自动匹配同名话语（手选过则不动）
   }
 
   // ===== chips 交互 =====
@@ -559,6 +847,8 @@ function 角色台本工厂(cfg) {
       }
       else if (c.hasAttribute('data-tone')) c.classList.toggle('tag-active', 编辑状态.tone === c.getAttribute('data-tone'));
       else if (c.hasAttribute('data-scene')) c.classList.toggle('tag-active', 编辑状态.scene === c.getAttribute('data-scene'));
+      else if (c.hasAttribute('data-lang-style')) c.classList.toggle('tag-active', 读语言风格().indexOf(c.getAttribute('data-lang-style')) >= 0);
+      else if (c.hasAttribute('data-speech-use')) c.classList.toggle('tag-active', 读使用话语());
     });
   }
   function 切换主题(t) {
@@ -630,6 +920,7 @@ function 角色台本工厂(cfg) {
     if (语气选项 && 语气选项.length) 编辑状态.tone = 语气选项[Math.floor(Math.random() * 语气选项.length)];
     var 当前场合选项 = 有效场合选项();
     if (当前场合选项 && 当前场合选项.length) 编辑状态.scene = 当前场合选项[Math.floor(Math.random() * 当前场合选项.length)];
+    // 语言风格：不参与随机灵感 —— 语言风格默认不启用，只能由用户点 chip / 🤖 建议 / ＋ 自定义来选
     自动标题();
     编辑字段('theme', 编辑状态.theme);
     编辑字段('tone', 编辑状态.tone);
@@ -644,12 +935,26 @@ function 角色台本工厂(cfg) {
     if (!ref) return '';
     return (typeof window.角色卡全部 === 'function') ? 角色卡全部(ref) : JSON.stringify(ref || {});
   }
+  // 主题/语气释义（选中项附释义，多选时逐条列出）：进 AI 参数段，让模型知道这一项要求的是什么，而不是只看到一个词
+  function 主题说明(v) {
+    var arr = Array.isArray(v) ? v : (v ? [v] : []);
+    var 有 = arr.filter(function(t) { return 角色台本主题解释表[t]; });
+    if (!有.length) return '';
+    return '\n' + 有.map(function(t) { return '　· ' + t + '：' + 角色台本主题解释表[t]; }).join('\n');
+  }
+  function 语气说明(t) {
+    if (!t || !角色台本语气解释表[t]) return '';
+    return '\n　· ' + t + '：' + 角色台本语气解释表[t];
+  }
   function 参数上下文() {
     var ctx = '';
     if (编辑状态.char) ctx += '角色：' + 编辑状态.char + '\n';
-    if (编辑状态.theme && (主题多选 ? 编辑状态.theme.length : 编辑状态.theme)) ctx += 主题标签 + '：' + 主题显示(编辑状态.theme) + '\n';
-    if (编辑状态.tone) ctx += '语气：' + 编辑状态.tone + '\n';
+    if (编辑状态.theme && (主题多选 ? 编辑状态.theme.length : 编辑状态.theme)) ctx += 主题标签 + '：' + 主题显示(编辑状态.theme) + 主题说明(编辑状态.theme) + '\n';
+    if (编辑状态.tone) ctx += '语气：' + 编辑状态.tone + 语气说明(编辑状态.tone) + '\n';
     if (编辑状态.scene) ctx += '场合：' + 编辑状态.scene + '\n';
+    if (语言风格选项) ctx += 语言风格上下文();
+    // 角色话语段：默认启用，附上所选角色在原作里的原话（只作说话调子的参照）
+    if (话语行 && 读使用话语()) ctx += 角色话语上下文(读话语键());
     if (对象模式 && (编辑状态.targets || []).length) ctx += '对象人物：' + (编辑状态.targets || []).join('、') + '\n';
     var direction = ((document.getElementById(cfg.prefix + 'Direction')||{}).value || '').trim();
     if (direction) ctx += '方向：' + direction + '\n';
@@ -691,6 +996,34 @@ function 角色台本工厂(cfg) {
 
   // ===== AI 字段注册 =====
   if (typeof registerAiField !== 'undefined') {
+    // 语言风格建议（选题卡·语言风格行 🤖）：按角色与选题从技法库里挑 3-5 条追加进已选
+    if (语言风格选项) registerAiField(cfg.aiFieldId + 'LangStyle', cfg.aiLabel + '语言风格建议', function() {
+      var ctx = '作品类型：' + (cfg.aiLabel || '');
+      if (编辑状态.char) ctx += '\n角色：' + 编辑状态.char;
+      var m = 当前模式();
+      if (m) ctx += '\n模式：' + m.label;
+      ctx += '\n' + 主题标签 + '：' + (主题显示(编辑状态.theme) || '（未选）') + 主题说明(编辑状态.theme);
+      if (编辑状态.tone) ctx += '\n语气：' + 编辑状态.tone + 语气说明(编辑状态.tone);
+      if (编辑状态.scene) ctx += '\n场合：' + 编辑状态.scene;
+      if (对象模式 && (编辑状态.targets || []).length) ctx += '\n对象人物：' + (编辑状态.targets || []).join('、');
+      var cur = 读语言风格全部();
+      ctx += '\n备选语言风格（每种都是一整套用词与称谓取向；只能从中挑选，风格名须一字不差）：\n' + 语言风格选项.map(function(n) {
+        var e = 语言风格条目查(n);
+        return e ? ('【' + e.名 + '·用词与称谓】' + e.用词 + '\n【' + e.名 + '·示范台词（只是语感参照，禁止照抄整句）】\n' + e.例) : ('【' + n + '】（自定义风格）');
+      }).join('\n');
+      if (cur.length) ctx += '\n已选语言风格：' + cur.join('、') + '（可保留，也可换更合适的）';
+      return renderPrompt('lang_style_suggest', { charCtx: 角色上下文(), ctx: ctx });
+    }, { fillFn: function(d) {
+      if (!d) { toast('语言风格建议为空'); return; }
+      var names = 语言风格选项;
+      var got = Array.isArray(d.styles) ? d.styles.filter(function(n){ return names.indexOf(n) >= 0; }) : [];
+      if (!got.length) { toast('AI 未给出可用的语言风格'); return; }
+      var arr = 读语言风格();
+      got.forEach(function(n) { if (arr.indexOf(n) < 0) arr.push(n); });
+      写语言风格(arr);
+      同步chips();
+      toast('已选语言风格：' + got.join('、') + (d.rationale ? '（' + d.rationale + '）' : ''));
+    }});
     registerAiField(cfg.aiFieldId, cfg.aiLabel, function() {
       var vars = { ctx: 参数上下文(), charCtx: 角色上下文() };
       if (经历模式) vars.experience = 选中经历表().map(function(e) { return 去序号(e); }).join('\n');
@@ -812,7 +1145,12 @@ function 角色台本工厂(cfg) {
   window[cfg.windowPrefix + '切换主题'] = 切换主题;
   window[cfg.windowPrefix + '切换语气'] = 切换语气;
   window[cfg.windowPrefix + '切换场合'] = 切换场合;
+  window[cfg.windowPrefix + '切换语言风格'] = 切换语言风格;
+  window[cfg.windowPrefix + '添加语言风格'] = 添加语言风格;
   window[cfg.windowPrefix + '切换模式'] = 切换模式;
+  window[cfg.windowPrefix + '切换使用角色话语'] = 切换使用角色话语;
+  window[cfg.windowPrefix + '选取话语'] = 选取话语;
+  window[cfg.windowPrefix + '清除话语'] = 清除话语;
   window[cfg.windowPrefix + '切换字数'] = 切换字数;
   window[cfg.windowPrefix + '随机灵感'] = 随机灵感;
   window[cfg.windowPrefix + '同步chips'] = 同步chips;

@@ -65,6 +65,7 @@ function initStores() {
   if (!Store.interactiveNovel) Store.interactiveNovel = createStore('interactiveNovel');
   if (!Store.socialPost)    Store.socialPost    = createStore('socialPost');
   if (!Store.shenghuoGuanshang) Store.shenghuoGuanshang = createStore('shenghuoGuanshang');
+  if (!Store.roleSpeech)    Store.roleSpeech    = createStore('roleSpeech');
 }
 
 window.Store = Store;

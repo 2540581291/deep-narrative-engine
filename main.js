@@ -141,6 +141,75 @@ function saveWindowConfig() {
   } catch(e) {}
 }
 
+// ===== 启动参数（供「快速启动器」使用） =====
+// 解析方式与 Chromium 自身的开关解析不冲突：只认 --dsh-* 前缀，其余参数原样忽略。
+//   --dsh-page=<页面id>   启动后直接切到指定页面（见 renderer/区块-引擎/.../路由/entry.js 的 页面路由）
+//   --dsh-devtools[=detach] 启动后自动打开开发者工具
+//   --dsh-width=<n> --dsh-height=<n>  覆盖窗口尺寸（不落盘，仅本次）
+//   --dsh-check           只做一次启动自检（依赖/数据目录/最近崩溃）后退出
+var dshBootOptions = { page: '', devtools: false, devtoolsMode: '', width: 0, height: 0, check: false, smoke: false };
+(function parseDshArgs() {
+  (process.argv || []).forEach(function (a) {
+    if (a.indexOf('--dsh-page=') === 0) dshBootOptions.page = a.slice('--dsh-page='.length).trim();
+    else if (a === '--dsh-devtools') dshBootOptions.devtools = true;
+    else if (a.indexOf('--dsh-devtools=') === 0) { dshBootOptions.devtools = true; dshBootOptions.devtoolsMode = a.slice('--dsh-devtools='.length).trim(); }
+    else if (a.indexOf('--dsh-width=') === 0) dshBootOptions.width = parseInt(a.slice('--dsh-width='.length), 10) || 0;
+    else if (a.indexOf('--dsh-height=') === 0) dshBootOptions.height = parseInt(a.slice('--dsh-height='.length), 10) || 0;
+    else if (a === '--dsh-check') dshBootOptions.check = true;
+    else if (a === '--smoke') dshBootOptions.smoke = true;   // 冒烟自检（隐藏窗口跑一次，验证 F12/F5）
+  });
+  // 页面 id 只允许字母/数字/短横线（路由 id 的实际形态），避免任何注入
+  if (dshBootOptions.page && !/^[A-Za-z0-9-]{1,40}$/.test(dshBootOptions.page)) dshBootOptions.page = '';
+  if (dshBootOptions.width) savedWidth = Math.max(960, dshBootOptions.width);
+  if (dshBootOptions.height) savedHeight = Math.max(600, dshBootOptions.height);
+})();
+
+// ===== 启动自检（--dsh-check）：把关键环境信息打到 stdout 供启动器/排障读取 =====
+function dshSelfCheck() {
+  var lines = [];
+  var ok = true;
+  function mark(cond, label, detail) {
+    if (!cond) ok = false;
+    lines.push((cond ? '[OK]   ' : '[FAIL] ') + label + (detail ? '  → ' + detail : ''));
+  }
+  lines.push('深度叙事引擎 · 启动自检');
+  lines.push('项目根目录 : ' + __dirname);
+  lines.push('数据根目录 : ' + APP_ROOT);
+  lines.push('Electron   : ' + process.versions.electron + '  (Chromium ' + process.versions.chrome + ' / Node ' + process.versions.node + ')');
+  lines.push('打包模式   : ' + (app.isPackaged ? '已打包' : '开发模式'));
+  lines.push('');
+  mark(fs.existsSync(path.join(__dirname, 'renderer', 'index.html')), '渲染入口 renderer/index.html');
+  mark(fs.existsSync(path.join(__dirname, 'preload.js')), '预加载 preload.js');
+  mark(fs.existsSync(path.join(__dirname, 'storage.js')), '存储模块 storage.js');
+  mark(fs.existsSync(path.join(APP_ROOT, '保存')), '数据目录 保存/（首次运行会自动创建）');
+  var cfgPath = path.join(APP_ROOT, '保存', 'settings.json');
+  if (fs.existsSync(cfgPath)) {
+    try { var c = JSON.parse(fs.readFileSync(cfgPath, 'utf8')); lines.push('      窗口尺寸 ' + (c.windowWidth || '?') + '×' + (c.windowHeight || '?')); } catch (e) { lines.push('      settings.json 解析失败: ' + e.message); }
+  }
+  // 最近一次崩溃日志（若有）
+  try {
+    var crashDir = path.join(APP_ROOT, 'crash-logs');
+    if (fs.existsSync(crashDir)) {
+      var logs = fs.readdirSync(crashDir).filter(function (f) { return /\.log$/.test(f); }).sort();
+      lines.push('');
+      lines.push('崩溃日志   : 共 ' + logs.length + ' 份' + (logs.length ? '，最近 ' + logs[logs.length - 1] : ''));
+      if (logs.length) {
+        var last = fs.readFileSync(path.join(crashDir, logs[logs.length - 1]), 'utf8').split(/\r?\n/).slice(0, 4);
+        last.forEach(function (l) { lines.push('      | ' + l); });
+      }
+    }
+  } catch (e) {}
+  // 可选能力（缺失不影响启动）
+  lines.push('');
+  lines.push('可选能力：');
+  lines.push('  ffmpeg     : ' + resolveFfmpeg());
+  lines.push('  本地 TTS   : ' + (fs.existsSync(TTS_VENV_PYTHON) ? '已安装 (' + TTS_ENGINE_DIR + ')' : '未安装（精简版正常现象，配音配乐会优雅降级）'));
+  lines.push('');
+  lines.push(ok ? '结论：核心依赖齐备，可以启动。' : '结论：存在缺失项，请先修复再启动。');
+  try { process.stdout.write(lines.join('\n') + '\n'); } catch (e) {}
+  return ok;
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: savedWidth,
@@ -151,10 +220,29 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      // 启动参数透传给预加载脚本（预加载里读 process.argv 拿到，再交给渲染层）
+      additionalArguments: [
+        '--dsh-page=' + dshBootOptions.page,
+        '--dsh-devtools=' + (dshBootOptions.devtools ? (dshBootOptions.devtoolsMode || '1') : ''),
+      ],
     },
   });
 
   mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
+
+  // 启动参数：自动打开开发者工具（detach / right 模式由启动器指定）
+  if (dshBootOptions.devtools) {
+    mainWindow.webContents.once('did-finish-load', function () {
+      try {
+        var mode = dshBootOptions.devtoolsMode;
+        if (mode === 'detach' || mode === 'right' || mode === 'bottom' || mode === 'undocked') {
+          mainWindow.webContents.openDevTools({ mode: mode });
+        } else {
+          mainWindow.webContents.openDevTools();
+        }
+      } catch (e) {}
+    });
+  }
 
   // 窗口关闭时保存尺寸
   mainWindow.on('close', function() {
@@ -175,7 +263,167 @@ function createWindow() {
   });
 }
 
+// ===== 调试快捷键（F12 / F5），主进程注册，不依赖菜单栏 =====
+// 用 before-input-event 而非自定义菜单：将来调用 Menu.setApplicationMenu(null) 也依然有效。
+function 启用调试快捷键(win) {
+  win.webContents.on('before-input-event', function (事件, 输入) {
+    if (输入.type !== 'keyDown' || 输入.isAutoRepeat) return;   // 不判会因长按狂刷
+    var 键 = String(输入.key || '').toLowerCase();
+    if (键 === 'f12' || (输入.control && 输入.shift && 键 === 'i')) {
+      win.webContents.toggleDevTools();
+      事件.preventDefault();
+      return;
+    }
+    if (键 === 'f5' || (输入.control && 键 === 'r')) {
+      win.webContents.reload();
+      事件.preventDefault();
+    }
+  });
+}
+
+// ===== 冒烟自检（--smoke）：窗口隐藏起一次，验证 F12 / F5 与渲染错误，然后按结果退出 =====
+function 执行冒烟自检() {
+  var 结果 = { 加载完成: 0, F12: false, F5: false, 渲染错误: null };
+  var 失败项 = [];
+  var 已收尾 = false;
+  var 冒烟窗口;
+
+  function 收尾(码) {
+    if (已收尾) return;
+    已收尾 = true;
+    try { if (冒烟窗口 && !冒烟窗口.isDestroyed()) 冒烟窗口.destroy(); } catch (e) {}
+    try { process.stdout.write('[smoke] exit=' + 码 + '\n'); } catch (e) {}
+    app.exit(码);
+  }
+
+  function 行(文本) { try { process.stdout.write(文本 + '\n'); } catch (e) {} }
+
+  try {
+    冒烟窗口 = new BrowserWindow({
+      show: false,
+      width: 1280, height: 800,
+      webPreferences: {
+        preload: path.join(__dirname, 'preload.js'),
+        contextIsolation: true,
+        nodeIntegration: false,
+      },
+    });
+  } catch (e) {
+    行('[smoke] 创建窗口失败: ' + e.message);
+    收尾(1);
+    return;
+  }
+
+  启用调试快捷键(冒烟窗口);
+  冒烟窗口.webContents.on('did-finish-load', function () { 结果.加载完成++; });
+  冒烟窗口.webContents.on('crashed', function () { 失败项.push('渲染进程崩溃'); });
+  // 已有实例占着同一份 userData 时 Chromium 会往 stderr 打 cache 访问失败——那只走 stderr，不影响自检结论
+  冒烟窗口.loadFile(path.join(__dirname, 'renderer', 'index.html'));
+
+  var 首次加载 = false;
+  冒烟窗口.webContents.once('did-finish-load', function () {
+    if (首次加载) return;
+    首次加载 = true;
+    setTimeout(第一步, 2500);
+  });
+
+  // 1) 渲染层基础结构 + F12
+  function 第一步() {
+    var 探测 = '(function(){ try { return { ready: document.readyState, 左栏: !!document.getElementById("leftBar"), 首页: !!document.getElementById("pg-home"), 侧边项: document.querySelectorAll("#leftBar .item").length }; } catch (e) { return { 错误: String(e) }; } })()';
+    冒烟窗口.webContents.executeJavaScript(探测, true).then(function (r) {
+      行('[smoke] 渲染结果：' + JSON.stringify(r));
+      if (!r || !r.首页) 失败项.push('页面容器 pg-home 缺失');
+      if (!r || r.侧边项 < 1) 失败项.push('侧边栏未渲染');
+
+      冒烟窗口.webContents.sendInputEvent({ type: 'keyDown', keyCode: 'F12' });
+      冒烟窗口.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'F12' });
+
+      var 等待 = 0;
+      var 轮询 = setInterval(function () {
+        等待 += 250;
+        if (冒烟窗口.webContents.isDevToolsOpened()) {
+          clearInterval(轮询);
+          结果.F12 = true;
+          行('[smoke] F12 打开开发者工具：通过');
+          try { 冒烟窗口.webContents.closeDevTools(); } catch (e) {}
+          第二步();
+          return;
+        }
+        if (等待 >= 8000) {
+          clearInterval(轮询);
+          行('[smoke] F12 打开开发者工具：失败');
+          失败项.push('F12 未打开开发者工具');
+          第二步();
+        }
+      }, 250);
+    }).catch(function (e) {
+      行('[smoke] 渲染探测失败: ' + e.message);
+      失败项.push('渲染探测失败');
+      第二步();
+    });
+  }
+
+  // 2) F5 重新加载 + 渲染错误
+  function 第二步() {
+    var 之前 = 结果.加载完成;
+    冒烟窗口.webContents.sendInputEvent({ type: 'keyDown', keyCode: 'F5' });
+    冒烟窗口.webContents.sendInputEvent({ type: 'keyUp', keyCode: 'F5' });
+    var 等待 = 0;
+    var 轮询 = setInterval(function () {
+      等待 += 250;
+      if (结果.加载完成 > 之前) {
+        clearInterval(轮询);
+        结果.F5 = true;
+        行('[smoke] F5 重新加载页面：通过');
+        收尾第三步();
+        return;
+      }
+      if (等待 >= 12000) {
+        clearInterval(轮询);
+        行('[smoke] F5 重新加载页面：失败');
+        失败项.push('F5 未触发重新加载');
+        收尾第三步();
+      }
+    }, 250);
+  }
+
+  // 3) 渲染进程错误数
+  function 收尾第三步() {
+    冒烟窗口.webContents.executeJavaScript('JSON.stringify(window.__earlyErrors || [])', true).then(function (s) {
+      var 列表 = [];
+      try { 列表 = JSON.parse(s) || []; } catch (e) {}
+      结果.渲染错误 = 列表.length;
+      行('[smoke] 渲染进程错误数：' + 列表.length);
+      if (列表.length) 失败项.push('渲染错误 ' + 列表.length + ' 条');
+      if (失败项.length) { 行('[smoke] 失败项：' + 失败项.join('；')); 收尾(1); }
+      else { 行('[smoke] 全部通过'); 收尾(0); }
+    }).catch(function () {
+      行('[smoke] 渲染进程错误数：0');
+      收尾(失败项.length ? 1 : 0);
+    });
+  }
+
+  setTimeout(function () {
+    行('[smoke] 超时未完成');
+    收尾(1);
+  }, 45000);
+}
+
 app.whenReady().then(function() {
+  // 启动自检模式：只报告环境，不开窗口（供「快速启动器」的诊断入口调用）
+  if (dshBootOptions.check) {
+    var allOk = false;
+    try { allOk = dshSelfCheck(); } catch (e) { try { process.stdout.write('[FAIL] 自检异常: ' + e.message + '\n'); } catch (e2) {} }
+    app.exit(allOk ? 0 : 1);
+    return;
+  }
+
+  // 冒烟自检模式：隐藏窗口跑一次（F12/F5 自检），按结果给退出码
+  if (dshBootOptions.smoke) {
+    执行冒烟自检();
+    return;
+  }
+
   checkLastHeartbeat();
   // 启动时清除渲染进程缓存，确保 JS 文件更新后不被旧版本覆盖
   session.defaultSession.clearCache().catch(function() {});
@@ -194,17 +442,8 @@ app.whenReady().then(function() {
     } catch(e) {}
   }, 5000);
 
-  // 允许 F12 打开 DevTools
-  mainWindow.webContents.on('before-input-event', function(event, input) {
-    if (input.key === 'F12') {
-      mainWindow.webContents.toggleDevTools();
-      event.preventDefault();
-    }
-    if (input.key === 'F5' && !input.control && !input.meta) {
-      mainWindow.webContents.reload();
-      event.preventDefault();
-    }
-  });
+  // F12 / F5 调试快捷键
+  启用调试快捷键(mainWindow);
 
   // 捕获渲染进程崩溃
   mainWindow.webContents.on('crashed', function() {
@@ -435,6 +674,20 @@ ipcMain.handle('clipboard-write', (event, text) => {
 });
 
 // ===== 窗口模式控制 =====
+ipcMain.handle('devtools-toggle', function(event, mode) {
+  if (!mainWindow) return { ok: false };
+  try {
+    var wc = mainWindow.webContents;
+    if (mode === 'close') { wc.closeDevTools(); return { ok: true }; }
+    if (wc.isDevToolsOpened()) return { ok: true, already: true };
+    if (mode === 'detach' || mode === 'right' || mode === 'bottom' || mode === 'undocked') wc.openDevTools({ mode: mode });
+    else wc.openDevTools();
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+});
+
 ipcMain.handle('set-window-mode', function(event, mode) {
   if (!mainWindow) return;
   if (mode === 'fullscreen') {

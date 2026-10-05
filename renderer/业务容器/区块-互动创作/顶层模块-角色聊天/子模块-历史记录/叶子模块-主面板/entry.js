@@ -81,7 +81,7 @@ function 渲染聊天历史详情(el) {
       msgs.forEach(function(m) {
         var isUser = m.role === 'user';
         h += '<div style="margin-bottom:8px;text-align:' + (isUser ? 'right' : 'left') + '">';
-        h += '<div style="display:inline-block;max-width:85%;padding:8px 12px;border-radius:8px;background:' + (isUser ? 'var(--accent)' : 'var(--bg)') + ';color:' + (isUser ? '#fff' : 'var(--fg)') + ';text-align:left;font-size:13px;line-height:1.5;white-space:pre-wrap">';
+        h += '<div' + (isUser ? ' class="chat-mine"' : '') + ' style="display:inline-block;max-width:85%;padding:8px 12px;border-radius:8px;' + (isUser ? '' : 'background:var(--bg);color:var(--fg);') + 'text-align:left;font-size:13px;line-height:1.5;white-space:pre-wrap">';
         h += '<div class="text-xs mb-2 opacity-7">' + (isUser ? '你' : escHtml(session.character || '角色')) + '</div>';
         h += escHtml(m.content);
         h += '</div></div>';

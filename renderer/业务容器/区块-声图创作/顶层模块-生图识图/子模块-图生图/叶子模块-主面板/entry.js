@@ -2,19 +2,17 @@
 
 // ===== 图生图 =====
 function renderI2I(el) {
-  if (!I2I.model) I2I.model = S.settings.runninghubDefaultI2i || 'seedream-v4';
+  if (!I2I.model) I2I.model = S.settings.runninghubDefaultI2i || '';
   var models = RH.allI2iModels();
   var prefix = 'i2i';
 
   var h = '';
-  // 模型选择
+  // 模型选择：不预设，候选来自官方抓取，也可直接手输模型 id
   h += '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)">';
   h += '<span style="font-size:12px;color:var(--fg2);margin-right:4px">生图模型:</span>';
-  h += '<select id="' + prefix + 'Model" style="background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:12px;max-width:200px">';
-  models.forEach(function(m) {
-    h += '<option value="' + m.id + '"' + (m.id === I2I.model ? ' selected' : '') + '>' + escHtml(m.provider) + ' · ' + escHtml(m.name) + '</option>';
-  });
-  h += '</select></div>';
+  h += 组合框HTML({ id: prefix + 'Model', value: I2I.model, placeholder: '点开选已获取的官方模型，或手输模型 id', style: 'max-width:300px' });
+  if (!models.length) h += '<span style="font-size:11px;color:var(--fg3)">尚未获取模型：请到 设置 → 生图 API 点「🔄 获取可用模型」</span>';
+  h += '</div>';
 
   // 提示词
   h += '<div style="margin-bottom:8px">';
@@ -51,12 +49,17 @@ function renderI2I(el) {
   bindSizeInputs(I2I, prefix);
   bindImageUrl(I2I, prefix);
   bindFileUpload(I2I, prefix, el);
+  attachCombo(prefix + 'Model', {
+    getOptions: function() { return RH.modelOptions(RH.allI2iModels()); },
+    emptyHint: '尚未获取模型：请到 设置 → 生图 API 点「🔄 获取可用模型」，也可以直接手输模型 id',
+  });
 }
 
 function onI2IGenerate() {
   if (I2I.status === 'submitting' || I2I.status === 'waiting') return;
   var prompt = I2I.prompt.trim();
   if (!prompt) { toast('请输入提示词'); return; }
+  if (!I2I.model) { toast('请先选择或输入生图模型（设置 → 生图 API 里可点「🔄 获取可用模型」）'); return; }
   if (!I2I.imageUrl) { toast('图生图需要提供参考图片'); return; }
   I2I.status = 'submitting'; I2I.statusText = '提交任务...';
   updateGenStatus(I2I, 'i2i');

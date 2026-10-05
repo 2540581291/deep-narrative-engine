@@ -111,7 +111,7 @@ function renderTestChat(el) {
     for (var hi = 0; hi < history.length; hi++) {
       var msg = history[hi];
       if (msg.role === 'user') {
-        html += '<div style="text-align:right;margin-bottom:8px"><span style="display:inline-block;background:var(--accent);color:#fff;padding:6px 12px;border-radius:12px 12px 4px 12px;max-width:80%;word-break:break-word">' + escHtml(msg.content) + '</span></div>';
+        html += '<div style="text-align:right;margin-bottom:8px"><span class="chat-mine" style="display:inline-block;padding:6px 12px;border-radius:12px 12px 4px 12px;max-width:80%;word-break:break-word">' + escHtml(msg.content) + '</span></div>';
       } else {
         var isStreaming = msg.role === 'streaming';
         html += '<div style="margin-bottom:8px"><span style="display:inline-block;background:var(--bg1);border:1px solid var(--border);padding:6px 12px;border-radius:12px 12px 12px 4px;max-width:80%;word-break:break-word">' + escHtml(msg.content) + (isStreaming ? '<span class="blink">▊</span>' : '') + '</span></div>';
@@ -188,7 +188,7 @@ function renderTestChatMessages() {
   for (var i = 0; i < history.length; i++) {
     var msg = history[i];
     if (msg.role === 'user') {
-      html += '<div style="text-align:right;margin-bottom:8px"><span style="display:inline-block;background:var(--accent);color:#fff;padding:6px 12px;border-radius:12px 12px 4px 12px;max-width:80%;word-break:break-word">' + escHtml(msg.content) + '</span></div>';
+      html += '<div style="text-align:right;margin-bottom:8px"><span class="chat-mine" style="display:inline-block;padding:6px 12px;border-radius:12px 12px 4px 12px;max-width:80%;word-break:break-word">' + escHtml(msg.content) + '</span></div>';
     } else {
       var isStreaming = msg.role === 'streaming';
       var reasoningHtml = '';
@@ -206,7 +206,7 @@ function clearTestChat() {
 }
 
 function renderAbout(el) {
-  el.innerHTML = '<div style="text-align:center;padding:20px"><h2 style="color:var(--accent);margin-bottom:4px">深度-叙事引擎</h2><p style="color:var(--fg2);font-size:0.85em;margin-bottom:12px">版本 0.1.0</p><p style="color:var(--fg2);font-size:0.78em;margin-bottom:20px">AI 驱动的成人内容创作工具</p><div style="font-size:0.78em;color:var(--fg2);line-height:1.8">Electron + 原生 JavaScript<br>支持多厂商 LLM 接入</div></div>';
+  el.innerHTML = '<div style="text-align:center;padding:20px"><h2 style="color:var(--accent);margin-bottom:4px">深度叙事引擎</h2><p style="color:var(--fg2);font-size:0.85em;margin-bottom:12px">版本 0.2.0</p><p style="color:var(--fg2);font-size:0.78em;margin-bottom:20px">AI 驱动的成人内容创作工具</p><div style="font-size:0.78em;color:var(--fg2);line-height:1.8">Electron + 原生 JavaScript<br>支持多厂商 LLM 接入</div></div>';
 }
 
 function resetLLMState() {

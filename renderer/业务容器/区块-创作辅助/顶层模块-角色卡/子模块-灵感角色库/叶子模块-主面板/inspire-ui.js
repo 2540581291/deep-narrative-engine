@@ -11,18 +11,21 @@ var STCD_INSPIRE_VIEW = { item: null, editing: false, version: 'deep' };
 // ===== 顶层大分区：世界观 / 典型场景 / 典型角色（默认世界观）=====
 var STCD_INSPIRE_SCOPE = { mode: 'world' };   // 'world'(世界观) | 'scene'(典型场景) | 'char'(典型角色)
 // 世界观区的下钻路径（不含顶层「世界观」字面）：如 ['熟女仙界','九重天']
-var STCD_INSPIRE_WORLD = { path: [] };
+// path：浏览位置；关联索引 / 子级索引：页内视图（势力·关联总览、地理·子级视图），不占 path
+var STCD_INSPIRE_WORLD = { path: [], 关联索引: -1, 子级索引: -1, 关联板块: '', 关联维度: '' };
 // 典型场景区：当前选中的场景 id 与正在下钻的节点 id（null=场景列表；否则=该节点树）
 var STCD_INSPIRE_SCENE = { sceneId: null, nodeId: null };
 
 // 世界观子级 · 主题元数据（图标 + 主题色 + 一句话 + UI 序列类型）
 // layout：每个世界专属的下钻 UI 序列
 //   'tier-ladder'  熟女仙界：九重天飞升阶梯（层阶横排 + 仙门/仙岛入口）
-//   'land-board'  大陆棋盘 + 宗门列表
+//   'land-board'   幼女武界：大陆棋盘 + 宗门列表
 //   'pantheon-tree' 诸神神界：神系谱系树（主神 → 附属神 → 属性）
 var STCD_INSPIRE_WORLD_THEMES = {
   '熟女仙界': { icon: '🌺', color: '#d946ef', layout: 'tier-ladder',
     desc: '仙气缥缈的高阶仙界，九重天层层飞升，仙门林立、寿与天齐' },
+  '幼女武界': { icon: '⚔️', color: '#10b981', layout: 'land-board',
+    desc: '以武道为尊的浩渺大陆，宗门林立、境界攀升、以实力说话' },
   '诸神神界': { icon: '✨', color: '#f59e0b', layout: 'pantheon-tree',
     desc: '众神栖居的神域，主神统辖万灵、附属神各司其职、神格划分属性' },
 };
@@ -129,7 +132,7 @@ function stcdInspireSetScope(mode) {
 
 // ===== 世界观区 · 分类UI（世界卡片 + 逐层下钻）=====
 // 世界观分类树从「世界观」节点往下取（categoryTree 仅剩世界观大类；典型场景走独立存储）：
-//   世界观 > 熟女仙界/诸神神界 > 层天/大陆/宗门/神系 > 更细 ...
+//   世界观 > 熟女仙界/幼女武界/诸神神界 > 层天/大陆/宗门/神系 > 更细 ...
 // STCD_INSPIRE_WORLD.path 存「世界观之后」的路径，如 ['熟女仙界','九重天']
 
 // 取世界观节点（categoryTree 中 name='世界观' 的那个）
@@ -152,7 +155,7 @@ function stcdInspireRenderWorld() {
   var path = STCD_INSPIRE_WORLD.path;
   var h = '';
 
-  // --- 顶部：只显示已导入的世界（世界观一律来自「📥 导入世界观」，去掉预设的熟女仙界/诸神神界）---
+  // --- 顶部：只显示已导入的世界（世界观一律来自「📥 导入世界观」，去掉预设的熟女仙界/幼女武界/诸神神界）---
   h += '<div style="background:linear-gradient(135deg,#7c3aed22,#312e8122);border:1px solid #8b5cf6;border-radius:12px;padding:12px;margin-bottom:10px">';
   h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">';
   h += '<div style="font-size:13px;font-weight:700;color:#c4b5fd;flex:1">🌌 世界观</div>';
@@ -169,9 +172,9 @@ function stcdInspireRenderWorld() {
       var active = path[0] === '__import__' && path[1] === nm;
       var icolor = importPalette[ii % importPalette.length];
       var iicon = (imp.icon && imp.icon !== '🌍') ? imp.icon : (importIcons[ii % importIcons.length]);
-      // 只统计「地理/势力」入口（与卡片标签、五入口下钻一致）；世界设定/种族/文化/时间线仅作生成背景，不纳入条目数
+      // 统计全部 7 板块（与世界观模块的版块 TAB 一致），逐维度累加
       var total = 0; var 内容s = imp.内容 || {};
-      ['世界地理','聚落','奇境','世俗政权','超凡势力','地下黑道','邪教淫祠','宗教神权','情色行业结社','军武集团','民间宗族'].forEach(function(k) { total += (内容s[k] || []).length; });
+      STCD_INSPIRE_板块表.forEach(function(b) { b.维度.forEach(function(d) { total += (内容s[d] || []).length; }); });
       var st = active
         ? 'background:' + icolor + ';color:#fff;border-color:' + icolor + ';box-shadow:0 6px 14px ' + icolor + '44'
         : 'background:' + icolor + '14;border-color:' + icolor + ';color:' + icolor;
@@ -179,7 +182,7 @@ function stcdInspireRenderWorld() {
       h += '<button class="btn-out" style="position:absolute;top:6px;right:6px;padding:1px 7px;font-size:10px;color:#e06c75;cursor:pointer;z-index:2" title="删除该已导入世界" onclick="event.stopPropagation();stcdInspire删除导入世界UI(\'' + nm + '\')">🗑</button>';
       h += '<div style="font-size:20px;line-height:1;margin-bottom:6px">' + iicon + '</div>';
       h += '<div style="font-size:13px;font-weight:700;margin-bottom:3px">' + nm + '</div>';
-      h += '<div style="font-size:10px;opacity:0.85;line-height:1.5">' + total + ' 条 · 地理/势力</div>';
+      h += '<div style="font-size:10px;opacity:0.85;line-height:1.5">' + total + ' 条 · 7 板块</div>';
       h += '</div>';
     });
     h += '</div>';
@@ -188,7 +191,7 @@ function stcdInspireRenderWorld() {
 
   // --- 已选中世界：下钻（只支持已导入的世界）---
   if (path.length && path[0] === '__import__') {
-    // 已导入的世界：五入口下钻（世界地理/聚落/奇境/势力类别）
+    // 已导入的世界：按入口下钻（地理四维度 / 势力八维度 / 物品）
     h += stcdInspire导入世界渲染(path);
   }
 
@@ -201,72 +204,518 @@ function stcdInspireRenderWorld() {
   el.innerHTML = h;
 }
 
-// ===== 已导入的世界 · 五入口下钻渲染 =====
-// path 形如 ['__import__', 世界名] → 五入口；['__import__', 世界名, 入口] → 该入口条目列表；
-// ['__import__', 世界名, 入口, 条目名] → 条目子级（可继续生成）。
-function stcdInspire导入世界渲染(path) {
-  var 世界名 = path[1] || '';
-  var 入口 = path[2] || '';
-  var 条目名 = path[3] || '';
-  var list = (window.STCD_INSPIRE_IMPORT_LIST) ? window.STCD_INSPIRE_IMPORT_LIST : [];
-  var imp = null;
-  for (var i = 0; i < list.length; i++) if (list[i].世界名 === 世界名) { imp = list[i]; break; }
-  if (!imp) return '<div style="font-size:11px;color:var(--fg3);padding:10px">找不到已导入的世界「' + escHtml(世界名) + '」</div>';
-  var h = '';
-  // 面包屑返回
-  h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">';
-  h += '<button class="btn-out" style="padding:2px 10px;font-size:11px" onclick="stcdInspireWorldLevel(0,\'\')">‹ 世界观</button>';
-  if (入口) h += '<span style="font-size:11px;color:var(--fg3)">' + escHtml(世界名) + '</span>';
-  h += '</div>';
+// ===== 已导入的世界 · 按世界观「世界版块表」分类浏览 =====
+// 层级与世界观模块一致：世界 → 板块（7）→ 子维度（小 TAB）→ 条目 → 子级 / 关联总览 / 层级视图。
+// path 形如 ['__import__', 世界名]              → 板块卡片
+//            ['__import__', 世界名, 维度]        → 该板块的子维度 TAB + 条目列表
+//            ['__import__', 世界名, 维度, 条目名] → 该条目的「层级视图」（级别 · 职位，角色锚点）
+// 板块由「维度」反查得到，因此 path 形状与旧版一致，已有角色的 category 不受影响。
+// ⚠ 世界观模块的维度若有增删，本表与 inspire-data.js 的抓取清单要一起同步。
+// 角色卡只需要「能长出角色」的那几块：势力（谁是主）、地理（在哪儿）、种族（是什么）、物品（拿什么）。
+// 世界设定 / 文化 / 时间线是纯背景，角色卡里**不出现、也不导入**。
 
-  // ===== 已下钻到某个势力/地点条目 → 渲染该势力的「层级视图」=====
-  if (条目名) {
-    var itemArr = (imp.内容 && imp.内容[入口]) || [];
-    var item = null, itemIdx = -1;
-    for (var it = 0; it < itemArr.length; it++) if (itemArr[it]['条目'] === 条目名) { item = itemArr[it]; itemIdx = it; break; }
-    if (item) return stcdInspire导入世界层级视图(世界名, 入口, item, itemIdx);
+var STCD_INSPIRE_板块表 = [
+  { 板块: '势力',     icon: '🏴', 关联: true, 维度: ['世俗政权', '超凡势力', '地下黑道', '邪教淫祠', '宗教神权', '情色行业结社', '民间宗族'] },
+  { 板块: '地理',     icon: '🗺️', 可下钻: true, 维度: ['世界地理', '大城名宗', '乡镇村落', '奇境'] },
+  { 板块: '种族',     icon: '🧬', 可下钻: true, 维度: ['种族', '文明'] },
+  // 军队：**九个维度都是兵种**（与世界观模块的「军队」板块一一对应）。
+  // 军队条目本身带「所属势力」指回势力板块，所以它们不是势力名（见 stcdInspire势力清单 的说明）。
+  { 板块: '军队',     icon: '⚔️', 可下钻: true, 维度: ['步兵', '骑兵', '战车', '远程', '法师', '怪兽', '炮械', '空军', '海军'] },
+  { 板块: '物品',     icon: '🎁', 池化: '物品', 维度: ['神器', '圣物', '兵刃', '甲胄', '饰物', '束具', '坐骑', '战兽', '随从', '奴仆', '药剂', '器物'] },
+];
+function stcdInspire板块定义(板块名) {
+  for (var i = 0; i < STCD_INSPIRE_板块表.length; i++) if (STCD_INSPIRE_板块表[i].板块 === 板块名) return STCD_INSPIRE_板块表[i];
+  return null;
+}
+function stcdInspire板块之维度(维度名) {
+  if (!维度名) return null;
+  for (var i = 0; i < STCD_INSPIRE_板块表.length; i++) {
+    if (STCD_INSPIRE_板块表[i].维度.indexOf(维度名) >= 0) return STCD_INSPIRE_板块表[i];
   }
+  return null;
+}
+// 按「入口」反查板块名。入口通常就是维度名；但「物品」是池化键，要另外认。
+function stcdInspire板块名(入口) {
+  var b = stcdInspire板块之维度(入口);
+  if (!b) {
+    for (var i = 0; i < STCD_INSPIRE_板块表.length; i++) {
+      if (STCD_INSPIRE_板块表[i].池化 === 入口) { b = STCD_INSPIRE_板块表[i]; break; }
+    }
+  }
+  return b ? b.板块 : '';
+}
+// 锚点释义：把「它属于哪个板块」翻成提示词能直接用的人话。
+// 级别/职位/代表人物三处生成共用，避免提示词写死成「势力」。
+function stcdInspire锚点释义(入口) {
+  var 板块 = stcdInspire板块名(入口);
+  if (板块 === '地理') {
+    return { 板块: '地理', 主体: '地点',
+      释义: '它是一个**地点**（大陆、城市、乡镇、奇境、遗迹……）。它的「级别」＝**这个地点里由高到低的身份与职掌**——官府与驻军、行会与寺庙、街巷与场院里的各色人等，谁管着谁、谁在这里说话管用。' };
+  }
+  if (板块 === '种族') {
+    return { 板块: '种族', 主体: '种族 / 文明',
+      释义: '它是一个**种族或文明**。它的「级别」＝**这一族内部由高到低的身份与职掌**——血统与出身、阶层与职分、性别与年龄带来的位置，谁在上、谁被使用。' };
+  }
+  if (板块 === '物品') {
+    // **不做特殊化**：随从 / 奴仆 与神器、兵刃、坐骑、战兽一样，都是「物品」这个大板块下的器物，
+    // 释义、主体、提示词全部同一套（它们只是内容上是人而已，见下方 人物补充）。
+    return { 板块: '物品', 主体: '器物',
+      释义: '它是一件**器物**。它的「级别」＝**围绕这件器物形成的、由高到低的人事关系**——谁掌有它、谁守护它、谁为它效力、谁被它使用或消耗；级别即这些人在这个体系里的位置。' };
+  }
+  if (板块 === '军队') {
+    return { 板块: '军队', 主体: '兵种',
+      释义: '它是一个**兵种 / 成建制的武装**（步兵、骑兵、战车、远程、法师、怪兽、炮械、空军、海军里的某一支——如某骑士团、某弓手队、某支兽群、某支舰队）。它的「级别」＝**这支部队内部由高到低的身份与职掌**——统帅与诸将、各层军官与番号、随军的事务与祭仪人员、以及被这支部队占有和驱使的人（军奴、随军娼妇、战利品）。' };
+  }
+  if (板块 === '势力') {
+    return { 板块: '势力', 主体: '势力',
+      释义: '它是一个**组织 / 机构**（政权、教派、军团、行会、宗族……）。它的「级别」＝**这个组织内部由高到低的身份与职掌**。' };
+  }
+  return { 板块: 板块 || '条目', 主体: '主体',
+    释义: '它是一个**条目主体**。它的「级别」＝**这个主体内部由高到低的身份与职掌**。' };
+}
 
-  if (!入口) {
-    // 入口平铺：地理三入口 + 势力全部类别（与世界观模块 世界版块表 一致，含新加的地下黑道/宗教神权等）
-    var 入口表 = [
-      {名:'世界地理',icon:'🌍'}, {名:'聚落',icon:'🏘️'}, {名:'奇境',icon:'🌀'},
-      {名:'世俗政权',icon:'🏛️'}, {名:'超凡势力',icon:'⚔️'}, {名:'地下黑道',icon:'🕶️'},
-      {名:'邪教淫祠',icon:'🩸'}, {名:'宗教神权',icon:'⛪'}, {名:'情色行业结社',icon:'🌸'}, {名:'军武集团',icon:'🛡️'}, {名:'民间宗族',icon:'🏮'},
-    ];
-    h += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px">';
-    入口表.forEach(function(e) {
-      var cnt = (imp.内容 && imp.内容[e.名]) ? imp.内容[e.名].length : 0;
-      h += '<div style="border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;background:var(--bg2)" onclick="stcdInspire导入世界进入入口(\'' + 世界名 + '\',\'' + e.名 + '\')">';
-      h += '<div style="font-size:22px;margin-bottom:6px">' + e.icon + '</div>';
-      h += '<div style="font-size:13px;font-weight:700">' + e.名 + '</div>';
-      h += '<div style="font-size:10px;color:var(--fg3);margin-top:3px">' + cnt + ' 条</div>';
-      h += '</div>';
+// 「随从 / 奴仆」这两类**不做任何特殊化**：释义、主体、提示词与别的器物完全一致，
+// 只在提示词**最下面**补这段「这一条写的是人」的说明——
+// 生成人物时优先直接生成她／他本人；本人已经生成过，就转而生成曾经拥有过她／他的人、
+// 或与她／他有关的其他人物（上位者、同僚、经手人、被牵连的亲属等）。
+// 其余器物：返回空串，模板里的 {补充} 会被替换成空、什么也不多说。
+function stcdInspire人物补充(入口) {
+  if (入口 !== '随从' && 入口 !== '奴仆') return '';
+  return '\n\n【补充·这一条写的是人】「' + 入口 + '」这一类条目**本身就是一个人**——它虽然挂在「物品」板块下，写的却不是东西而是人。' +
+    '因此生成人物时：**优先直接生成她／他本人**（她／他就是这一条的主角）；' +
+    '若她／他本人已经作为角色生成过了，就转而生成**曾经拥有过她／他的人**（主人、买主、经手人、转手过她的人），' +
+    '或**与她／他有关的其他人物**（上位者、同僚、亲属、被她牵连或牵连过她的人）。';
+}
+window.stcdInspire人物补充 = stcdInspire人物补充;
+// 切换浏览位置时清掉页内状态（关联总览 / 子级视图）
+function stcdInspire导入世界重置视图() {
+  STCD_INSPIRE_WORLD.关联索引 = -1;
+  STCD_INSPIRE_WORLD.子级索引 = -1;
+  STCD_INSPIRE_WORLD.关联板块 = '';
+  STCD_INSPIRE_WORLD.关联维度 = '';
+}
+// 取某个维度下的条目。「物品」是**池化目录**（12 个维度汇在一个键里），
+// 靠导入时盖的「_维度」戳筛出该维度的那一批；其余板块一个维度一个键，直接取。
+function stcdInspire取维度条目(内容, 维度) {
+  var b = stcdInspire板块之维度(维度);
+  if (b && b.池化) return ((内容 || {})[b.池化] || []).filter(function(it) { return it['_维度'] === 维度; });
+  return ((内容 || {})[维度] || []);
+}
+// 某个板块的条目总数（池化板块按 12 个维度分别数）
+function stcdInspire板块条数(内容, b) {
+  var n = 0;
+  if (b.池化) { b.维度.forEach(function(d) { n += stcdInspire取维度条目(内容, d).length; }); return n; }
+  b.维度.forEach(function(d) { n += ((内容 || {})[d] || []).length; });
+  return n;
+}
+
+// ===== 势力 · 关联总览（与世界观模块同一套逻辑）=====
+// 「所属势力」可能是「甲、乙」多个，而势力名本身可能含「、」，
+// 所以不能按分隔符盲切，要拿已知势力名做**最长匹配**。
+// 每条都带「板块」：关联面板要按 板块 → 维度 两级筛（与世界观的 世界关联组表 同构）。
+var STCD_INSPIRE_关联组表 = [
+  { 板块: '种族', 维度: '种族', icon: '🧬', label: '种族' },
+  { 板块: '种族', 维度: '文明', icon: '🏛️', label: '文明' },
+  // 军队：兵种条目用「所属势力」指回势力板块，所以某个势力的关联总览里会汇出它名下的那些兵种
+  { 板块: '军队', 维度: '步兵', icon: '🚶', label: '下辖步兵' },
+  { 板块: '军队', 维度: '骑兵', icon: '🐎', label: '下辖骑兵' },
+  { 板块: '军队', 维度: '战车', icon: '🛞', label: '下辖战车' },
+  { 板块: '军队', 维度: '远程', icon: '🏹', label: '下辖远程' },
+  { 板块: '军队', 维度: '法师', icon: '✨', label: '下辖法师' },
+  { 板块: '军队', 维度: '怪兽', icon: '🐉', label: '下辖怪兽' },
+  { 板块: '军队', 维度: '炮械', icon: '💥', label: '下辖炮械' },
+  { 板块: '军队', 维度: '空军', icon: '🦅', label: '下辖空军' },
+  { 板块: '军队', 维度: '海军', icon: '⚓', label: '下辖海军' },
+  { 板块: '物品', 维度: '神器', icon: '🏺', label: '神器' },
+  { 板块: '物品', 维度: '圣物', icon: '🕊️', label: '圣物' },
+  { 板块: '物品', 维度: '兵刃', icon: '⚔️', label: '兵刃' },
+  { 板块: '物品', 维度: '甲胄', icon: '🛡️', label: '甲胄' },
+  { 板块: '物品', 维度: '饰物', icon: '💍', label: '饰物' },
+  { 板块: '物品', 维度: '束具', icon: '⛓️', label: '束具' },
+  { 板块: '物品', 维度: '坐骑', icon: '🐎', label: '坐骑' },
+  { 板块: '物品', 维度: '战兽', icon: '🐉', label: '战兽' },
+  { 板块: '物品', 维度: '随从', icon: '🧑‍💼', label: '随从' },
+  { 板块: '物品', 维度: '奴仆', icon: '🪢', label: '奴仆' },
+  { 板块: '物品', 维度: '药剂', icon: '⚗️', label: '药剂' },
+  { 板块: '物品', 维度: '器物', icon: '🧰', label: '器物' },
+  { 板块: '地理', 维度: '世界地理', icon: '🌍', label: '所在世界地理' },
+  { 板块: '地理', 维度: '大城名宗', icon: '🏙️', label: '拥有的大城名宗' },
+  { 板块: '地理', 维度: '乡镇村落', icon: '🏘️', label: '乡镇村落与据点' },
+  { 板块: '地理', 维度: '奇境', icon: '🌀', label: '奇境' },
+  { 板块: '文化', 维度: '文化与习俗', icon: '📜', label: '文化与习俗' },
+  { 板块: '文化', 维度: '哲学与信仰', icon: '🕯️', label: '哲学与信仰' },
+  { 板块: '文化', 维度: '性征与繁衍', icon: '🧫', label: '性征与繁衍' },
+  { 板块: '时间线', 维度: '历史年表', icon: '⏳', label: '历史年表' },
+  { 板块: '时间线', 维度: '事件链', icon: '🔗', label: '相关事件链' },
+  { 板块: '时间线', 维度: '战役', icon: '🔥', label: '相关战役' },
+  { 板块: '时间线', 维度: '剧情种子', icon: '🌱', label: '相关剧情种子' },
+  { 板块: '世界设定', 维度: '宇宙与法则', icon: '📖', label: '宇宙与法则' },
+  { 板块: '世界设定', 维度: '力量体系', icon: '✨', label: '力量体系' },
+  { 板块: '世界设定', 维度: '情色生态', icon: '🫧', label: '情色生态' },
+];
+function stcdInspire关联组元(维度) {
+  for (var i = 0; i < STCD_INSPIRE_关联组表.length; i++) if (STCD_INSPIRE_关联组表[i].维度 === 维度) return STCD_INSPIRE_关联组表[i];
+  return { 维度: 维度, icon: '📄', label: 维度 };
+}
+function stcdInspire关联组元(维度) {
+  for (var i = 0; i < STCD_INSPIRE_关联组表.length; i++) if (STCD_INSPIRE_关联组表[i].维度 === 维度) return STCD_INSPIRE_关联组表[i];
+  return { 维度: 维度, icon: '📄', label: 维度 };
+}
+// 该世界的全部势力名（**只认「势力」板块的全部条目名**）
+// 军队**不进来**：军队板块的维度都是兵种，兵种不是势力——它们自己的「所属势力」指回势力板块，
+// 收集兵种名当势力名只会让「XX骑士团」被当成一个势力，把归属判歪。
+function stcdInspire势力清单(imp) {
+  var out = [], 内容 = (imp && imp.内容) || {};
+  var 收板块 = function(板块名) {
+    var b = stcdInspire板块定义(板块名);
+    if (!b) return;
+    b.维度.forEach(function(d) {
+      (内容[d] || []).forEach(function(it) { if (it['条目']) out.push(it['条目']); });
+    });
+  };
+  收板块('势力');
+  return out;
+}
+function stcdInspire归入势力(条目项, 势力名, 词表) {
+  if (!条目项 || !势力名) return false;
+  var v = String(条目项['所属势力'] || '').trim();
+  if (!v || v === '无') return false;
+  var i = 0, 命中 = false;
+  while (i < v.length) {
+    if (/[、，,;；\/\s]/.test(v.charAt(i))) { i++; continue; }
+    var hit = '', maxL = Math.min(24, v.length - i);
+    for (var L = maxL; L >= 2; L--) {
+      var cand = v.substr(i, L);
+      if (词表.indexOf(cand) >= 0) { hit = cand; break; }
+    }
+    // 认不出的词跳过继续往后认，不再一票否决整条（与世界观模块同一口径，见 世界归入势力）
+    if (!hit) { i++; continue; }
+    if (hit === 势力名) 命中 = true;
+    i += hit.length;
+  }
+  return 命中;
+}
+// 扫描该世界**全部导入维度**，汇出「归属于该势力」的条目并按维度分组。
+// 覆盖到不作浏览入口的那几块（世界设定 / 文化 / 时间线）——它们既然导入了，挂在势力名下就该露出来。
+// 顺序＝板块表顺序（物品展开成 12 个维度），其后是其余导入维度。
+function stcdInspire扫描关联(imp, 势力名) {
+  var 词表 = stcdInspire势力清单(imp);
+  var 内容 = (imp && imp.内容) || {};
+  var 势维 = {}, 池键 = {};
+  STCD_INSPIRE_板块表.forEach(function(b) {
+    if (b.板块 === '势力') { b.维度.forEach(function(d) { 势维[d] = 1; }); return; }
+    if (b.池化) 池键[b.池化] = 1;
+  });
+  var 维序 = [];
+  STCD_INSPIRE_板块表.forEach(function(b) {
+    if (b.板块 === '势力') return;
+    b.维度.forEach(function(d) { if (维序.indexOf(d) < 0) 维序.push(d); });
+  });
+  Object.keys(内容).forEach(function(k) {
+    if (势维[k] || 池键[k]) return;
+    if (维序.indexOf(k) < 0) 维序.push(k);
+  });
+  var 组 = [];
+  维序.forEach(function(dim) {
+    var hits = stcdInspire取维度条目(内容, dim).filter(function(it) { return stcdInspire归入势力(it, 势力名, 词表); });
+    // 每条都带上**它属于哪个板块**：关联面板要按 板块 → 维度 两级筛（与世界观模块同构）
+    if (hits.length) 组.push({ 板块: stcdInspire维度之板块(dim), 维度: dim, 条目: hits });
+  });
+  return 组;
+}
+
+// 某个维度属于哪个板块（关联面板按板块筛要用）：
+//   ① 浏览用的板块表里登记过（势力 / 地理 / 种族 / 军队 / 物品）→ 取它；
+//   ② 只在关联组表里登记（文化 / 时间线 / 世界设定）→ 取组表里的板块；
+//   ③ 都没登记的旧维度 → 就拿维度名当板块名（照样能在面板里选到，不会被藏起来）
+function stcdInspire维度之板块(维度) {
+  var b = stcdInspire板块之维度(维度);
+  if (b) return b.板块;
+  for (var i = 0; i < STCD_INSPIRE_关联组表.length; i++) {
+    if (STCD_INSPIRE_关联组表[i].维度 === 维度) return STCD_INSPIRE_关联组表[i].板块 || 维度;
+  }
+  return 维度;
+}
+
+// ============================================================
+// 与「世界观」模块同一套外观（本文件的浏览界面全部走这几个共用件）
+// ------------------------------------------------------------
+// 世界观模块里的这几件是**全局**的，且那个文件在 index.html 里先于本文件加载
+// （世界观的视图列表 392、本文件 442），所以这里直接复用：
+//   世界字段序 / 世界条目正文 / 世界详情字段 / 世界详情内部设定 / 世界工具条 /
+//   世界分组表 / 世界分组引导表
+// 这样两个模块的 版块 TAB、维度 TAB、条目卡、正文、详情弹窗、内部块 才会长得一模一样。
+// 本模块**自己的**东西只有一件：「级别 · 职位」（拿世界观的条目当角色锚点），
+// 它在卡片与详情弹窗的右侧保持原样，不参与这套外观统一。
+// ============================================================
+
+function stcdInspire取导入世界(世界名) {
+  var list = (window.STCD_INSPIRE_IMPORT_LIST) ? window.STCD_INSPIRE_IMPORT_LIST : [];
+  for (var i = 0; i < list.length; i++) if (list[i].世界名 === 世界名) return list[i];
+  return null;
+}
+
+// 条目正文 / 工具条：直接用世界观模块那两份（缺件时兜底，不至于整块空白）
+function stcdInspire条目正文(item, 跳过字段) {
+  if (typeof window.世界条目正文 === 'function') return window.世界条目正文(item, 跳过字段);
+  return '<div style="font-size:11px;color:var(--fg2);line-height:1.75;white-space:pre-wrap">' + escHtml((item || {})['详细描述'] || '') + '</div>';
+}
+function stcdInspire详情字段(item, 跳过字段) {
+  if (typeof window.世界详情字段 === 'function') return window.世界详情字段(item, 跳过字段);
+  return stcdInspire条目正文(item, 跳过字段);
+}
+function stcdInspire详情内部设定(item, sec, dim) {
+  if (typeof window.世界详情内部设定 === 'function') return window.世界详情内部设定(item, sec, dim);
+  return '';
+}
+function stcdInspire工具条(opts) {
+  if (typeof window.世界工具条 === 'function') return window.世界工具条(opts);
+  opts = opts || {};
+  var h = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">';
+  if (opts.返回文字 && opts.返回动作) h += '<button class="btn-out" style="padding:2px 10px;font-size:11px" onclick="' + opts.返回动作 + '">‹ 返回 ' + escHtml(opts.返回文字) + '</button>';
+  h += '<div style="font-size:13px;font-weight:700;flex:1">' + escHtml(opts.标题 || '') +
+       (opts.计数 !== undefined && opts.计数 !== null ? ' <span style="font-size:10px;color:var(--fg3);font-weight:400">' + opts.计数 + ' ' + (opts.计数单位 || '条') + '</span>' : '') + '</div>';
+  (opts.右侧 || []).forEach(function(b) {
+    h += '<button class="' + (b.主 ? 'btn-main' : 'btn-out') + '" style="padding:2px 10px;font-size:11px' + (b.色 ? ';color:' + b.色 : '') + '" onclick="' + b.动作 + '">' + b.文字 + '</button>';
+  });
+  h += '</div>';
+  return h;
+}
+
+// 条目卡（世界观模块那个样子）：点整块 = 主动作；右侧挂次级按钮与进入提示
+function stcdInspire条目卡(名, 主点击, 主提示, 次级, 提示, 正文) {
+  var h = '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;cursor:pointer" title="' + escHtml(主提示 || '') + '" onclick="' + 主点击 + '">';
+  h += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
+  h += '<div style="font-size:13px;font-weight:700;color:var(--fg);flex:1">' + escHtml(名 || '（未命名）') + '</div>';
+  (次级 || []).forEach(function(b) {
+    h += '<button class="btn-out" style="padding:1px 8px;font-size:9px' + (b.色 ? ';color:' + b.色 : '') + '"' +
+         (b.提示 ? ' title="' + escHtml(b.提示) + '"' : '') + ' onclick="event.stopPropagation();' + b.动作 + '">' + b.文字 + '</button>';
+  });
+  if (提示) h += '<span style="font-size:9px;color:var(--accent2);flex-shrink:0">' + escHtml(提示) + '</span>';
+  h += '</div>';
+  return h + (正文 || '') + '</div>';
+}
+
+// 板块元信息（图标 / 名字）：优先用世界观模块那张表（两边同一套图标与顺序）
+function stcdInspire板块元(sec) {
+  if (Array.isArray(window.世界可用模块)) {
+    for (var i = 0; i < window.世界可用模块.length; i++) if (window.世界可用模块[i].id === sec) return window.世界可用模块[i];
+  }
+  for (var j = 0; j < STCD_INSPIRE_板块表.length; j++) if (STCD_INSPIRE_板块表[j].板块 === sec) return { id: sec, icon: STCD_INSPIRE_板块表[j].icon, label: sec };
+  return { id: sec, icon: '📄', label: sec };
+}
+function stcdInspire板块序() {
+  var 序 = [];
+  if (Array.isArray(window.世界可用模块)) window.世界可用模块.forEach(function(m) { 序.push(m.id); });
+  if (!序.length) 序 = ['世界设定', '地理', '势力', '种族', '军队', '物品', '文化', '时间线'];
+  return 序;
+}
+
+// 军队 / 地理 的条目内部分组：直接取世界观模块那一套（军队 7 块、地理 6 块，含每块的引导语）
+function stcdInspire分组表(sec, 维度) {
+  if (typeof window.世界分组表 === 'function') return window.世界分组表(sec, 维度);
+  return null;
+}
+function stcdInspire分组引导表(sec, 维度) {
+  if (typeof window.世界分组引导表 === 'function') return window.世界分组引导表(sec, 维度);
+  return {};
+}
+// 某个子级属于哪一块（没标分组 / 分组名不认识 → 落第一块，与世界观模块同一口径）
+function stcdInspire子级分组名(分组表, it) {
+  var g = it && it['分组'];
+  return (g && 分组表.indexOf(g) >= 0) ? g : 分组表[0];
+}
+
+// 版块 TAB + 维度 TAB（**常驻**：与世界观模块的编辑器一样，浏览时一直挂在最上面）
+function stcdInspire世界导航(世界名, 维度) {
+  var imp = stcdInspire取导入世界(世界名);
+  if (!imp) return '';
+  var 内容 = imp.内容 || {};
+  var 板块 = stcdInspire板块之维度(维度);
+  var h = '<div class="sub-nav" style="margin-bottom:8px;flex-wrap:wrap;row-gap:2px">';
+  STCD_INSPIRE_板块表.forEach(function(b) {
+    var 选 = !!(板块 && b.板块 === 板块.板块);
+    h += '<div class="sub-nav-item' + (选 ? ' act' : '') + '" onclick="stcdInspire导入世界进入入口(\'' + escHtml(世界名) + '\',\'' + escHtml(b.维度[0]) + '\')">' +
+         b.icon + ' ' + escHtml(b.板块) + ' <span style="font-size:9px;opacity:0.7">' + stcdInspire板块条数(内容, b) + '</span></div>';
+  });
+  h += '</div>';
+  if (板块 && 板块.维度.length > 1) {
+    h += '<div class="sub-nav" style="margin-bottom:8px;flex-wrap:wrap;row-gap:2px">';
+    板块.维度.forEach(function(d) {
+      h += '<div class="sub-nav-item' + (d === 维度 ? ' act' : '') + '" style="font-size:11px" onclick="stcdInspire导入世界进入入口(\'' + escHtml(世界名) + '\',\'' + escHtml(d) + '\')">' +
+           escHtml(d) + ' <span style="font-size:9px;opacity:0.7">' + stcdInspire取维度条目(内容, d).length + '</span></div>';
     });
     h += '</div>';
-    return h;
   }
-  // 入口下：该入口的条目列表（可点条目进入子级/继续生成）
-  var items = (imp.内容 && imp.内容[入口]) || [];
-  h += '<div class="n-card" style="padding:14px">';
-  h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">';
-  h += '<div style="font-size:13px;font-weight:700;flex:1">' + escHtml(入口) + ' <span style="font-size:10px;color:var(--fg3);font-weight:400">' + items.length + ' 条</span></div>';
-  h += '<button class="btn-main" style="padding:2px 10px;font-size:11px" onclick="stcdInspire导入世界生成(\'' + 世界名 + '\',\'' + 入口 + '\')">✨ AI 生成</button>';
-  h += '</div>';
+  return h;
+}
+
+function stcdInspire导入世界渲染(path) {
+  var 世界名 = path[1] || '';
+  var 维度 = path[2] || '';
+  var 条目名 = path[3] || '';
+  var 子级名 = path[4] || '';
+  var imp = stcdInspire取导入世界(世界名);
+  if (!imp) return '<div style="font-size:11px;color:var(--fg3);padding:10px">找不到已导入的世界「' + escHtml(世界名) + '」</div>';
+  var 内容 = imp.内容 || {};
+  var 板块 = stcdInspire板块之维度(维度);
+  // 进了世界但没给维度 → 落到第一个板块的第一个维度（世界观模块进板块也是自动选第一个维度）
+  if (!维度 && STCD_INSPIRE_板块表.length) {
+    板块 = STCD_INSPIRE_板块表[0];
+    维度 = 板块.维度[0] || '';
+  }
+  // 常驻导航：下面每一种视图都挂在它下面
+  var nav = stcdInspire世界导航(世界名, 维度);
+
+  // ===== 条目 → 层级视图（级别 · 职位，角色锚点）=====
+  // 注意：这里按**存储数组**定位（物品是池化目录，「物品」键下一个数组），
+  // 下标与存储键一起传给层级视图，下游的级别/职位/角色生成函数都按存储键取，口径一致。
+  if (条目名) {
+    var 存键 = stcdInspire存键(维度);
+    var 池 = 内容[存键] || [];
+    var item = null, itemIdx = -1;
+    for (var it = 0; it < 池.length; it++) if (池[it]['条目'] === 条目名) { item = 池[it]; itemIdx = it; break; }
+    if (item) return nav + stcdInspire导入世界层级视图(世界名, 维度, item, itemIdx, 存键, 子级名);
+  }
+  // ===== 势力：关联总览（点势力卡片后展开它下辖的种族 / 物品 / 地点 / 事件）=====
+  if (板块 && 板块.关联 && STCD_INSPIRE_WORLD.关联索引 >= 0) {
+    var 势arr = stcdInspire取维度条目(内容, 维度);
+    if (势arr[STCD_INSPIRE_WORLD.关联索引]) return nav + stcdInspire导入世界渲染关联(imp, 世界名, 维度, STCD_INSPIRE_WORLD.关联索引);
+  }
+  // ===== 有子级的条目：条目内部（军队 / 地理 按分组铺开，其余板块平铺）=====
+  if (STCD_INSPIRE_WORLD.子级索引 >= 0) {
+    var 钻arr = stcdInspire取维度条目(内容, 维度);
+    if (钻arr[STCD_INSPIRE_WORLD.子级索引]) return nav + stcdInspire导入世界渲染子级(世界名, 维度, STCD_INSPIRE_WORLD.子级索引);
+  }
+
+  // ===== 该维度的条目列表（工具条 + 条目卡，与世界观模块同一套）=====
+  var items = stcdInspire取维度条目(内容, 维度);
+  var 有关联 = !!(板块 && 板块.关联);
+  var h = '<div class="n-card" style="padding:14px">';
+  h += stcdInspire工具条({ 标题: 维度, 计数: items.length, 计数单位: '条' });
   if (!items.length) {
-    h += '<div style="text-align:center;padding:22px 12px;color:var(--fg3)">还没有内容，用「✨ AI 生成」自动产出</div>';
+    h += '<div style="font-size:10px;color:var(--fg3);line-height:1.7;background:var(--bg2);border:1px dashed var(--border);border-radius:8px;padding:8px 10px">' +
+         '这个维度还没有内容——到「世界观」模块补上后，重新点一次「📥 导入世界观」即可带过来</div>';
   } else {
-    h += '<div style="display:flex;flex-direction:column;gap:6px">';
+    h += '<div style="display:flex;flex-direction:column;gap:5px">';
     items.forEach(function(item, idx) {
       var t = item['条目'] || '条目';
-      var 层级数 = (item['层级'] && item['层级'].length) ? item['层级'].length : 0;
-      h += '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px;cursor:pointer" onclick="stcdInspire导入世界进入势力(\'' + 世界名 + '\',\'' + 入口 + '\',' + idx + ')">';
-      h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">';
-      h += '<div style="font-size:13px;font-weight:700;color:var(--fg);flex:1">' + escHtml(t) + '</div>';
-      h += '<span style="font-size:10px;color:var(--fg3)">' + (层级数 ? 层级数 + ' 层级' : '进入') + ' ›</span>';
-      h += '</div>';
-      if (item['详细描述']) h += '<div style="font-size:11px;color:var(--fg2);line-height:1.6">' + escHtml(item['详细描述']) + '</div>';
-      h += '</div>';
+      var hasSub = !!(item['子级'] && item['子级'].length);
+      // 点整块 = 进入：势力 → 关联总览 ｜ 有子级 → 条目内部 ｜ 其余（含物品）→ 它的「级别 · 职位」。
+      // 右侧另有「📄 详情」——就地看全文，不跳转（与世界观模块的卡片一样：卡片进、按钮看）。
+      var 点击动作 = 有关联
+        ? 'stcdInspire导入世界展开关联(\'' + escHtml(世界名) + '\',\'' + escHtml(维度) + '\',' + idx + ')'
+        : (hasSub
+            ? 'stcdInspire导入世界下钻子级(\'' + escHtml(世界名) + '\',\'' + escHtml(维度) + '\',' + idx + ')'
+            : 'stcdInspire导入世界进入势力(\'' + escHtml(世界名) + '\',\'' + escHtml(维度) + '\',' + idx + ')');
+      var 提示 = 有关联 ? '展开关联 ›' : (hasSub ? '下钻 ' + item['子级'].length + ' ›' : '级别 · 职位 ›');
+      var 次级 = [{ 文字: '📄 详情', 动作: 'stcdInspire导入世界看条目(\'' + escHtml(世界名) + '\',\'' + escHtml(维度) + '\',' + idx + ')', 提示: '就地看这一条的全文（不跳转）' }];
+      h += stcdInspire条目卡(t, 点击动作, '点击进入', 次级, 提示, stcdInspire条目正文(item));
+    });
+    h += '</div>';
+  }
+  h += '</div>';
+  return nav + h;
+}
+
+// ===== 势力 · 关联总览（与世界观模块同一套：按板块筛 → 该板块的维度 TAB → 条目卡）=====
+// 「所属势力」的归属现扫现汇，本身不存数据——两边永远不会不一致。
+function stcdInspire导入世界渲染关联(imp, 世界名, 维度, idx) {
+  var item = stcdInspire取维度条目(imp.内容, 维度)[idx] || {};
+  var 名 = item['条目'] || '势力';
+  var 组 = stcdInspire扫描关联(imp, 名);
+  var 总 = 组.reduce(function(a, g) { return a + g.条目.length; }, 0);
+
+  // 按板块归拢（顺序 = 世界观模块的顶层板块顺序）
+  var 序 = stcdInspire板块序();
+  var 篮 = {};
+  组.forEach(function(g) { (篮[g.板块] = 篮[g.板块] || []).push(g); });
+  // 候选板块 / 维度一律取**全量表**（关联组表），不是「已经有内容的那些」——
+  // 空白状态也要能选能筛（零锁定，与世界观模块同一处理）
+  var 候选板块 = [];
+  STCD_INSPIRE_关联组表.forEach(function(g) { if (g.板块 && 候选板块.indexOf(g.板块) < 0) 候选板块.push(g.板块); });
+  Object.keys(篮).forEach(function(s) { if (候选板块.indexOf(s) < 0) 候选板块.push(s); });
+  候选板块.sort(function(a, b) { var ia = 序.indexOf(a), ib = 序.indexOf(b); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib); });
+  // 有内容的板块（按板序）——默认落在第一个真有内容的板块上，一进来就是空格子看着像没功能
+  var 有内容 = 候选板块.filter(function(sec) { return (篮[sec] || []).length; });
+  var st = STCD_INSPIRE_WORLD;
+  if (候选板块.indexOf(st.关联板块) < 0) st.关联板块 = 有内容[0] || 候选板块[0] || '';
+  var 本板块维度 = [];
+  STCD_INSPIRE_关联组表.forEach(function(g) { if (g.板块 === st.关联板块 && 本板块维度.indexOf(g.维度) < 0) 本板块维度.push(g.维度); });
+  (篮[st.关联板块] || []).forEach(function(g) { if (本板块维度.indexOf(g.维度) < 0) 本板块维度.push(g.维度); });
+  var 本板块组 = 篮[st.关联板块] || [];
+  if (本板块维度.indexOf(st.关联维度) < 0) {
+    // 默认落在这板块下**第一个有内容的维度**上；整块都空时才留在第一个维度
+    // （用户自己点的空格子不会被顶掉——那条路进来时 关联维度 已在本板块维度里了）
+    st.关联维度 = (本板块组[0] && 本板块组[0].维度) || 本板块维度[0] || '';
+  }
+  var 当前组 = null;
+  for (var i = 0; i < 本板块组.length; i++) if (本板块组[i].维度 === st.关联维度) { 当前组 = 本板块组[i]; break; }
+  if (!当前组) 当前组 = { 板块: st.关联板块, 维度: st.关联维度, 条目: [] };
+
+  var h = '<div class="n-card" style="padding:14px">';
+  h += stcdInspire工具条({
+    返回文字: 维度,
+    返回动作: 'stcdInspire导入世界收起关联(\'' + escHtml(世界名) + '\')',
+    标题: '🏴 ' + 名,
+    计数: 总,
+    计数单位: '条关联',
+    右侧: [{ 文字: '级别 · 职位 ›', 动作: 'stcdInspire导入世界进入势力(\'' + escHtml(世界名) + '\',\'' + escHtml(维度) + '\',' + idx + ')', 色: 'var(--accent2)', 提示: '为该势力建立级别 · 职位，并在这里生成角色' }],
+  });
+  if (item['详细描述']) h += '<div style="font-size:11px;color:var(--fg2);line-height:1.7;margin-bottom:12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px;white-space:pre-wrap">' + escHtml(item['详细描述']) + '</div>';
+  if (!总) h += '<div style="text-align:center;padding:8px 12px 14px;color:var(--fg3);font-size:11px;line-height:1.8">' +
+    '还没有任何条目归属于它。<br>在下面选一个板块与类型查看；也可以到「地理 / 种族 / 军队 / 物品 / 文化 / 时间线」里，' +
+    '把条目的「<b>所属势力</b>」填成本势力名，这里就会自动汇出来。</div>';
+
+  // ===== 第一层：按**顶层板块**筛 =====
+  h += '<div style="font-size:10px;color:var(--fg3);margin-bottom:5px">按板块筛</div>';
+  h += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">';
+  候选板块.forEach(function(sec) {
+    var m = stcdInspire板块元(sec);
+    var 组列 = 篮[sec] || [];
+    var 条 = 组列.reduce(function(a, g) { return a + g.条目.length; }, 0);
+    var 选 = (sec === st.关联板块);
+    h += '<div style="background:var(--bg2);border:1px solid ' + (选 ? 'var(--accent2)' : 'var(--border)') + ';border-left:3px solid ' + (选 ? 'var(--accent2)' : 'var(--border)') + ';border-radius:8px;padding:8px 10px;cursor:pointer;transition:.15s" ' +
+         'title="只看这个板块的关联条目" onclick="stcdInspire关联切板块(\'' + escHtml(sec) + '\')">';
+    h += '<div style="font-size:12px;font-weight:700;color:' + (选 ? 'var(--accent2)' : 'var(--fg)') + '">' + m.icon + ' ' + escHtml(m.label) + '</div>';
+    h += '<div style="font-size:10px;color:var(--fg3);margin-top:2px">' + (条 ? 组列.length + ' 类 · ' + 条 + ' 条' : '暂无关联条目') + '</div>';
+    h += '</div>';
+  });
+  h += '</div>';
+
+  // ===== 第二层：该板块下的**维度**子 TAB =====
+  h += '<div class="sub-nav" style="margin:12px 0 8px;flex-wrap:wrap;row-gap:2px">';
+  本板块维度.forEach(function(d) {
+    var g = null;
+    for (var j = 0; j < 本板块组.length; j++) if (本板块组[j].维度 === d) { g = 本板块组[j]; break; }
+    h += '<div class="sub-nav-item' + (d === st.关联维度 ? ' act' : '') + '" style="font-size:11px" onclick="stcdInspire关联切维度(\'' + escHtml(d) + '\')">' +
+         escHtml(d) + ' <span style="font-size:9px;color:var(--fg3)">' + (g ? g.条目.length : 0) + '</span></div>';
+  });
+  h += '</div>';
+
+  // ===== 第三层：当前维度下的条目 =====
+  var 组元 = null;
+  for (var k = 0; k < STCD_INSPIRE_关联组表.length; k++) if (STCD_INSPIRE_关联组表[k].维度 === st.关联维度) { 组元 = STCD_INSPIRE_关联组表[k]; break; }
+  h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;flex-wrap:wrap">';
+  h += '<div style="font-size:12px;font-weight:700;color:var(--fg)">' + (组元 ? 组元.icon + ' ' + escHtml(组元.label) : escHtml(st.关联维度)) +
+       ' <span style="font-size:10px;color:var(--fg3);font-weight:400">' + 当前组.条目.length + ' 条</span></div>';
+  h += '</div>';
+  if (!当前组.条目.length) {
+    h += '<div style="font-size:10px;color:var(--fg3);line-height:1.7;background:var(--bg2);border:1px dashed var(--border);border-radius:8px;padding:8px 10px">' +
+         '这一格里还没有与「' + escHtml(名) + '」相关的' + escHtml(st.关联维度) + '条目。</div>';
+  } else {
+    h += '<div style="display:flex;flex-direction:column;gap:5px">';
+    当前组.条目.forEach(function(it) {
+      var nm = it['条目'] || '未命名';
+      var hasSub = !!(it['子级'] && it['子级'].length);
+      var 次级 = [];
+      if (hasSub) 次级.push({ 文字: '下钻 ' + it['子级'].length + ' ›', 动作: 'stcdInspire导入世界跳到(\'' + escHtml(世界名) + '\',\'' + escHtml(当前组.板块) + '\',\'' + escHtml(nm) + '\')', 色: 'var(--accent2)', 提示: '进它的条目内部' });
+      else 次级.push({ 文字: '级别 · 职位 ›', 动作: 'stcdInspire导入世界跳到(\'' + escHtml(世界名) + '\',\'' + escHtml(当前组.板块) + '\',\'' + escHtml(nm) + '\')', 色: 'var(--accent2)', 提示: '进它的级别 · 职位，在那里生成角色' });
+      // 点卡片 = 就地看详情（与世界观模块的关联总览一致：卡片看、按钮进）
+      h += stcdInspire条目卡(nm,
+        'stcdInspire导入世界弹条目(\'' + escHtml(世界名) + '\',\'' + escHtml(当前组.板块) + '\',\'' + escHtml(nm) + '\')',
+        '就地查看该条目的详情（不跳转）', 次级, 当前组.维度,
+        stcdInspire条目正文(it));
     });
     h += '</div>';
   }
@@ -274,33 +723,197 @@ function stcdInspire导入世界渲染(path) {
   return h;
 }
 
+// 关联总览里切板块 / 切维度（纯筛选，不跳转、不存数据）
+// 维度清空即可：渲染时会落到这一板块下**第一个有内容的维度**（都是空的才留在第一个）
+function stcdInspire关联切板块(sec) {
+  STCD_INSPIRE_WORLD.关联板块 = sec;
+  STCD_INSPIRE_WORLD.关联维度 = '';
+  stcdInspireRenderWorld();
+}
+window.stcdInspire关联切板块 = stcdInspire关联切板块;
+function stcdInspire关联切维度(dim) {
+  STCD_INSPIRE_WORLD.关联维度 = dim;
+  stcdInspireRenderWorld();
+}
+window.stcdInspire关联切维度 = stcdInspire关联切维度;
+
+// ===== 条目内部（军队 / 地理）：与世界观模块一样按**分组**铺开 =====
+// 导入时子级自带「分组」（军队七块 / 地理六块），所以这里能铺得和世界观那边一模一样：
+// 每块一个小标题 + 计数，空块照常显示并写出这一块该写什么。
+// 每个子级右侧保留本模块自己的「级别 · 职位 ›」——那是拿它当角色锚点的入口。
+function stcdInspire导入世界渲染子级(世界名, 维度, idx) {
+  var imp = stcdInspire取导入世界(世界名);
+  if (!imp) return '';
+  var item = stcdInspire取维度条目(imp.内容, 维度)[idx] || {};
+  var 父名 = item['条目'] || '';
+  var 子级 = item['子级'] || [];
+  var 板块 = stcdInspire板块之维度(维度);
+  var sec = (板块 && 板块.板块) || '';
+  var 分组表 = stcdInspire分组表(sec, 维度);
+  var 引导表 = stcdInspire分组引导表(sec, 维度);
+  var 进入层级 = 'stcdInspire导入世界进入势力(\'' + escHtml(世界名) + '\',\'' + escHtml(维度) + '\',' + idx + ')';
+
+  var h = '<div class="n-card" style="padding:0">';
+  h += stcdInspire工具条({
+    返回文字: 维度,
+    返回动作: 'stcdInspire导入世界收起关联(\'' + escHtml(世界名) + '\')',
+    标题: 父名,
+    计数: 子级.length,
+    计数单位: '条内部设定',
+    右侧: [{ 文字: '级别 · 职位 ›', 动作: 进入层级, 色: 'var(--accent2)', 提示: '为这一条建立级别 · 职位，并在这里生成角色' }],
+  });
+  // 这一条自己是什么（全文）：点一下就地看详情
+  h += '<div style="padding:12px 14px;border-bottom:1px solid var(--border)">';
+  h += '<div style="font-size:11.5px;color:var(--fg2);line-height:1.8;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;min-height:20px;white-space:pre-wrap;cursor:text" ' +
+       'title="点这里看这一条的全文" onclick="stcdInspire导入世界看条目(\'' + escHtml(世界名) + '\',\'' + escHtml(维度) + '\',' + idx + ')">' +
+       (item['详细描述'] ? escHtml(item['详细描述']) : '<span style="color:var(--fg3)">（还没有描述）到「世界观」模块里补上，重新导入即可带过来</span>') + '</div>';
+  h += '</div>';
+
+  h += '<div style="padding:4px 14px 16px">';
+  if (!分组表) {
+    // 兜底：拿不到世界观的分组表时平铺（正常永远走不到这里——那个文件先加载）
+    h += '<div style="display:flex;flex-direction:column;gap:5px;margin-top:10px">';
+    子级.forEach(function(s) {
+      h += stcdInspire条目卡(s['条目'] || '未命名', 'stcdInspire导入世界进入子级层级(\'' + escHtml(世界名) + '\',\'' + escHtml(维度) + '\',' + idx + ',\'' + escHtml(s['条目'] || '') + '\')',
+        '进入该子级的级别 · 职位', [], '级别 · 职位 ›', stcdInspire条目正文(s));
+    });
+    h += '</div>';
+  } else {
+    分组表.forEach(function(分组) {
+      var 组 = 子级.filter(function(x) { return stcdInspire子级分组名(分组表, x) === 分组; });
+      h += '<div style="margin-top:14px">';
+      h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap">';
+      h += '<div style="font-size:12px;font-weight:700;color:var(--fg)">' + escHtml(分组) +
+           '<span style="font-size:10px;color:var(--fg3);font-weight:400"> · ' + 组.length + '</span></div>';
+      h += '</div>';
+      if (!组.length) {
+        h += '<div style="font-size:10px;color:var(--fg3);line-height:1.7;background:var(--bg2);border:1px dashed var(--border);border-radius:8px;padding:7px 10px">' +
+             '<span style="color:var(--fg2)">' + escHtml(引导表[分组] || '') + '</span><br>' +
+             '（这一块还空着）到「世界观」模块里补上，重新点一次「📥 导入世界观」即可带过来</div>';
+      } else {
+        h += '<div style="display:flex;flex-direction:column;gap:5px">';
+        组.forEach(function(s) {
+          var nm = s['条目'] || '未命名';
+          var 次级 = [
+            { 文字: '级别 · 职位 ›', 动作: 'stcdInspire导入世界进入子级层级(\'' + escHtml(世界名) + '\',\'' + escHtml(维度) + '\',' + idx + ',\'' + escHtml(nm) + '\')', 色: 'var(--accent2)', 提示: '拿这个子级当角色锚点' },
+            { 文字: '📄 详情', 动作: 'stcdInspire导入世界弹子级(\'' + escHtml(世界名) + '\',\'' + escHtml(维度) + '\',\'' + escHtml(父名) + '\',\'' + escHtml(nm) + '\')', 提示: '就地看这一条的全文' },
+          ];
+          h += stcdInspire条目卡(nm,
+            'stcdInspire导入世界进入子级层级(\'' + escHtml(世界名) + '\',\'' + escHtml(维度) + '\',' + idx + ',\'' + escHtml(nm) + '\')',
+            '进入该子级的级别 · 职位', 次级, '', stcdInspire条目正文(s));
+        });
+        h += '</div>';
+      }
+      h += '</div>';
+    });
+  }
+  h += '</div></div>';
+  return h;
+}
+
+// ===== 锚点：级别 / 职位挂在「条目」或它的某个「子级」上 =====
+// 子级名传空 = 锚在主条目；传了子级名 = 锚在那个子级——**每个子级都有自己的级别与职位**。
+function stcdInspire锚点(imp, 入口, itemIdx, 子级名) {
+  var arr = ((imp || {}).内容 || {})[入口] || [];
+  var item = arr[itemIdx] || null;
+  if (!item) return null;
+  if (!子级名) return item;
+  var 子 = (item['子级'] || []).filter(function(x) { return x['条目'] === 子级名; })[0];
+  return 子 || null;
+}
+// 层级视图的返回路径：主条目 = [__import__, 世界名, 存键, 条目名]；子级 = 末尾再追加子级名
+function stcdInspire锚路径(世界名, 入口, 父条目名, 子级名) {
+  var p = ['__import__', 世界名, 入口, 父条目名 || '未命名'];
+  if (子级名) p.push(子级名);
+  return p;
+}
+// category / 代表人物 的字符串基路径：'世界观/世界名/存键/条目名' 或再追加 '/子级名'
+function stcdInspire基路径(世界名, 入口, 父条目名, 子级名) {
+  return '世界观/' + 世界名 + '/' + 入口 + '/' + 父条目名 + (子级名 ? '/' + 子级名 : '');
+}
+
+// 某维度的**存储键**：池化板块（物品）的 12 个维度共用「物品」这个键。
+// 浏览界面按维度分类，但**角色 category 与代表人物路径一律用存储键**——
+// 这样「物品」这条入口的形状与旧版完全一致，已有角色不会因为分类改造而失联。
+function stcdInspire存键(维度) {
+  var b = stcdInspire板块之维度(维度);
+  return (b && b.池化) ? b.池化 : 维度;
+}
+
 // ===== 已下钻到某个势力/地点条目 → 该势力的「层级视图」=====
 // item['级别']：该势力内部的上下层级（如 最高层/决策层/执行层/基层...）；
 //            每个级别 含 { 名称, 描述, 职位:[{名称,描述}...] }（级别下再放职位）。
 // 生成角色锚定在「职位」上。
-function stcdInspire导入世界层级视图(世界名, 入口, item, itemIdx) {
-  var 条目名 = item['条目'] || '未命名';
-  var 级别 = item['级别'] || [];
+function stcdInspire导入世界层级视图(世界名, 维度, item, itemIdx, 存键, 子级名) {
+  var 入口 = 存键 || stcdInspire存键(维度);   // 存储键：路径与 category 用它（物品 → 「物品」）
+  var 父条目名 = item['条目'] || '未命名';
+  // 锚点：级别 / 职位挂在主条目上，或者挂在它的某个子级上（每个子级都有自己的级别与职位）
+  var 锚 = item;
+  if (子级名) {
+    锚 = (item['子级'] || []).filter(function(x) { return x['条目'] === 子级名; })[0] || item;
+  }
+  var 条目名 = 锚['条目'] || 父条目名;
+  var 级别 = 锚['级别'] || [];
+  var 是物品 = (stcdInspire板块之维度(维度) || {}).池化 === '物品';
+  var 基 = stcdInspire基路径(世界名, 入口, 父条目名, 子级名);
+  // 下面这些按钮的参数一律**按各函数声明的顺序**拼（世界名, 入口, itemIdx, [级别Idx], [职位Idx], 子级名, 维度）。
+  // 原来是把 子级名 塞在 itemIdx 后面、再把 级别Idx 拼在尾巴上——子级锚点时参数会整体错位
+  // （级别Idx 收到子级名、子级名 收到下标），生成职位 / 角色直接落到错的地方。
+  // 子级名**永远显式传**（空就传 ''）——它是中间参数，省掉会让后面的 维度 串位
+  var 子参 = ',\'' + (子级名 || '') + '\'';
+  var 世界参 = '\'' + 世界名 + '\',\'' + 入口 + '\',' + itemIdx;
+  var 维参 = ',\'' + 维度 + '\'';   // 生成类要带上**维度**：物品是池化键，光看入口分不出随从/奴仆
+  var 级参 = 世界参 + 子参;          // 新增/删除类用（它们不需要维度）
   var h = '';
-  // 面包屑：返回入口
-  h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">';
-  h += '<button class="btn-out" style="padding:2px 10px;font-size:11px" onclick="stcdInspire导入世界进入入口(\'' + 世界名 + '\',\'' + 入口 + '\')">‹ 返回 ' + escHtml(入口) + '</button>';
-  h += '<div style="font-size:13px;font-weight:700;flex:1">' + escHtml(条目名) + ' <span style="font-size:10px;color:var(--fg3);font-weight:400">' + 级别.length + ' 级别</span></div>';
-  h += '<button class="btn-out" style="padding:2px 10px;font-size:11px" onclick="stcdInspire导入世界新增层级(\'' + 世界名 + '\',\'' + 入口 + '\',' + itemIdx + ')">＋ 新增级别</button>';
-  h += '<button class="btn-out" style="padding:2px 10px;font-size:11px;color:var(--accent2)" onclick="stcdInspire导入世界生成代表人物(\'' + 世界名 + '\',\'' + 入口 + '\',' + itemIdx + ')">✦ 代表人物</button>';
-  h += '<button class="btn-main" style="padding:2px 10px;font-size:11px" onclick="stcdInspire导入世界生成层级(\'' + 世界名 + '\',\'' + 入口 + '\',' + itemIdx + ')">✨ AI 生成级别</button>';
-  h += '</div>';
-  // 势力信息（该势力整体详情，供参考）
-  if (item['详细描述']) h += '<div style="font-size:11px;color:var(--fg2);line-height:1.6;margin-bottom:10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px">' + escHtml(item['详细描述']) + '</div>';
+  // 工具条：与世界观模块共用同一条（返回 · 标题 · 计数 · 右侧按钮）
+  h += stcdInspire工具条({
+    返回文字: 子级名 ? (父条目名 + ' 的子级') : 维度,
+    返回动作: 子级名
+      ? 'stcdInspire导入世界返回子级(\'' + 世界名 + '\',\'' + 维度 + '\',' + itemIdx + ')'
+      : 'stcdInspire导入世界进入入口(\'' + 世界名 + '\',\'' + 维度 + '\')',
+    标题: 条目名 + (子级名 ? '（' + 父条目名 + ' 的子级）' : ''),
+    计数: 级别.length,
+    计数单位: '级别',
+    右侧: [
+      { 文字: '＋ 新增级别', 动作: 'stcdInspire导入世界新增层级(' + 级参 + ')' },
+      { 文字: '✦ 代表人物', 动作: 'stcdInspire导入世界生成代表人物(' + 级参 + 维参 + ')', 色: 'var(--accent2)' },
+      { 文字: '✨ AI 生成级别', 动作: 'stcdInspire导入世界生成层级(' + 级参 + 维参 + ')', 主: true },
+    ],
+  });
+  // 当前锚点详情（供参考）——与世界观模块的详情弹窗同一套正文块，全文不截断
+  if (锚['详细描述'] || 锚['历史'] || 锚['所属势力'] || (锚['子级'] && 锚['子级'].length)) {
+    h += '<div style="margin-bottom:10px">';
+    h += stcdInspire详情字段(锚, { '子级': 1 });
+    if (锚['子级'] && 锚['子级'].length) {
+      h += '<div style="font-size:11px;color:var(--fg2);line-height:1.7;margin-top:6px"><span style="color:var(--fg3);font-weight:600">子级（' + 锚['子级'].length + '）：</span>' +
+        escHtml(锚['子级'].map(function(x) { return x['条目'] || ''; }).join('、')) + '</div>';
+    }
+    h += '</div>';
+  }
+  // 物品条目：在角色库里，一件东西对应的角色就是「持有它 / 创造它 / 毁去它的人，或曾经持有它的人」。
+  // 世界观侧只写器物本身，这层人物关系在这里当场认。
+  // **随从 / 奴仆 不特殊化**：文案与别的器物完全一样，只在最下面补一句「这一条写的是人」（与提示词同款）。
+  if (是物品) {
+    h += '<div style="background:var(--bg2);border:1px solid var(--accent2);border-radius:8px;padding:10px;margin-bottom:10px">';
+    h += '<div style="font-size:11px;font-weight:700;color:var(--accent2);margin-bottom:2px">🧩 这件东西对应的角色</div>';
+    h += '<div style="font-size:11px;color:var(--fg2);line-height:1.6;margin-top:3px">就是持有它、创造它或毁去它的人，或者是曾经持有过它的人。从上面这段来历里把这个人认出来，再用下方「✦ 代表人物」为他／她塑一张角色卡。</div>';
+    if (维度 === '随从' || 维度 === '奴仆') {
+      h += '<div style="font-size:11px;color:var(--fg2);line-height:1.6;margin-top:6px;padding-top:6px;border-top:1px dashed var(--border)">' +
+           '不过「' + escHtml(维度) + '」这一类条目<b>本身就是一个人</b>：生成人物时优先直接生成她／他本人；' +
+           '本人已经生成过，就转而生成曾经拥有过她／他的人，或与她／他有关的其他人物。</div>';
+    }
+    h += '</div>';
+  }
   // 代表人物：独立一排，锁定在层级上方，UI 与层级不同、互不影响；用与普通角色完全一致的卡片（缩略图+名称，点开3版本）
-  var personaPath = '世界观/' + 世界名 + '/' + 入口 + '/' + 条目名 + '/代表人物';
+  var personaPath = 基 + '/代表人物';
   var 代表 = STCD_INSPIRE.items.filter(function(c) { return (c.category || '').indexOf(personaPath) === 0; });
   h += '<div style="background:linear-gradient(160deg,var(--accent2)22,transparent);border:1px solid var(--accent2);border-radius:10px;padding:10px;margin-bottom:12px">';
   h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">';
   h += '<div style="font-size:12px;font-weight:700;color:var(--accent2);flex:1">🧩 代表人物 <span style="font-size:10px;color:var(--fg3);font-weight:400">' + 代表.length + ' 位 · 台面人物</span></div>';
   h += '</div>';
   if (!代表.length) {
-    h += '<div style="font-size:10px;color:var(--fg3)">还没有代表人物——点上面「✦ 代表人物」为「' + escHtml(条目名) + '」树立门面印象（宗主、长老、大弟子、小师妹、身怀绝技的弟子等）</div>';
+    h += '<div style="font-size:10px;color:var(--fg3)">还没有代表人物——点上面「✦ 代表人物」为「' + escHtml(条目名) + '」树立门面印象（宗主、长老、大弟子、小师妹、身怀绝技的弟子等）' +
+      ((维度 === '随从' || 维度 === '奴仆') ? '；这两类<b>本身就是一个人</b>，优先直接生成她／他本人，本人已生成过再生成拥有过她／他的人或与她／他有关的人' : '') + '</div>';
   } else {
     h += '<div style="display:flex;flex-wrap:wrap;gap:8px">';
     代表.forEach(function(c) {
@@ -336,9 +949,9 @@ function stcdInspire导入世界层级视图(世界名, 入口, item, itemIdx) {
       // 级别头
       h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">';
       h += '<div style="font-size:13px;font-weight:700;color:var(--fg);flex:1">' + escHtml(名称) + ' <span style="font-size:10px;color:var(--fg3);font-weight:400">' + 职位.length + ' 职位</span></div>';
-      h += '<button class="btn-out" style="padding:1px 8px;font-size:9px" onclick="stcdInspire导入世界新增职位(\'' + 世界名 + '\',\'' + 入口 + '\',' + itemIdx + ',' + li + ')">＋ 职位</button>';
-      h += '<button class="btn-out" style="padding:1px 8px;font-size:9px" onclick="stcdInspire导入世界生成职位(\'' + 世界名 + '\',\'' + 入口 + '\',' + itemIdx + ',' + li + ')">✨ AI 职位</button>';
-      h += '<button class="btn-out" style="padding:1px 8px;font-size:9px;color:#e06c75" onclick="stcdInspire导入世界删除层级(\'' + 世界名 + '\',\'' + 入口 + '\',' + itemIdx + ',' + li + ')">🗑</button>';
+      h += '<button class="btn-out" style="padding:1px 8px;font-size:9px" onclick="stcdInspire导入世界新增职位(' + 世界参 + ',' + li + 子参 + ')">＋ 职位</button>';
+      h += '<button class="btn-out" style="padding:1px 8px;font-size:9px" onclick="stcdInspire导入世界生成职位(' + 世界参 + ',' + li + 子参 + 维参 + ')">✨ AI 职位</button>';
+      h += '<button class="btn-out" style="padding:1px 8px;font-size:9px;color:#e06c75" onclick="stcdInspire导入世界删除层级(' + 世界参 + ',' + li + 子参 + ')">🗑</button>';
       h += '</div>';
       if (lv['描述']) h += '<div style="font-size:11px;color:var(--fg2);line-height:1.6;margin-bottom:6px">' + escHtml(lv['描述']) + '</div>';
       // 职位列表
@@ -348,15 +961,15 @@ function stcdInspire导入世界层级视图(世界名, 入口, item, itemIdx) {
         职位.forEach(function(po, pi) {
           var pn = po['名称'] || '未命名';
           // 该职位下已生成的角色（按完整锚点路径过滤）
-          var posPath = '世界观/' + 世界名 + '/' + 入口 + '/' + 条目名 + '/' + 名称 + '/' + pn;
+          var posPath = 基 + '/' + 名称 + '/' + pn;
           var linked = STCD_INSPIRE.items.filter(function(c) {
             return (c.category || '').indexOf(posPath) === 0;
           });
           h += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px">';
           h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">';
           h += '<div style="font-size:12px;font-weight:600;color:var(--fg);flex:1">' + escHtml(pn) + ' <span style="font-size:9px;color:var(--fg3);font-weight:400">' + linked.length + ' 角色</span></div>';
-          h += '<button class="btn-out" style="padding:1px 9px;font-size:10px" onclick="stcdInspire导入世界生成层级角色(\'' + 世界名 + '\',\'' + 入口 + '\',' + itemIdx + ',' + li + ',' + pi + ')">✨ 角色</button>';
-          h += '<button class="btn-out" style="padding:1px 9px;font-size:10px;color:#e06c75" onclick="stcdInspire导入世界删除职位(\'' + 世界名 + '\',\'' + 入口 + '\',' + itemIdx + ',' + li + ',' + pi + ')">🗑</button>';
+          h += '<button class="btn-out" style="padding:1px 9px;font-size:10px" onclick="stcdInspire导入世界生成层级角色(' + 世界参 + ',' + li + ',' + pi + 子参 + 维参 + ')">✨ 角色</button>';
+          h += '<button class="btn-out" style="padding:1px 9px;font-size:10px;color:#e06c75" onclick="stcdInspire导入世界删除职位(' + 世界参 + ',' + li + ',' + pi + 子参 + ')">🗑</button>';
           h += '</div>';
           if (po['描述']) h += '<div style="font-size:10px;color:var(--fg2);line-height:1.5;margin-bottom:6px">' + escHtml(po['描述']) + '</div>';
           if (!linked.length) {
@@ -391,32 +1004,34 @@ function stcdInspire导入世界层级视图(世界名, 入口, item, itemIdx) {
   return h;
 }
 
-// 点击入口层的某个势力/地点条目 → 进入其层级视图
-function stcdInspire导入世界进入势力(世界名, 入口, idx) {
+// 点击条目层的某个势力/地点条目 → 进入其层级视图（收 维度 + 该维度筛出列表里的下标）
+function stcdInspire导入世界进入势力(世界名, 维度, idx) {
   var list = (window.STCD_INSPIRE_IMPORT_LIST) ? window.STCD_INSPIRE_IMPORT_LIST : [];
   var imp = null;
   for (var i = 0; i < list.length; i++) if (list[i].世界名 === 世界名) { imp = list[i]; break; }
-  if (!imp || !imp.内容 || !imp.内容[入口] || !imp.内容[入口][idx]) return;
-  var 条目名 = imp.内容[入口][idx]['条目'] || '未命名';
-  STCD_INSPIRE_WORLD.path = ['__import__', 世界名, 入口, 条目名];
+  if (!imp) return;
+  var it = stcdInspire取维度条目(imp.内容, 维度)[idx];
+  if (!it) return;
+  STCD_INSPIRE_WORLD.path = ['__import__', 世界名, 维度, it['条目'] || '未命名'];
   stcdInspireRenderWorld();
   stcdInspireRenderCards();
 }
 window.stcdInspire导入世界进入势力 = stcdInspire导入世界进入势力;
 
 // 新增一个级别（空级别，含职位数组）
-function stcdInspire导入世界新增层级(世界名, 入口, itemIdx) {
+function stcdInspire导入世界新增层级(世界名, 入口, itemIdx, 子级名) {
   var list = (window.STCD_INSPIRE_IMPORT_LIST) ? window.STCD_INSPIRE_IMPORT_LIST : [];
   var imp = null;
   for (var i = 0; i < list.length; i++) if (list[i].世界名 === 世界名) { imp = list[i]; break; }
-  if (!imp || !imp.内容 || !imp.内容[入口] || !imp.内容[入口][itemIdx]) return;
-  var item = imp.内容[入口][itemIdx];
+  var 父项 = ((imp || {}).内容 || {})[入口] ? imp.内容[入口][itemIdx] : null;
+  var item = stcdInspire锚点(imp, 入口, itemIdx, 子级名);
+  if (!父项 || !item) return;
   if (!item['级别']) item['级别'] = [];
   item['级别'].push({ 名称: '新级别', 描述: '', 职位: [] });
   window.stcdInspire导入世界观保存(list).then(function() {
     window.toast('已新增级别');
     var 条目名 = item['条目'] || '未命名';
-    STCD_INSPIRE_WORLD.path = ['__import__', 世界名, 入口, 条目名];
+    STCD_INSPIRE_WORLD.path = stcdInspire锚路径(世界名, 入口, 父项['条目'], 子级名);
     stcdInspireRenderWorld();
     stcdInspireRenderCards();
   });
@@ -424,12 +1039,13 @@ function stcdInspire导入世界新增层级(世界名, 入口, itemIdx) {
 window.stcdInspire导入世界新增层级 = stcdInspire导入世界新增层级;
 
 // 新增一个职位（在某个级别内）
-function stcdInspire导入世界新增职位(世界名, 入口, itemIdx, 级别Idx) {
+function stcdInspire导入世界新增职位(世界名, 入口, itemIdx, 级别Idx, 子级名) {
   var list = (window.STCD_INSPIRE_IMPORT_LIST) ? window.STCD_INSPIRE_IMPORT_LIST : [];
   var imp = null;
   for (var i = 0; i < list.length; i++) if (list[i].世界名 === 世界名) { imp = list[i]; break; }
-  if (!imp || !imp.内容 || !imp.内容[入口] || !imp.内容[入口][itemIdx]) return;
-  var item = imp.内容[入口][itemIdx];
+  var 父项 = ((imp || {}).内容 || {})[入口] ? imp.内容[入口][itemIdx] : null;
+  var item = stcdInspire锚点(imp, 入口, itemIdx, 子级名);
+  if (!父项 || !item) return;
   if (!item['级别']) item['级别'] = [];
   if (!item['级别'][级别Idx]) return;
   if (!item['级别'][级别Idx]['职位']) item['级别'][级别Idx]['职位'] = [];
@@ -437,7 +1053,7 @@ function stcdInspire导入世界新增职位(世界名, 入口, itemIdx, 级别I
   window.stcdInspire导入世界观保存(list).then(function() {
     window.toast('已新增职位');
     var 条目名 = item['条目'] || '未命名';
-    STCD_INSPIRE_WORLD.path = ['__import__', 世界名, 入口, 条目名];
+    STCD_INSPIRE_WORLD.path = stcdInspire锚路径(世界名, 入口, 父项['条目'], 子级名);
     stcdInspireRenderWorld();
     stcdInspireRenderCards();
   });
@@ -445,12 +1061,13 @@ function stcdInspire导入世界新增职位(世界名, 入口, itemIdx, 级别I
 window.stcdInspire导入世界新增职位 = stcdInspire导入世界新增职位;
 
 // 删除某个级别（连其下职位）
-function stcdInspire导入世界删除层级(世界名, 入口, itemIdx, 级别Idx) {
+function stcdInspire导入世界删除层级(世界名, 入口, itemIdx, 级别Idx, 子级名) {
   var list = (window.STCD_INSPIRE_IMPORT_LIST) ? window.STCD_INSPIRE_IMPORT_LIST : [];
   var imp = null;
   for (var i = 0; i < list.length; i++) if (list[i].世界名 === 世界名) { imp = list[i]; break; }
-  if (!imp || !imp.内容 || !imp.内容[入口] || !imp.内容[入口][itemIdx]) return;
-  var item = imp.内容[入口][itemIdx];
+  var 父项 = ((imp || {}).内容 || {})[入口] ? imp.内容[入口][itemIdx] : null;
+  var item = stcdInspire锚点(imp, 入口, itemIdx, 子级名);
+  if (!父项 || !item) return;
   if (!item['级别'] || !item['级别'][级别Idx]) return;
   var 级别名 = item['级别'][级别Idx]['名称'] || '未命名';
   confirmDialog('确定删除级别「' + 级别名 + '」及其下所有职位？', function() {
@@ -458,7 +1075,7 @@ function stcdInspire导入世界删除层级(世界名, 入口, itemIdx, 级别I
     window.stcdInspire导入世界观保存(list).then(function() {
       window.toast('已删除级别');
       var 条目名 = item['条目'] || '未命名';
-      STCD_INSPIRE_WORLD.path = ['__import__', 世界名, 入口, 条目名];
+      STCD_INSPIRE_WORLD.path = stcdInspire锚路径(世界名, 入口, 父项['条目'], 子级名);
       stcdInspireRenderWorld();
       stcdInspireRenderCards();
     });
@@ -467,12 +1084,13 @@ function stcdInspire导入世界删除层级(世界名, 入口, itemIdx, 级别I
 window.stcdInspire导入世界删除层级 = stcdInspire导入世界删除层级;
 
 // 删除某个职位
-function stcdInspire导入世界删除职位(世界名, 入口, itemIdx, 级别Idx, 职位Idx) {
+function stcdInspire导入世界删除职位(世界名, 入口, itemIdx, 级别Idx, 职位Idx, 子级名) {
   var list = (window.STCD_INSPIRE_IMPORT_LIST) ? window.STCD_INSPIRE_IMPORT_LIST : [];
   var imp = null;
   for (var i = 0; i < list.length; i++) if (list[i].世界名 === 世界名) { imp = list[i]; break; }
-  if (!imp || !imp.内容 || !imp.内容[入口] || !imp.内容[入口][itemIdx]) return;
-  var item = imp.内容[入口][itemIdx];
+  var 父项 = ((imp || {}).内容 || {})[入口] ? imp.内容[入口][itemIdx] : null;
+  var item = stcdInspire锚点(imp, 入口, itemIdx, 子级名);
+  if (!父项 || !item) return;
   var lv = (item['级别'] || [])[级别Idx] || null;
   if (!lv || !lv['职位'] || !lv['职位'][职位Idx]) return;
   var 职位名 = lv['职位'][职位Idx]['名称'] || '未命名';
@@ -481,7 +1099,7 @@ function stcdInspire导入世界删除职位(世界名, 入口, itemIdx, 级别I
     window.stcdInspire导入世界观保存(list).then(function() {
       window.toast('已删除职位');
       var 条目名 = item['条目'] || '未命名';
-      STCD_INSPIRE_WORLD.path = ['__import__', 世界名, 入口, 条目名];
+      STCD_INSPIRE_WORLD.path = stcdInspire锚路径(世界名, 入口, 父项['条目'], 子级名);
       stcdInspireRenderWorld();
       stcdInspireRenderCards();
     });
@@ -489,39 +1107,56 @@ function stcdInspire导入世界删除职位(世界名, 入口, itemIdx, 级别I
 }
 window.stcdInspire导入世界删除职位 = stcdInspire导入世界删除职位;
 
-// AI 根据势力信息生成「级别」（上下层级，每级含职位数组）——走二元模板弹窗
-function stcdInspire导入世界生成层级(世界名, 入口, itemIdx) {
+// 条目全文：世界观侧「物品」是两条线（详细描述 + 历史），其余板块只有详细描述。
+// 角色库里凡是把条目内容喂给 AI 的地方都走这个函数，别只取「详细描述」而漏掉「历史」——
+// 物品对应的人物线索基本都在「历史」里。
+function stcdInspire条目全文(item) {
+  if (!item) return '';
+  var s = item['详细描述'] || '';
+  if (item['历史']) s += (s ? '\n' : '') + '历史：' + item['历史'];
+  return s;
+}
+window.stcdInspire条目全文 = stcdInspire条目全文;
+
+// AI 根据锚点信息生成「级别」（上下层级，每级含职位数组）——走二元模板弹窗（锚点可为 势力/地理/种族/物品）
+// 维度 = 浏览时那一格的名字（奴仆 / 随从 / 兵刃…）。物品是池化键，光看 入口 分不出是哪一类，
+// 而「随从 / 奴仆」要在提示词最下面补一句「这一条写的是人」——所以维度必须一路传下来。
+function stcdInspire导入世界生成层级(世界名, 入口, itemIdx, 子级名, 维度) {
   var list = (window.STCD_INSPIRE_IMPORT_LIST) ? window.STCD_INSPIRE_IMPORT_LIST : [];
   var imp = null;
   for (var i = 0; i < list.length; i++) if (list[i].世界名 === 世界名) { imp = list[i]; break; }
-  if (!imp || !imp.内容 || !imp.内容[入口] || !imp.内容[入口][itemIdx]) { window.toast('找不到该势力/地点'); return; }
-  var item = imp.内容[入口][itemIdx];
+  var 父项 = ((imp || {}).内容 || {})[入口] ? imp.内容[入口][itemIdx] : null;
+  var item = stcdInspire锚点(imp, 入口, itemIdx, 子级名);
+  if (!父项 || !item) { window.toast(子级名 ? '找不到该子级' : '找不到该条目'); return; }
   var 条目名 = item['条目'] || '未命名';
   if (typeof LLM === 'undefined' || !LLM.callJSON) { window.toast('AI 系统未就绪'); return; }
   // 写入目标定位，供 stcd-inspire-level-gen 的 fillFn 写入并落盘
   STCD_INSPIRE_LVGEN = {
-    世界名: 世界名, 入口: 入口, itemIdx: itemIdx, 条目名: 条目名,
-    详细: (item['详细描述'] || ''), 上下文: stcdInspire导入世界上下文(世界名, '', 0),
+    世界名: 世界名, 入口: 入口, itemIdx: itemIdx, 条目名: 条目名, 子级名: 子级名 || '', 维度: 维度 || 入口,
+    板块: stcdInspire锚点释义(入口).板块, 主体: stcdInspire锚点释义(入口).主体, 释义: stcdInspire锚点释义(入口).释义,
+    详细: stcdInspire条目全文(item), 上下文: stcdInspire导入世界上下文(世界名, 子级名 ? '' : 条目名),
   };
   if (typeof openAiGenPanel === 'function') openAiGenPanel('stcd-inspire-level-gen');
   else window.toast('AI 弹窗未就绪');
 }
 window.stcdInspire导入世界生成层级 = stcdInspire导入世界生成层级;
 
-// 生成该势力的「台面代表人物」——独立于级别/职位，显示在层级上方的一排（走二元模板弹窗）
-function stcdInspire导入世界生成代表人物(世界名, 入口, itemIdx) {
+// 生成该锚点的「台面代表人物」——独立于级别/职位，显示在层级上方的一排（走二元模板弹窗）
+function stcdInspire导入世界生成代表人物(世界名, 入口, itemIdx, 子级名, 维度) {
   var list = (window.STCD_INSPIRE_IMPORT_LIST) ? window.STCD_INSPIRE_IMPORT_LIST : [];
   var imp = null;
   for (var i = 0; i < list.length; i++) if (list[i].世界名 === 世界名) { imp = list[i]; break; }
-  if (!imp || !imp.内容 || !imp.内容[入口] || !imp.内容[入口][itemIdx]) { window.toast('找不到该势力/地点'); return; }
-  var item = imp.内容[入口][itemIdx];
+  var 父项 = ((imp || {}).内容 || {})[入口] ? imp.内容[入口][itemIdx] : null;
+  var item = stcdInspire锚点(imp, 入口, itemIdx, 子级名);
+  if (!父项 || !item) { window.toast(子级名 ? '找不到该子级' : '找不到该条目'); return; }
   var 条目名 = item['条目'] || '未命名';
   if (typeof LLM === 'undefined' || !LLM.callJSON) { window.toast('AI 系统未就绪'); return; }
-  // ① 该势力的级别/职位骨架（AI 生成代表人物时知道这个势力内部怎么分层，代表人物能对上号）
-  var 详细 = (item['详细描述'] || '');
+  // ① 该锚点的级别/职位骨架（AI 生成代表人物时知道它内部怎么分层，代表人物能对上号）
+  var 义 = stcdInspire锚点释义(入口);
+  var 详细 = stcdInspire条目全文(item);
   var 级别 = item['级别'] || [];
   if (级别.length) {
-    详细 += '\n\n【该势力已有级别体系（从高到低）】\n';
+    详细 += '\n\n【已给「' + 条目名 + '」搭好的级别体系（从高到低）】\n';
     级别.forEach(function(lv, li) {
       var 级别名 = (lv['名称'] || '未命名');
       var 级别描述 = (lv['描述'] || '');
@@ -534,18 +1169,19 @@ function stcdInspire导入世界生成代表人物(世界名, 入口, itemIdx) {
       }
     });
   }
-  // ② 该势力已有代表人物（供 AI 判断身份是否已被占：代表人物可与现有重合，但不得与现有冲突）
-  var personaPath = '世界观/' + 世界名 + '/' + 入口 + '/' + 条目名 + '/代表人物';
+  // ② 该锚点已有代表人物（供 AI 判断身份是否已被占：代表人物可与现有重合，但不得与现有冲突）
+  var personaPath = stcdInspire基路径(世界名, 入口, 父项['条目'], 子级名) + '/代表人物';
   var 已有代表 = STCD_INSPIRE.items.filter(function(c) { return (c.category || '').indexOf(personaPath) === 0; });
   var 已有名 = 已有代表.map(function(c) {
     return (typeof window.stcdInspire代表文本 === 'function') ? stcdInspire代表文本(c) : stcdInspireDisplayName(c);
   }).filter(Boolean);
-  if (已有名.length) 详细 += '\n【该势力已有代表人物（代表人物可与他们重合，但**名字与身份经历不得与他们完全一样**；同一身份可有多人，但每位身份经历须彼此不同、不重复）】\n' + 已有名.join('、') + '\n';
+  if (已有名.length) 详细 += '\n【已给「' + 条目名 + '」树过的代表人物（可与他们重合，但**名字与身份经历不得与他们完全一样**；同一身份可有多人，但每位身份经历须彼此不同、不重复）】\n' + 已有名.join('、') + '\n';
   // ③ 世界观其余设定作背景
-  var 上下文 = stcdInspire导入世界上下文(世界名, '', 0);
-  上下文 = 上下文 ? ('【势力所在世界背景】\n' + 上下文) : '';
+  var 上下文 = stcdInspire导入世界上下文(世界名, 子级名 ? '' : 条目名);
+  上下文 = 上下文 ? ('【世界观背景】\n' + 上下文) : '';
   STCD_INSPIRE_PERSONAGEN = {
-    世界名: 世界名, 入口: 入口, itemIdx: itemIdx, 条目名: 条目名,
+    世界名: 世界名, 入口: 入口, itemIdx: itemIdx, 条目名: 条目名, 子级名: 子级名 || '', 维度: 维度 || 入口,
+    板块: 义.板块, 主体: 义.主体, 释义: 义.释义,
     详细: 详细, 上下文: 上下文,
   };
   if (typeof openAiGenPanel === 'function') openAiGenPanel('stcd-inspire-persona-gen');
@@ -554,49 +1190,54 @@ function stcdInspire导入世界生成代表人物(世界名, 入口, itemIdx) {
 window.stcdInspire导入世界生成代表人物 = stcdInspire导入世界生成代表人物;
 
 // AI 根据某级别信息生成该级别下的职位——走二元模板弹窗
-function stcdInspire导入世界生成职位(世界名, 入口, itemIdx, 级别Idx) {
+function stcdInspire导入世界生成职位(世界名, 入口, itemIdx, 级别Idx, 子级名, 维度) {
   var list = (window.STCD_INSPIRE_IMPORT_LIST) ? window.STCD_INSPIRE_IMPORT_LIST : [];
   var imp = null;
   for (var i = 0; i < list.length; i++) if (list[i].世界名 === 世界名) { imp = list[i]; break; }
-  if (!imp || !imp.内容 || !imp.内容[入口] || !imp.内容[入口][itemIdx]) { window.toast('找不到该势力/地点'); return; }
-  var item = imp.内容[入口][itemIdx];
+  var 父项 = ((imp || {}).内容 || {})[入口] ? imp.内容[入口][itemIdx] : null;
+  var item = stcdInspire锚点(imp, 入口, itemIdx, 子级名);
+  if (!父项 || !item) { window.toast(子级名 ? '找不到该子级' : '找不到该条目'); return; }
   var lv = (item['级别'] || [])[级别Idx] || null;
   if (!lv) { window.toast('找不到该级别'); return; }
   var 条目名 = item['条目'] || '未命名';
   if (typeof LLM === 'undefined' || !LLM.callJSON) { window.toast('AI 系统未就绪'); return; }
   // 写入目标定位，供 stcd-inspire-pos-gen 的 fillFn 写入并落盘
   STCD_INSPIRE_POSGEN = {
-    世界名: 世界名, 入口: 入口, itemIdx: itemIdx, 级别Idx: 级别Idx, 条目名: 条目名,
+    世界名: 世界名, 入口: 入口, itemIdx: itemIdx, 级别Idx: 级别Idx, 条目名: 条目名, 子级名: 子级名 || '', 维度: 维度 || 入口,
+    板块: stcdInspire锚点释义(入口).板块, 主体: stcdInspire锚点释义(入口).主体, 释义: stcdInspire锚点释义(入口).释义,
     levelName: (lv['名称'] || ''), levelDesc: (lv['描述'] || ''),
-    上下文: stcdInspire导入世界上下文(世界名, '', 0),
+    上下文: stcdInspire导入世界上下文(世界名, 子级名 ? '' : 条目名),
   };
   if (typeof openAiGenPanel === 'function') openAiGenPanel('stcd-inspire-pos-gen');
   else window.toast('AI 弹窗未就绪');
 }
 window.stcdInspire导入世界生成职位 = stcdInspire导入世界生成职位;
 
-// 在该势力的某个「职位」上生成角色（势力信息最开头 + 级别·职位 + 世界观其余作上下文）
+// 在该锚点的某个「职位」上生成角色（锚点信息最开头 + 级别·职位 + 世界观其余作上下文）
 // 走二元模板弹窗（openAiGenPanel），生成后角色挂到该职位显示
-function stcdInspire导入世界生成层级角色(世界名, 入口, itemIdx, 级别Idx, 职位Idx) {
+function stcdInspire导入世界生成层级角色(世界名, 入口, itemIdx, 级别Idx, 职位Idx, 子级名, 维度) {
   var list = (window.STCD_INSPIRE_IMPORT_LIST) ? window.STCD_INSPIRE_IMPORT_LIST : [];
   var imp = null;
   for (var i = 0; i < list.length; i++) if (list[i].世界名 === 世界名) { imp = list[i]; break; }
-  if (!imp || !imp.内容 || !imp.内容[入口] || !imp.内容[入口][itemIdx]) { window.toast('找不到该势力/地点'); return; }
-  var item = imp.内容[入口][itemIdx];
+  var 父项 = ((imp || {}).内容 || {})[入口] ? imp.内容[入口][itemIdx] : null;
+  var item = stcdInspire锚点(imp, 入口, itemIdx, 子级名);
+  if (!父项 || !item) { window.toast(子级名 ? '找不到该子级' : '找不到该条目'); return; }
   var lv = (item['级别'] || [])[级别Idx] || null;
   var 职位 = (lv && lv['职位'] || [])[职位Idx] || null;
   if (!职位) { window.toast('找不到该职位'); return; }
   var 条目名 = item['条目'] || '未命名';
   var 级别名 = (lv['名称'] || '未命名');
   var 职位名 = (职位['名称'] || '未命名');
-  var 世界上下文 = stcdInspire导入世界上下文(世界名, '', 0);
+  var 世界上下文 = stcdInspire导入世界上下文(世界名, 子级名 ? '' : 条目名);
   // 该职位下已存在的角色（供 AI 参考，避免重复生成）
-  var posPath = '世界观/' + 世界名 + '/' + 入口 + '/' + 条目名 + '/' + 级别名 + '/' + 职位名;
+  var posPath = stcdInspire基路径(世界名, 入口, 父项['条目'], 子级名) + '/' + 级别名 + '/' + 职位名;
   var 已有 = STCD_INSPIRE.items.filter(function(c) { return (c.category || '').indexOf(posPath) === 0; });
-  // ① 势力信息最开头
-  var text = '【' + 入口 + '·' + 条目名 + '】' + (item['详细描述'] || '') + '\n';
+  // ① 锚点本身放最开头（附一句它是什么，好让 AI 知道这次锚的是势力 / 地点 / 种族 / 器物）
+  var 义 = stcdInspire锚点释义(入口);
+  var text = '【本次锚点：' + 义.板块 + ' · ' + 条目名 + '（' + 义.主体 + '）】' + stcdInspire条目全文(item) + '\n';
+  text += '【这个锚点是什么】' + 义.释义 + '\n';
   // ② 级别 + 职位
-  text += '【该势力中的级别·' + 级别名 + '】' + (lv['描述'] || '') + '\n';
+  text += '【它在「' + 条目名 + '」里的级别·' + 级别名 + '】' + (lv['描述'] || '') + '\n';
   text += '【在这个级别中的职位·' + 职位名 + '】' + (职位['描述'] || '') + '\n';
   // ②.5 该职位已有角色
   if (已有.length) {
@@ -610,15 +1251,17 @@ function stcdInspire导入世界生成层级角色(世界名, 入口, itemIdx, �
   text += '\n';
   // ③ 世界观其余设定
   if (世界上下文) text += '【世界观其余设定】\n' + 世界上下文 + '\n\n';
-  text += '请在这些设定基础上，为「' + 条目名 + '」中「' + 级别名 + '」级别「' + 职位名 + '」这个职位【新增】一位灵感角色。\n\n';
+  text += '请在这些设定基础上，为「' + 条目名 + '」（' + 义.板块 + '）里「' + 级别名 + '」级别的「' + 职位名 + '」这个职位【新增】一位灵感角色。\n\n';
   text += '【要求】\n';
   if (已有.length) text += '- 必须与上面【该职位已有角色】完全不同：名称、身份、性格、经历都不得与任何已有角色重复或雷同，也不要重新生成他们本人。\n';
   text += '- 若该职位具有强唯一性（如只有一个国王、掌门、教皇、帮主、圣子），不要凭空再造一个同职能的平替；而应创作该职位体系下的其他形态人物，例如「影子国王」「前任国王」「王储」「代行」「摄政」「名义圣座」「隐世师尊」等，或与该职位紧密相关却又独立的人物。\n';
   text += '- 这是【追加】的新角色，请以独立新角色输出，不要去覆盖/替换已有角色。';
+  // 最下面补一句：只有「随从 / 奴仆」有（这一条写的是人），别的器物是空串
+  text += ((typeof stcdInspire人物补充 === 'function') ? stcdInspire人物补充(维度 || 入口) : '');
   STCD_INSPIRE_GEN.desc = text;
   STCD_INSPIRE_GEN.gender = (typeof STCD_INSPIRE_GEN.gender !== 'undefined' && STCD_INSPIRE_GEN.gender) ? STCD_INSPIRE_GEN.gender : '女';
   // 完整锚点路径：世界观/世界/入口/条目/级别/职位 —— 用于在层级视图把角色挂到对应职位
-  STCD_INSPIRE_GEN.category = '世界观/' + 世界名 + '/' + 入口 + '/' + 条目名 + '/' + 级别名 + '/' + 职位名;
+  STCD_INSPIRE_GEN.category = stcdInspire基路径(世界名, 入口, 父项['条目'], 子级名) + '/' + 级别名 + '/' + 职位名;
   STCD_INSPIRE_GEN.anchor = { 世界名: 世界名, 入口: 入口, 条目: 条目名, 级别: 级别名, 职位: 职位名 };
   STCD_INSPIRE_GEN.fromDetail = false;
   STCD_INSPIRE_GEN.posRefresh = true;
@@ -629,16 +1272,192 @@ function stcdInspire导入世界生成层级角色(世界名, 入口, itemIdx, �
 }
 window.stcdInspire导入世界生成层级角色 = stcdInspire导入世界生成层级角色;
 
-// 点击五入口 → 进入该入口
-function stcdInspire导入世界进入入口(世界名, 入口) {
-  STCD_INSPIRE_WORLD.path = ['__import__', 世界名, 入口];
+// 点板块 TAB / 维度 TAB → 进入那个维度（板块由维度反查，不需要单独记录）
+function stcdInspire导入世界进入入口(世界名, 维度) {
+  stcdInspire导入世界重置视图();
+  STCD_INSPIRE_WORLD.path = ['__import__', 世界名, 维度];
   stcdInspireRenderWorld();
   stcdInspireRenderCards();
 }
 window.stcdInspire导入世界进入入口 = stcdInspire导入世界进入入口;
 
-// 点击导入的世界卡片 → 进入五入口
+// 回到这个世界（落第一个板块的第一个维度——版块 / 维度 TAB 是常驻的，不再有单独的「板块卡片」层）
+function stcdInspire导入世界回板块(世界名) {
+  stcdInspire导入世界重置视图();
+  var b = STCD_INSPIRE_板块表[0] || { 维度: [''] };
+  STCD_INSPIRE_WORLD.path = ['__import__', 世界名, b.维度[0] || ''];
+  stcdInspireRenderWorld();
+  stcdInspireRenderCards();
+}
+window.stcdInspire导入世界回板块 = stcdInspire导入世界回板块;
+
+// 势力：点条目卡片 → 展开关联总览（与世界观模块同一套逻辑）
+function stcdInspire导入世界展开关联(世界名, 维度, idx) {
+  STCD_INSPIRE_WORLD.关联索引 = idx;
+  STCD_INSPIRE_WORLD.子级索引 = -1;
+  stcdInspireRenderWorld();
+}
+window.stcdInspire导入世界展开关联 = stcdInspire导入世界展开关联;
+
+// 退出关联总览 / 子级视图，回到条目列表
+function stcdInspire导入世界收起关联(世界名) {
+  stcdInspire导入世界重置视图();
+  stcdInspireRenderWorld();
+}
+window.stcdInspire导入世界收起关联 = stcdInspire导入世界收起关联;
+
+// 地理 / 种族：点带子级的条目 → 进入子级视图
+function stcdInspire导入世界下钻子级(世界名, 维度, idx) {
+  STCD_INSPIRE_WORLD.子级索引 = idx;
+  STCD_INSPIRE_WORLD.关联索引 = -1;
+  stcdInspireRenderWorld();
+}
+window.stcdInspire导入世界下钻子级 = stcdInspire导入世界下钻子级;
+
+// 进入某个**子级自己的**层级视图（级别 · 职位）——每个子级都是独立的角色锚点
+function stcdInspire导入世界进入子级层级(世界名, 维度, idx, 子级名) {
+  var list = (window.STCD_INSPIRE_IMPORT_LIST) ? window.STCD_INSPIRE_IMPORT_LIST : [];
+  var imp = null;
+  for (var i = 0; i < list.length; i++) if (list[i].世界名 === 世界名) { imp = list[i]; break; }
+  if (!imp) return;
+  var 父 = stcdInspire取维度条目(imp.内容, 维度)[idx];
+  if (!父) return;
+  var s = (父['子级'] || []).filter(function(x) { return x['条目'] === 子级名; })[0];
+  if (!s) return;
+  stcdInspire导入世界重置视图();
+  STCD_INSPIRE_WORLD.path = ['__import__', 世界名, 维度, 父['条目'] || '未命名', s['条目'] || '未命名'];
+  stcdInspireRenderWorld();
+  stcdInspireRenderCards();
+}
+window.stcdInspire导入世界进入子级层级 = stcdInspire导入世界进入子级层级;
+
+// 从子级的层级视图返回「父条目的子级列表」
+function stcdInspire导入世界返回子级(世界名, 维度, idx) {
+  STCD_INSPIRE_WORLD.path = ['__import__', 世界名, 维度];
+  STCD_INSPIRE_WORLD.子级索引 = idx;
+  STCD_INSPIRE_WORLD.关联索引 = -1;
+  stcdInspireRenderWorld();
+  stcdInspireRenderCards();
+}
+window.stcdInspire导入世界返回子级 = stcdInspire导入世界返回子级;
+
+// 关联总览里点某条 → **直接进入它**（切到它所在的维度）：有子级的进子级视图，没有的进它的「级别 · 职位」
+function stcdInspire导入世界跳到(世界名, 维度, 条目名) {
+  var list = (window.STCD_INSPIRE_IMPORT_LIST) ? window.STCD_INSPIRE_IMPORT_LIST : [];
+  var imp = null;
+  for (var i = 0; i < list.length; i++) if (list[i].世界名 === 世界名) { imp = list[i]; break; }
+  if (!imp) return;
+  var arr = stcdInspire取维度条目(imp.内容, 维度);
+  var idx = -1;
+  for (var j = 0; j < arr.length; j++) if (arr[j]['条目'] === 条目名) { idx = j; break; }
+  if (idx < 0) { window.toast('找不到条目「' + 条目名 + '」'); return; }
+  stcdInspire导入世界重置视图();
+  var it = arr[idx];
+  if (it['子级'] && it['子级'].length) {
+    STCD_INSPIRE_WORLD.path = ['__import__', 世界名, 维度];
+    STCD_INSPIRE_WORLD.子级索引 = idx;
+  } else {
+    STCD_INSPIRE_WORLD.path = ['__import__', 世界名, 维度, 条目名];
+  }
+  stcdInspireRenderWorld();
+  stcdInspireRenderCards();
+}
+window.stcdInspire导入世界跳到 = stcdInspire导入世界跳到;
+
+// 就地查看某个条目的详情（弹窗，不改变浏览位置）——底栏可进「级别 · 职位」
+// 正文块与世界观模块的详情弹窗**同一套**（字段名小字 + 正文块、全文不截断、所属势力置底）
+function stcdInspire导入世界弹条目(世界名, 维度, 条目名) {
+  var imp = stcdInspire取导入世界(世界名);
+  if (!imp) return;
+  var arr = stcdInspire取维度条目(imp.内容, 维度);
+  var item = null, idx = -1;
+  for (var j = 0; j < arr.length; j++) if (arr[j]['条目'] === 条目名) { item = arr[j]; idx = j; break; }
+  if (!item) return;
+  var 板块 = stcdInspire板块之维度(维度);
+  var h = '<div class="mcard" style="max-width:620px">';
+  h += '<div style="font-size:14px;font-weight:700;margin-bottom:3px">📄 ' + escHtml(条目名) + '</div>';
+  h += '<div style="font-size:10px;color:var(--fg3);margin-bottom:12px">' + escHtml(世界名) + ' · ' + escHtml(维度) + '　·　就地查看（不跳转）</div>';
+  h += '<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-gutter:stable;padding-right:2px">';
+  h += stcdInspire详情字段(item, { '子级': 1 });
+  h += stcdInspire详情内部设定(item, (板块 && 板块.板块) || '', 维度);
+  h += '</div>';
+  h += '<div style="display:flex;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap;flex:none">';
+  if (item['子级'] && item['子级'].length && 板块 && 板块.可下钻) {
+    h += '<button class="btn-out" style="padding:3px 12px;font-size:11px;color:var(--accent2)" title="进它的条目内部（按分组铺开）" onclick="stcdInspire导入世界关闭弹窗();stcdInspire导入世界下钻子级(\'' + escHtml(世界名) + '\',\'' + escHtml(维度) + '\',' + idx + ')">进入内部（' + item['子级'].length + ' 条内部设定）›</button>';
+  }
+  if (板块 && 板块.关联) {
+    h += '<button class="btn-out" style="padding:3px 12px;font-size:11px;color:var(--accent2)" onclick="stcdInspire导入世界关闭弹窗();stcdInspire导入世界展开关联(\'' + escHtml(世界名) + '\',\'' + escHtml(维度) + '\',' + idx + ')">展开关联总览 ›</button>';
+  }
+  h += '<span style="font-size:10px;color:var(--fg3)">（点击后离开详情，进入它的下级）</span>';
+  h += '<span style="flex:1"></span>';
+  h += '<button class="btn-out" onclick="stcdInspire导入世界关闭弹窗()">关闭</button>';
+  h += '<button class="btn-main" title="拿这一条当角色锚点：建立级别 · 职位并生成角色" onclick="stcdInspire导入世界关闭弹窗();stcdInspire导入世界进入势力(\'' + escHtml(世界名) + '\',\'' + escHtml(维度) + '\',' + idx + ')">级别 · 职位 ›</button>';
+  h += '</div></div>';
+  stcdInspire导入世界关闭弹窗();
+  var ov = document.createElement('div');
+  ov.className = 'ovl';
+  ov.innerHTML = h;
+  document.body.appendChild(ov);
+  ov.addEventListener('click', function(e) { if (e.target === ov) ov.remove(); });
+}
+window.stcdInspire导入世界弹条目 = stcdInspire导入世界弹条目;
+
+// 就地查看某个子级的详情（弹窗）——同一套正文块
+function stcdInspire导入世界弹子级(世界名, 维度, 父名, 子名) {
+  var imp = stcdInspire取导入世界(世界名);
+  if (!imp) return;
+  var arr = stcdInspire取维度条目(imp.内容, 维度);
+  var 父 = null;
+  for (var j = 0; j < arr.length; j++) if (arr[j]['条目'] === 父名) { 父 = arr[j]; break; }
+  if (!父) return;
+  var s = null;
+  (父['子级'] || []).forEach(function(x) { if (x['条目'] === 子名) s = x; });
+  if (!s) return;
+  // 子级在父条目子级数组里的真实下标（进它的「级别 · 职位」要用）
+  var 父idx = arr.indexOf(父);
+  var h = '<div class="mcard" style="max-width:620px">';
+  h += '<div style="font-size:14px;font-weight:700;margin-bottom:3px">📄 ' + escHtml(子名) + '</div>';
+  h += '<div style="font-size:10px;color:var(--fg3);margin-bottom:12px">' + escHtml(世界名) + ' · ' + escHtml(维度) + ' · ' + escHtml(父名) + ' · 子级　·　就地查看（不跳转）</div>';
+  h += '<div style="flex:1;min-height:0;overflow-y:auto;scrollbar-gutter:stable;padding-right:2px">';
+  h += stcdInspire详情字段(s, { '分组': 1 });
+  if (s['分组']) h += '<div style="font-size:10px;color:var(--fg3);margin-top:8px">归入「' + escHtml(s['分组']) + '」这一块</div>';
+  h += '</div>';
+  h += '<div style="display:flex;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap;flex:none">';
+  h += '<span style="font-size:10px;color:var(--fg3)">（点击后离开详情，进入它的级别 · 职位）</span>';
+  h += '<span style="flex:1"></span>';
+  h += '<button class="btn-out" onclick="stcdInspire导入世界关闭弹窗()">关闭</button>';
+  h += '<button class="btn-main" title="拿这个子级当角色锚点：建立级别 · 职位并生成角色" onclick="stcdInspire导入世界关闭弹窗();stcdInspire导入世界进入子级层级(\'' + escHtml(世界名) + '\',\'' + escHtml(维度) + '\',' + 父idx + ',\'' + escHtml(子名) + '\')">级别 · 职位 ›</button>';
+  h += '</div></div>';
+  stcdInspire导入世界关闭弹窗();
+  var ov = document.createElement('div');
+  ov.className = 'ovl';
+  ov.innerHTML = h;
+  document.body.appendChild(ov);
+  ov.addEventListener('click', function(e) { if (e.target === ov) ov.remove(); });
+}
+window.stcdInspire导入世界弹子级 = stcdInspire导入世界弹子级;
+
+function stcdInspire导入世界关闭弹窗() {
+  var o = document.querySelectorAll('.ovl');
+  for (var i = 0; i < o.length; i++) if (o[i].parentNode) o[i].parentNode.removeChild(o[i]);
+}
+window.stcdInspire导入世界关闭弹窗 = stcdInspire导入世界关闭弹窗;
+
+// 条目列表里「非势力、无子级」的条目 → 直接就地看详情（弹窗里再决定是否进「级别 · 职位」）
+function stcdInspire导入世界看条目(世界名, 维度, idx) {
+  var list = (window.STCD_INSPIRE_IMPORT_LIST) ? window.STCD_INSPIRE_IMPORT_LIST : [];
+  var imp = null;
+  for (var i = 0; i < list.length; i++) if (list[i].世界名 === 世界名) { imp = list[i]; break; }
+  if (!imp) return;
+  var it = ((imp.内容 || {})[维度] || [])[idx];
+  if (!it) return;
+  stcdInspire导入世界弹条目(世界名, 维度, it['条目'] || '');
+}
+window.stcdInspire导入世界看条目 = stcdInspire导入世界看条目;
+
+// 点击导入的世界卡片 → 进入板块卡片层
 function stcdInspire导入世界下钻(世界名) {
+  stcdInspire导入世界重置视图();
   STCD_INSPIRE_WORLD.path = ['__import__', 世界名];
   stcdInspireRenderWorld();
   stcdInspireRenderCards();
@@ -668,45 +1487,52 @@ function stcdInspire导入世界生成(世界名, 入口) {
 }
 window.stcdInspire导入世界生成 = stcdInspire导入世界生成;
 
-// 组装「世界观其余部分」作为上下文（跳过当前要生成的 入口·条目；用于角色生成背景）
-// 势力/地理类条目只取「条目名 + 详细描述前20字」（与世界观模块 世界条目按版块 保持一致），其余入口全量。
-function stcdInspire导入世界上下文(世界名, 跳过入口, 跳过索引) {
+// 组装喂给 AI 的「世界观」上下文。**只有两块**：
+//   ① 「世界设定」（宇宙与法则 / 力量体系 / 情色生态）→ **原文**
+//   ② 其余全部（势力 / 地理 / 种族 / 物品 / 文化 / 时间线）→ 只给「名称：正文前 20 字」
+// 参数 排除名：锚点**自己**的名字——它已以全文形式放在 {detail}，这里不再重复。
+//             锚点若是个「子级」，就没有可排除的同名顶层条目，传空串即可（父条目照常留在 ② 里）。
+function stcdInspire导入世界上下文(世界名, 排除名) {
   var list = (window.STCD_INSPIRE_IMPORT_LIST) ? window.STCD_INSPIRE_IMPORT_LIST : [];
   var imp = null;
   for (var i = 0; i < list.length; i++) if (list[i].世界名 === 世界名) { imp = list[i]; break; }
   if (!imp || !imp.内容) return '';
-  var 地理入口 = { 世界地理: 1, 聚落: 1, 奇境: 1 };
-  var 势力类别 = { 世俗政权: 1, 超凡势力: 1, 地下黑道: 1, 邪教淫祠: 1, 宗教神权: 1, 情色行业结社: 1, 军武集团: 1, 民间宗族: 1 };
-  var parts = [];
-  Object.keys(imp.内容).forEach(function(入口) {
-    if (入口 === 跳过入口) return;
-    var items = imp.内容[入口] || [];
+  var 内容 = imp.内容;
+  var 原文维度 = ['宇宙与法则', '力量体系', '情色生态'];   // 世界设定 → 原文
+  var 段 = {};
+  Object.keys(内容).forEach(function(维) {
+    var items = (内容[维] || []).filter(function(x) { return (x['条目'] || '') !== 排除名; });
     if (!items.length) return;
-    var 简述 = (地理入口[入口] || 势力类别[入口]) ? true : false;
-    var line = items.map(function(x){
-      var 名称 = (x['条目'] || '');
-      var 描述 = (x['详细描述'] || '');
-      if (简述 && 描述.length > 20) 描述 = 描述.substring(0, 20) + '…';
-      return 名称 + (描述 ? '：' + 描述 : '');
+    var 给原文 = 原文维度.indexOf(维) >= 0;
+    var line = items.map(function(x) {
+      var 描述 = x['详细描述'] || '';
+      if (!给原文 && 描述.length > 20) 描述 = 描述.substring(0, 20) + '…';
+      return (x['条目'] || '') + (描述 ? '：' + 描述 : '');
     }).join('\n');
-    parts.push('【' + 入口 + '】' + line);
+    段[维] = '【' + 维 + (给原文 ? '（原文）' : '（仅名称与正文前 20 字）') + '】' + line;
   });
-  return parts.join('\n\n');
+  // 世界设定排最前，其余按导入顺序
+  var 序 = 原文维度.filter(function(v) { return 段[v]; });
+  Object.keys(段).forEach(function(v) { if (序.indexOf(v) < 0) 序.push(v); });
+  return 序.map(function(v) { return 段[v]; }).join('\n\n');
 }
 
-// 在导入世界下钻的某条「势力/地点」节点生成角色：该势力信息放最开头 + 世界观其余内容作上下文
+// 在导入世界下钻的某条「势力/地点/种族/物品」节点生成角色：该条目信息放最开头 + 世界观其余内容作上下文
 function stcdInspire导入世界生成角色(世界名, 入口, 条目索引) {
   var list = (window.STCD_INSPIRE_IMPORT_LIST) ? window.STCD_INSPIRE_IMPORT_LIST : [];
   var imp = null;
   for (var i = 0; i < list.length; i++) if (list[i].世界名 === 世界名) { imp = list[i]; break; }
-  if (!imp || !imp.内容 || !imp.内容[入口] || !imp.内容[入口][条目索引]) { window.toast('找不到该势力/地点'); return; }
+  if (!imp || !imp.内容 || !imp.内容[入口] || !imp.内容[入口][条目索引]) { window.toast('找不到该条目'); return; }
   var 条目 = imp.内容[入口][条目索引];
   var 条目名 = 条目['条目'] || '未命名';
-  var 详细 = 条目['详细描述'] || '';
-  // ① 势力/地点本身信息放最开头
+  // 物品是两条线，人物线索主要在「历史」里；两段都带上
+  var 详细 = stcdInspire条目全文(条目);
+  // ① 条目本身信息放最开头
   var text = '【' + 入口 + '·' + 条目名 + '】' + 详细 + '\n\n';
-  // ② 世界观其余内容（除当前势力/地点外的其它入口）作上下文
-  var 上下文 = stcdInspire导入世界上下文(世界名, 入口, 条目索引);
+  // 物品：这件东西对应的角色，就是持有它、创造它或毁去它的人（或曾经持有它的人）
+  if (入口 === '物品') text += '【本次创作要求】上面是一件物品的详情与相关历史。本次要创作的角色，就是这段历史里持有它、创造它或毁去它的人，或者是曾经持有过它的人——请从正文中把这个人认出来，以他／她为原型。\n\n';
+  // ② 世界观其余内容（除当前条目外的其它入口）作上下文
+  var 上下文 = stcdInspire导入世界上下文(世界名, '');
   if (上下文) text += '【世界观其余设定】\n' + 上下文 + '\n\n';
   text += '请在这些设定的基础上，创作一位属于「' + 条目名 + '」的灵感角色。';
   // 设置生成参数，走二元模板（inspire_char_gen）
@@ -723,7 +1549,7 @@ function stcdInspire导入世界观弹窗() {
   if (typeof window.stcdInspire可取世界列表 !== 'function') { window.toast('世界观模块未就绪'); return; }
   window.stcdInspire可取世界列表().then(function(世界s) {
     var h = '<div class="mcard" style="max-width:520px">';
-    h += '<div style="font-size:14px;font-weight:700;margin-bottom:10px">📥 导入世界观（拉取地理 + 势力）</div>';
+    h += '<div style="font-size:14px;font-weight:700;margin-bottom:10px">📥 导入世界观（抓取全部维度；地理 / 势力 / 物品 可浏览，其余作生成背景）</div>';
     if (!世界s.length) {
       h += '<div style="font-size:12px;color:var(--fg3);padding:16px 0;text-align:center">世界观模块暂无世界，请先去「世界观」模块创建。</div>';
     } else {
@@ -802,6 +1628,7 @@ function stcdInspireWorldMatch(it) {
 // 世界观区：点击某层（idx=0 为世界层）value：''=全部/向上，其余=节点名
 function stcdInspireWorldLevel(idx, value) {
   var path = STCD_INSPIRE_WORLD.path.slice(0, idx);   // 保留前 idx 层
+  stcdInspire导入世界重置视图();
   if (idx === 0 && value === '') { STCD_INSPIRE_WORLD.path = []; }   // 回到「不预选」
   else {
     if (value) path[idx] = value;
@@ -955,7 +1782,7 @@ function stcdInspireWorldDimIcon(name) {
   return m[name] || { icon: '🗺️', desc: '' };
 }
 
-// ===== 大陆棋盘 + 宗门列表（land-board）=====
+// ===== 幼女武界 · 大陆棋盘 + 宗门列表（land-board）=====
 function stcdInspireWorldLandBoard(worldNode, subPath, worldName) {
   var meta = STCD_INSPIRE_WORLD_THEMES[worldName] || { color: '#10b981', icon: '⚔️' };
   var h = '';
@@ -1060,7 +1887,14 @@ function stcdInspireWorldPantheonTree(worldNode, subPath, worldName) {
 // 取人卡片（复用生图成果卡片样式）——点击进 3 版本详情
 // 场景里的人卡片 —— 与「生图成果」卡片 UI 完全一致（180px 竖版，3:4 上图，右下角年龄角标，11px 名称 + 9px 头衔）
 // 带一个删除按钮；点击卡片进完整灵感角色详情。
-function stcdInspireScenePersonCard(person, sceneId, levelIdx, groupIdx, personIdx, onPickName) {
+// opts.archive：只读浏览态（如「导入角色卡」弹窗的典型场景分区）下，卡片点击被宿主占用（点人=选人），
+//   额外挂一个「📋 档案」小按钮，点开灵感角色自己的档案（stcdInspireView）。
+// 只读浏览态下的「📋 档案」小按钮：开灵感角色自己的档案（灵感角色库的三版本详情弹窗）
+function stcdInspire档案按钮(roleId) {
+  return '<button class="btn-out" style="padding:1px 8px;font-size:9px" title="查看档案" onclick="event.stopPropagation();stcdInspireView(\'' + roleId + '\')">📋 档案</button>';
+}
+
+function stcdInspireScenePersonCard(person, sceneId, levelIdx, groupIdx, personIdx, onPickName, opts) {
   if (!person) return '';
   var name = person.name || '未命名';
   var title = person.title || '';
@@ -1099,6 +1933,10 @@ function stcdInspireScenePersonCard(person, sceneId, levelIdx, groupIdx, personI
   h += '<div style="font-size:11px;color:var(--fg);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escHtml(name) + '</div>';
   if (info) h += '<div style="font-size:9px;color:var(--fg3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escHtml(info) + '</div>';
   h += '</div>';
+  // 档案入口（只读浏览态）：点开该人对应的灵感角色档案
+  if (opts && opts.archive && role) {
+    h += '<div style="display:flex;justify-content:flex-end;padding:3px 6px;border-top:1px solid var(--border)">' + stcdInspire档案按钮(role.id) + '</div>';
+  }
   h += '</div>';
   return h;
 }
@@ -1186,7 +2024,9 @@ function stcdInspireSceneDetail(scene, onPickName, opts) {
         return '<div style="width:150px;background:var(--card);border:1px solid var(--border);border-radius:8px;cursor:pointer;flex-shrink:0;overflow:hidden;display:flex;flex-direction:column"' + (onPickName ? ' onclick="' + onPickName + '(\'' + c.id + '\')"' : ' onclick="stcdInspireView(\'' + c.id + '\')"') + '>'
           + '<div style="padding:8px"><div style="font-size:12px;color:var(--fg);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escHtml(cn) + (age ? ' <span style="color:var(--fg3);font-size:9px">' + escHtml(String(age).replace(/岁$/, '')) + '岁</span>' : '') + '</div>'
           + (summary ? '<div style="font-size:9px;color:var(--fg3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escHtml(summary) + '</div>' : '')
-          + '</div></div>';
+          + '</div>'
+          + ((opts && opts.archive) ? '<div style="display:flex;justify-content:flex-end;padding:3px 6px;border-top:1px solid var(--border)">' + stcdInspire档案按钮(c.id) + '</div>' : '')
+          + '</div>';
       });
       h += '<div style="display:flex;flex-wrap:wrap;gap:8px">' + 代表Cards.join('') + '</div>';
     }
@@ -1235,7 +2075,7 @@ function stcdInspireSceneRenderLevel(scene, lv, li, onPickName, opts) {
   h += '<div class="sc-tier-people">';
   if (persons.length) {
     persons.forEach(function(item) {
-      h += stcdInspireScenePersonCard(item.p, scene.id, li, item.gi, persons.indexOf(item), onPickName);
+      h += stcdInspireScenePersonCard(item.p, scene.id, li, item.gi, persons.indexOf(item), onPickName, opts);
     });
   } else {
     h += '<div class="sc-org-empty-small">（这一层还没有人）</div>';
@@ -2241,7 +3081,7 @@ function stcdInspireSceneImportDialog() {
       var items = 内容[入口] || [];
       items.forEach(function(it, idx) {
         var nm = it['条目'] || '未命名';
-        var desc = (it['详细描述'] || '').substring(0, 40);
+        var desc = stcdInspire条目全文(it).substring(0, 40);
         h += '<div style="display:flex;align-items:center;gap:8px;padding:6px;border-bottom:1px solid var(--border);cursor:pointer" onclick="stcdInspireSceneImportConfirm(\'' + (w.世界名 || '') + '\',\'' + 入口 + '\',\'' + nm + '\',this)">';
         h += '<span style="font-size:11px;color:var(--fg);font-weight:600;flex:1">' + escHtml(nm) + '</span>';
         h += '<span style="font-size:9px;color:var(--fg3)">' + escHtml(w.世界名 || '') + ' · ' + 入口 + '</span>';
@@ -2262,7 +3102,7 @@ function stcdInspireSceneImportConfirm(世界名, 入口, 条目名, el) {
   for (var i = 0; i < imported.length; i++) {
     if (imported[i].世界名 !== 世界名) continue;
     var items = (imported[i].内容 || {})[入口] || [];
-    for (var j = 0; j < items.length; j++) { if (items[j]['条目'] === 条目名) { desc = items[j]['详细描述'] || ''; break; } }
+    for (var j = 0; j < items.length; j++) { if (items[j]['条目'] === 条目名) { desc = stcdInspire条目全文(items[j]); break; } }
   }
   stcdSceneImportFromWorld(世界名, 入口, 条目名, desc).then(function(scene) {
     toast('已导入场景：' + 条目名);
@@ -2404,7 +3244,7 @@ function stcdInspireView(id) {
   h += '<div style="font-size:14px;color:var(--fg);font-weight:700">' + escHtml(name) + '</div>';
   if (it.category) h += '<span style="font-size:10px;color:var(--fg3);background:var(--bg2);padding:2px 8px;border-radius:3px">' + escHtml(it.category) + '</span>';
   h += '<div style="flex:1"></div>';
-  h += '<button class="btn-out" style="padding:3px 10px;font-size:11px" onclick="stcdInspireCopyCtx(\'' + it.id + '\')">📋 复制上下文</button>';
+  h += '<button class="btn-out" style="padding:3px 10px;font-size:11px;color:var(--accent2)" onclick="stcdInspireSendToGen(\'' + it.id + '\')">📤 发送到生成角色</button>';
   h += '<button class="btn-out" style="padding:3px 10px;font-size:11px;color:#e06c75" onclick="stcdInspireDeleteForm()">🗑 删除角色</button>';
   h += '</div>';
   // 3 版本卡片并排（内容区可滚动）
@@ -2855,12 +3695,126 @@ function stcdInspireCopyCtx(id) {
   复制到剪贴板(text).then(function(ok) { toast(ok ? '上下文已复制（全部版本）' : '复制失败'); });
 }
 
+// ===== 发送到生成角色 =====
+// 把灵感角色指定版本的内容作为「角色描述」填入「角色卡 ⇨ 生成角色」标签页（参照黄游角色导出）。
+// 详情弹窗右上角改为「📤 发送到生成角色」，点击后弹出版本选择，确定后切到 generate 标签并预填角色描述。
+
+// 辅助：判断某版本是否有非空内容（用于版本选择项上的状态提示）
+function stcdInspire版本有无内容(it, version) {
+  var vdata = stcdInspireGetVersion(it, version);
+  var fields = (typeof window.stcdInspireGetFields === 'function') ? window.stcdInspireGetFields(version) : STCD_INSPIRE_FIELDS;
+  for (var b = 0; b < fields.length; b++) {
+    var block = fields[b];
+    for (var fi = 0; fi < block.fields.length; fi++) {
+      var val = stcdInspireGetField(vdata, block.block + '.' + block.fields[fi].key);
+      if (val != null && val !== '') return true;
+    }
+  }
+  return false;
+}
+
+// 辅助：把指定版本格式化为可读的「角色描述」文本（分区块，label：value）
+function stcdInspire版本成文本(it, version) {
+  var vdata = stcdInspireGetVersion(it, version);
+  var fields = (typeof window.stcdInspireGetFields === 'function') ? window.stcdInspireGetFields(version) : STCD_INSPIRE_FIELDS;
+  var gender = stcdInspireGetField(vdata, 'identity.gender') || '';
+  var genitalsLabel = (typeof window.stcdInspireGetGenitalsLabel === 'function')
+    ? window.stcdInspireGetGenitalsLabel(gender) : '生殖器官';
+  var lines = [];
+  fields.forEach(function(block) {
+    var parts = [];
+    block.fields.forEach(function(f) {
+      var val = stcdInspireGetField(vdata, block.block + '.' + f.key);
+      if (val == null || val === '') return;
+      var label = f.key === 'genitals' ? genitalsLabel : f.label;
+      var valText = Array.isArray(val) ? val.map(function(s) { return s; }).join('\n') : String(val);
+      parts.push(label + '：' + valText);
+    });
+    if (parts.length) {
+      lines.push('【' + block.blockLabel + '】');
+      parts.forEach(function(p) { lines.push(p); });
+    }
+  });
+  return lines.join('\n');
+}
+
+function stcdInspireSendToGen(id) {
+  var it = STCD_INSPIRE.items.filter(function(x) { return x.id === id; })[0] || null;
+  if (!it) { toast('角色不存在'); return; }
+  if (typeof 渲染角色主面板 !== 'function') { toast('角色卡模块未就绪'); return; }
+  var name = stcdInspireDisplayName(it);
+  // 默认选中第一个有内容的版本（无则 normal）
+  var hasContent = null;
+  for (var vi = 0; vi < STCD_INSPIRE_VERSIONS.length; vi++) {
+    if (stcdInspire版本有无内容(it, STCD_INSPIRE_VERSIONS[vi])) { hasContent = STCD_INSPIRE_VERSIONS[vi]; break; }
+  }
+  var chosen = hasContent || STCD_INSPIRE_VIEW.version || 'normal';
+
+  var h = '<div class="mcard" style="max-width:440px">';
+  h += '<h3 style="font-size:0.95em;margin:0 0 4px">📤 发送到生成角色</h3>';
+  h += '<div style="font-size:11px;color:var(--fg3);margin-bottom:12px">将「' + escHtml(name) + '」的所选版本内容填入「角色卡 ⇨ 生成角色」的角色描述。</div>';
+  h += '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">';
+  STCD_INSPIRE_VERSIONS.forEach(function(v) {
+    var sel = (v === chosen);
+    var has = stcdInspire版本有无内容(it, v);
+    var border = sel ? '1px solid var(--accent)' : '1px solid var(--border)';
+    var bg = sel ? 'var(--bg2)' : 'var(--bg2)';
+    h += '<div class="stcd-send-version' + (sel ? ' sel' : '') + '" data-ver="' + v + '" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border:' + border + ';border-radius:6px;cursor:pointer;background:' + bg + '">';
+    h += '<span style="font-size:12px;color:var(--fg);font-weight:600">' + STCD_INSPIRE_VERSION_LABELS[v] + '</span>';
+    h += '<span style="font-size:10px;color:' + (has ? 'var(--accent2)' : 'var(--fg3)') + '">' + (has ? '✓ 有内容' : '空') + '</span>';
+    h += '</div>';
+  });
+  h += '</div>';
+  h += '<div style="display:flex;gap:8px;justify-content:flex-end">';
+  h += '<button class="btn-out" onclick="this.closest(\'.ovl\').remove()">取消</button>';
+  h += '<button class="btn-main" id="stcd-sendgen-btn">🎯 发送到生成角色</button>';
+  h += '</div></div>';
+
+  var ov = document.createElement('div');
+  ov.className = 'ovl';
+  ov.innerHTML = h;
+  document.body.appendChild(ov);
+  ov.addEventListener('click', function(e) { if (e.target === ov) ov.remove(); });
+  // 版本选择交互
+  ov.querySelectorAll('.stcd-send-version').forEach(function(el) {
+    el.addEventListener('click', function(ev) {
+      ev.stopPropagation();
+      chosen = el.getAttribute('data-ver');
+      ov.querySelectorAll('.stcd-send-version').forEach(function(o) {
+        o.classList.remove('sel');
+        o.style.borderColor = 'var(--border)';
+        o.style.background = 'var(--bg2)';
+      });
+      el.classList.add('sel');
+      el.style.borderColor = 'var(--accent)';
+      el.style.background = 'var(--bg2)';
+    });
+  });
+  document.getElementById('stcd-sendgen-btn').onclick = function() {
+    // 组装描述并切到「生成角色」标签页
+    var vdata = stcdInspireGetVersion(it, chosen);
+    var gender = stcdInspireGetField(vdata, 'identity.gender') || '女';
+    var catKey = { '女': 'female', '男': 'male', '伪娘': 'femboy', '扶她': 'futa', '女性': 'female', '男性': 'male' }[gender] || 'female';
+    var desc = stcdInspire版本成文本(it, chosen);
+    角色生成类别 = catKey;
+    角色生成描述 = desc;
+    角色生成阶段 = 'input';
+    角色生成概要 = null;
+    角色生成结果 = null;
+    角色当前标签 = 'generate';
+    ov.remove();
+    渲染角色主面板(document.getElementById('characterContent'));
+    toast('已发送到生成角色 · ' + (STCD_INSPIRE_VERSION_LABELS[chosen] || chosen));
+  };
+}
+
 window.stcdInspireRender = stcdInspireRender;
 window.stcdInspireRenderCards = stcdInspireRenderCards;
 window.stcdInspireView = stcdInspireView;
 window.stcdInspireSwitchVersion = stcdInspireSwitchVersion;
 window.stcdInspireDeleteForm = stcdInspireDeleteForm;
 window.stcdInspireCopyCtx = stcdInspireCopyCtx;
+window.stcdInspireSendToGen = stcdInspireSendToGen;
 window.stcdInspireGenOpen = stcdInspireGenOpen;
 window.stcdInspireGenFor = stcdInspireGenFor;
 window.stcdInspireGenRun = stcdInspireGenRun;

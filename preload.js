@@ -1,5 +1,13 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
+// ===== 启动参数（由主进程通过 additionalArguments 透传，供「快速启动器」使用） =====
+// 形如 --dsh-page=novel --dsh-devtools=detach
+const dshBoot = { page: '', devtools: '' };
+(process.argv || []).forEach((a) => {
+  if (a.indexOf('--dsh-page=') === 0) dshBoot.page = a.slice('--dsh-page='.length);
+  else if (a.indexOf('--dsh-devtools=') === 0) dshBoot.devtools = a.slice('--dsh-devtools='.length);
+});
+
 contextBridge.exposeInMainWorld('narrative', {
   // File system operations
   fileSave: (relPath, content) => ipcRenderer.invoke('file-save', relPath, content),
@@ -31,6 +39,8 @@ contextBridge.exposeInMainWorld('narrative', {
   videoSplit: (filePath, outRelDir, segDurSec) => ipcRenderer.invoke('video-split', filePath, outRelDir, segDurSec),
   writeLog: (entry) => ipcRenderer.invoke('write-log', entry),
   setWindowMode: (mode) => ipcRenderer.invoke('set-window-mode', mode),
+  // 开发者工具开关（'' 默认 / 'detach' / 'right' / 'bottom' / 'close'）
+  openDevTools: (mode) => ipcRenderer.invoke('devtools-toggle', mode),
   setWindowSize: (w, h) => ipcRenderer.invoke('set-window-size', w, h),
   // Crash logging from renderer
   logCrash: (errInfo) => ipcRenderer.invoke('crash-log', errInfo),
@@ -41,4 +51,6 @@ contextBridge.exposeInMainWorld('narrative', {
   ttsTranscribe: (base64Data, ext) => ipcRenderer.invoke('tts-transcribe', base64Data, ext),
   // 作品库层级树（自动扫描 renderer/业务容器 的 区块 → 顶层模块 → 子类型）
   getWorksTree: () => ipcRenderer.invoke('get-works-tree'),
+  // 启动参数（只读快照）：{ page: '页面id', devtools: '1'|'detach'|'' }
+  dshBoot,
 });

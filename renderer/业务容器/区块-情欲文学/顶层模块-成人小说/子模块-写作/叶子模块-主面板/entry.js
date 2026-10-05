@@ -20,15 +20,12 @@ var _writingStreakStoreKey = '';
 
 function 渲染小说写作(el) {
   try {
-    console.log('[Writing] 渲染小说写作 called, novelCurrentTitle=', novelCurrentTitle);
     // 如果 novelCurrentTitle 为空，尝试从 _outlineTitle 恢复
     if (!novelCurrentTitle && typeof _outlineTitle !== 'undefined' && _outlineTitle) {
-      console.log('[Writing] recovering novelCurrentTitle from _outlineTitle:', _outlineTitle);
       novelCurrentTitle = _outlineTitle;
     }
     debugLog('novel', '渲染小说写作', 'title=' + novelCurrentTitle);
     if (!novelCurrentTitle) {
-      console.log('[Writing] ERROR: novelCurrentTitle is empty, showing error message');
       el.innerHTML = '<div class="placeholder-text">请先在作品列表中选择或创建一部作品</div>';
       return;
     }
@@ -232,7 +229,6 @@ function 渲染小说写作(el) {
       });
     }
 
-    console.log('[Writing] about to call loadWritingChapters, novelCurrentTitle=', novelCurrentTitle);
     debugLog('novel', '渲染小说写作', 'about to call loadWritingChapters, title=' + novelCurrentTitle);
     try {
       小说loadWritingChapters();

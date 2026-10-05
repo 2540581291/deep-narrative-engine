@@ -120,6 +120,38 @@ function confirmDialog(msg, onConfirm) {
   setTimeout(function() { var btn = document.getElementById('confirmBtn'); if (btn) btn.focus(); }, 50);
 }
 
+// ===== 角色卡 · 按「创建时间」倒序（新建在前）=====
+// 为什么不能直接对 items 排序：角色卡的创建时间**不在**「<名> - 信息.json」里（那里 createdAt 是 null），
+// 唯一来源是 角色卡/.index.json 的数值 createdAt（角色库/暂存/角色讨论用的是内存里的 e.createdAt，
+// 生图词典角色选择器 picker.js 则是自己去读这份索引）。这里把这条口径做成一个共用件：
+// 与「角色卡·角色库」完全一致——**新建的角色在最前**，而不是"最近改动过的在最前"。
+// 用法：角色卡按创建倒序(Store.character.list())   也可以直接传已取到的数组
+//   → 返回 Promise<排好序的新数组>；索引读不到时退化为原序（不抛错）
+function 角色卡按创建倒序(itemsOrPromise) {
+  var 表 = {};
+  var 读索引 = (typeof LocalFS !== 'undefined' && LocalFS.readJSON)
+    ? LocalFS.readJSON('角色卡/.index.json').then(function(idx) {
+        if (idx && typeof idx === 'object') {
+          Object.keys(idx).forEach(function(k) {
+            var e = idx[k];
+            if (!e || !e.createdAt) return;
+            表[k] = e.createdAt;
+            if (e.id) 表[e.id] = e.createdAt;   // 索引键与 id 通常就等于角色目录名，两个都存以防万一
+          });
+        }
+      }).catch(function() {})
+    : Promise.resolve();
+  var 取数据 = Promise.resolve(itemsOrPromise).catch(function() { return []; });
+  return Promise.all([读索引, 取数据]).then(function(r) {
+    var items = r[1] || [];
+    return items.slice().sort(function(a, b) {
+      function 键(x) { return (x && (x._dirName || x.title || x.name)) || ''; }
+      return (表[键(b)] || 0) - (表[键(a)] || 0);
+    });
+  });
+}
+window.角色卡按创建倒序 = 角色卡按创建倒序;
+
 if (typeof uuid === 'undefined') {
   function uuid() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -265,3 +297,294 @@ function 筛选行(label, options, active, onClick, field) {
   return h;
 }
 window.筛选行 = 筛选行;
+
+// ===== 全局「可输入下拉选择器」（组合框）=====
+// window.组合框HTML(o) + window.attachCombo(id, opts) + window.openCombo(id)
+//
+// 为什么不用原生 <datalist>：Chromium 里点输入框不会展开（只有输入或点右侧小箭头才弹），
+// 且每次按键都要重建整份候选，中文条目一多就明显卡顿。这里换成自绘下拉：
+//   · 点击/聚焦输入框 → 立即展开全部候选；输入即过滤（多关键词空格分隔，命中片段高亮）
+//   · ↑↓ 选择、Enter 确认、Esc 关闭、点击外部关闭；面板下方空间不足时自动向上展开
+//   · 不锁死输入：候选之外的值照样能手输（零锁定）
+//
+// 组合框HTML({ id, value, placeholder, style, className }) → 输入框 + ▾ 指示的 HTML 片段
+// attachCombo(id, { getOptions, emptyHint, onPick, maxShow })
+//   getOptions() 每次展开时实时调用，返回 [{ value, label, meta }]（label 主文案，meta 右侧灰色小字）
+var _comboReg = {};        // id → { input, opts }
+var _comboActive = null;   // { id, input, panel, items, index, opts }
+
+function _esc(s) {
+  if (typeof escHtml === 'function') return escHtml(s);
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function 组合框HTML(o) {
+  o = o || {};
+  var extra = o.style ? String(o.style) : 'width:100%';
+  return '<span style="position:relative;display:inline-flex;align-items:center;' + extra + '">'
+    + '<input id="' + o.id + '" type="text" class="llm-input' + (o.className ? ' ' + o.className : '') + '" autocomplete="off" spellcheck="false"'
+    + ' style="width:100%;padding-right:22px" value="' + _esc(o.value || '') + '" placeholder="' + _esc(o.placeholder || '') + '" />'
+    + '<span style="position:absolute;right:7px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:9px;color:var(--fg3);opacity:.75">▼</span>'
+    + '</span>';
+}
+
+function _comboOptions(opts) {
+  try {
+    var list = (opts && typeof opts.getOptions === 'function') ? opts.getOptions() : [];
+    return (list || []).filter(function(x) { return x && x.value !== undefined && x.value !== null && x.value !== ''; });
+  } catch (e) { return []; }
+}
+
+// 空格分隔的多关键词 AND 匹配（value / label / meta 全字段参与）
+function _comboFilter(all, q) {
+  var tokens = String(q || '').trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if (!tokens.length) return all.slice();
+  return all.filter(function(o) {
+    var hay = ((o.value || '') + ' ' + (o.label || '') + ' ' + (o.meta || '')).toLowerCase();
+    for (var i = 0; i < tokens.length; i++) if (hay.indexOf(tokens[i]) < 0) return false;
+    return true;
+  });
+}
+
+// 命中片段高亮（保持原大小写）
+function _comboHl(text, q) {
+  text = String(text == null ? '' : text);
+  var tokens = String(q || '').trim().split(/\s+/).filter(Boolean);
+  if (!tokens.length) return _esc(text);
+  var lower = text.toLowerCase();
+  var marks = [];
+  tokens.forEach(function(tk) {
+    var t = tk.toLowerCase(), from = 0, at;
+    while ((at = lower.indexOf(t, from)) >= 0) { marks.push([at, at + t.length]); from = at + t.length; }
+  });
+  if (!marks.length) return _esc(text);
+  marks.sort(function(a, b) { return a[0] - b[0]; });
+  var merged = [], cur = marks[0];
+  for (var i = 1; i < marks.length; i++) {
+    if (marks[i][0] <= cur[1]) cur[1] = Math.max(cur[1], marks[i][1]);
+    else { merged.push(cur); cur = marks[i]; }
+  }
+  merged.push(cur);
+  var out = '', pos = 0;
+  merged.forEach(function(m) {
+    out += _esc(text.slice(pos, m[0])) + '<span style="color:var(--accent2);font-weight:700">' + _esc(text.slice(m[0], m[1])) + '</span>';
+    pos = m[1];
+  });
+  return out + _esc(text.slice(pos));
+}
+
+// 选中/悬停行：跟随项目设计语言（浅色 accent 上不能用白字），用淡底 + accent2 左侧竖条
+function _comboItemStyle(on) {
+  return 'padding:5px 8px;border-radius:4px;cursor:pointer;display:flex;align-items:baseline;gap:8px;color:var(--fg);'
+    + (on ? 'background:var(--accent-dim);box-shadow:inset 2px 0 0 var(--accent2);' : '');
+}
+
+function _comboPaint(state) {
+  var rows = state.panel.querySelectorAll('[data-ci]');
+  for (var i = 0; i < rows.length; i++) {
+    var on = (i === state.index);
+    rows[i].setAttribute('style', _comboItemStyle(on));
+    var meta = rows[i].querySelector('[data-cmeta]');
+    if (meta) meta.style.color = on ? 'var(--fg2)' : 'var(--fg3)';
+  }
+  // 只滚动面板内部，不用 scrollIntoView（避免连带滚动页面）
+  var act = rows[state.index];
+  if (act) {
+    var top = act.offsetTop, bottom = top + act.offsetHeight;
+    if (top < state.panel.scrollTop) state.panel.scrollTop = top;
+    else if (bottom > state.panel.scrollTop + state.panel.clientHeight) state.panel.scrollTop = bottom - state.panel.clientHeight;
+  }
+}
+
+function _comboRender(state) {
+  var all = _comboOptions(state.opts);
+  var q = state.query || '';
+  var list = _comboFilter(all, q);
+  var cap = state.opts.maxShow || 400;
+  var shown = list.slice(0, cap);
+  state.items = shown;
+  if (state.index >= shown.length) state.index = shown.length ? 0 : -1;
+
+  var h = '';
+  if (!all.length) {
+    h += '<div style="padding:8px;color:var(--fg3);font-size:11px;line-height:1.6">' + _esc(state.opts.emptyHint || '暂无可选项') + '</div>';
+  } else {
+    h += '<div style="padding:4px 8px 6px;color:var(--fg3);font-size:10px;border-bottom:1px solid var(--border);margin-bottom:4px">'
+      + '共 ' + list.length + (list.length !== all.length ? ' / ' + all.length : '') + ' 个 · 输入可筛选' + (list.length > cap ? '（只显示前 ' + cap + ' 个）' : '') + '</div>';
+    if (!shown.length) h += '<div style="padding:8px;color:var(--fg3);font-size:11px">没有匹配「' + _esc(q) + '」的模型，可直接手输</div>';
+    shown.forEach(function(it, i) {
+      h += '<div data-ci="' + i + '" style="' + _comboItemStyle(i === state.index) + '">'
+        + '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + _comboHl(it.label || it.value, q) + '</span>'
+        + (it.meta ? '<span data-cmeta="1" style="font-family:monospace;font-size:10px;color:var(--fg3);flex-shrink:0">' + _esc(it.meta) + '</span>' : '')
+        + '</div>';
+    });
+  }
+  state.panel.innerHTML = h;
+}
+
+function _comboPosition(state) {
+  var r = state.input.getBoundingClientRect();
+  var w = Math.max(r.width, 260);
+  var left = Math.min(r.left, Math.max(8, window.innerWidth - w - 8));
+  var maxH = 300;
+  var top = r.bottom + 4;
+  var h = Math.min(state.panel.scrollHeight || 0, maxH);
+  if (top + h > window.innerHeight - 8 && r.top - 4 - h > 8) top = r.top - 4 - h;
+  state.panel.style.left = left + 'px';
+  state.panel.style.top = top + 'px';
+  state.panel.style.width = w + 'px';
+}
+
+function closeCombo() {
+  if (!_comboActive) return;
+  if (_comboActive.panel && _comboActive.panel.parentNode) _comboActive.panel.parentNode.removeChild(_comboActive.panel);
+  _comboActive = null;
+}
+
+function openCombo(id, fromTyping) {
+  var reg = _comboReg[id];
+  var input = document.getElementById(id);
+  // 面板重渲染后元素会被替换，这里以最新的 DOM 为准
+  if (reg && input && reg.input !== input) { reg.input = input; }
+  if (!reg || !input || !document.body.contains(input)) { closeCombo(); return; }
+  if (!reg.panel) {
+    reg.panel = document.createElement('div');
+    reg.panel.setAttribute('data-combo-panel', id);
+    reg.panel.style.cssText = 'position:fixed;z-index:9999;background:var(--card,#1e1e24);border:1px solid var(--border,#333);'
+      + 'border-radius:6px;box-shadow:0 10px 28px rgba(0,0,0,.45);max-height:300px;overflow-y:auto;padding:4px;font-size:12px;color:var(--fg,#ddd);'
+      // 面板自己滚到头/到底时不要把滚动传给页面（否则页面一动，面板就被「滚动即收起」关掉）
+      + 'overscroll-behavior:contain';
+    // mousedown + preventDefault：点选项时不夺走输入框焦点（否则 blur 会先关掉面板）
+    reg.panel.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      // 在列表里按下（多半是想滚动/拖滚动条）：先把焦点还给输入框，
+      // 这样 ↑↓ / Enter / Esc 这些键盘操作不会因为焦点跑掉而失效
+      var pin = document.getElementById(id);
+      if (pin && pin !== document.activeElement) { try { pin.focus({ preventScroll: true }); } catch (err) { pin.focus(); } }
+      var row = e.target.closest ? e.target.closest('[data-ci]') : null;
+      if (!row) return;
+      var st = _comboActive;
+      if (!st || st.id !== id) return;
+      st.index = parseInt(row.getAttribute('data-ci'), 10) || 0;
+      _comboPick();
+    });
+    reg.panel.addEventListener('mousemove', function(e) {
+      var row = e.target.closest ? e.target.closest('[data-ci]') : null;
+      if (!row || !_comboActive || _comboActive.id !== id) return;
+      var i = parseInt(row.getAttribute('data-ci'), 10) || 0;
+      if (i === _comboActive.index) return;
+      _comboActive.index = i;
+      _comboPaint(_comboActive);
+    });
+  }
+  if (_comboActive && _comboActive.id !== id) closeCombo();
+  // query：点击/聚焦展开 = 空（列出全部，避免被框里已有的值过滤掉）；输入展开 = 当前输入
+  var state = { id: id, input: input, panel: reg.panel, items: [], index: 0, opts: reg.opts,
+                query: fromTyping ? input.value : '', openedValue: input.value, typed: false };
+  _comboActive = state;
+  _comboRender(state);
+  if (!reg.panel.parentNode) document.body.appendChild(reg.panel);
+  // 每次展开都从顶部开始（上一轮可能滚到列表中间，位置不该带到新的一轮）
+  reg.panel.scrollTop = 0;
+  _comboPosition(state);
+  // 点击展开时把当前值高亮（列表仍为全量，方便直接换一个）
+  if (!fromTyping && state.items.length) {
+    for (var ci = 0; ci < state.items.length; ci++) {
+      if (String(state.items[ci].value) === String(input.value)) { state.index = ci; break; }
+    }
+  }
+  _comboPaint(state);
+}
+
+function moveCombo(delta) {
+  if (!_comboActive || !_comboActive.items.length) return;
+  var n = _comboActive.items.length;
+  _comboActive.index = (_comboActive.index + delta + n) % n;
+  _comboPaint(_comboActive);
+}
+
+function _comboPick() {
+  var st = _comboActive;
+  if (!st || st.index < 0 || !st.items[st.index]) return false;
+  var it = st.items[st.index];
+  st.input.value = it.value;
+  // 触发既有绑定（bindModelSelect / 表单读取都依赖 input/change）
+  st.input.dispatchEvent(new Event('input', { bubbles: true }));
+  st.input.dispatchEvent(new Event('change', { bubbles: true }));
+  if (typeof st.opts.onPick === 'function') st.opts.onPick(it);
+  closeCombo();
+  return true;
+}
+
+function attachCombo(id, opts) {
+  opts = opts || {};
+  var input = document.getElementById(id);
+  if (!input) return null;
+  if (input.getAttribute('data-combo-ready') === '1') return _comboReg[id] || null;
+  // 宿主重渲染：旧面板先收起，避免留下孤儿浮层
+  if (_comboActive && _comboActive.id === id) closeCombo();
+  input.setAttribute('data-combo-ready', '1');
+  input.setAttribute('autocomplete', 'off');
+  _comboReg[id] = { input: input, opts: opts, panel: null };
+
+  input.addEventListener('focus', function() { openCombo(id, false); });
+  input.addEventListener('click', function() { openCombo(id, false); });
+  input.addEventListener('input', function() {
+    // 已展开时只重绘面板（原地过滤）；未展开则展开
+    if (_comboActive && _comboActive.id === id) {
+      var st = _comboActive;
+      var v = input.value;
+      // 点击展开后第一次输入：若只是在旧值后面接着打，就只用新打的字筛选（否则旧值会把结果过滤空）
+      if (!st.typed && st.openedValue && v.length > st.openedValue.length && v.indexOf(st.openedValue) === 0) {
+        st.query = v.slice(st.openedValue.length);
+      } else {
+        st.query = v;
+      }
+      st.typed = true;
+      st.index = 0;
+      _comboRender(st); _comboPosition(st); _comboPaint(st);
+    } else openCombo(id, true);
+  });
+  input.addEventListener('keydown', function(e) {
+    var open = _comboActive && _comboActive.id === id;
+    if (e.key === 'ArrowDown') { if (!open) openCombo(id, false); else moveCombo(1); e.preventDefault(); }
+    else if (e.key === 'ArrowUp') { if (!open) openCombo(id, false); else moveCombo(-1); e.preventDefault(); }
+    else if (e.key === 'Enter') { if (open && _comboPick()) e.preventDefault(); }
+    else if (e.key === 'Escape') { if (open) { closeCombo(); e.preventDefault(); } }
+    else if (e.key === 'Tab') { closeCombo(); }
+  });
+  input.addEventListener('blur', function() { setTimeout(function() { if (_comboActive && _comboActive.id === id) closeCombo(); }, 130); });
+  return _comboReg[id];
+}
+
+// 点击外部 / 滚动 / 改窗口大小 → 收起
+document.addEventListener('mousedown', function(e) {
+  if (!_comboActive) return;
+  if (_comboActive.panel.contains(e.target) || _comboActive.input === e.target) return;
+  closeCombo();
+}, true);
+// 窗口尺寸变化 → 面板跟着输入框重新定位。
+// 注意：这里不能顺手收起面板 —— 面板用的是 fixed 定位，只要重新摆一次位置就能对齐；
+// 而有些环境（打开/收起开发者工具、系统缩放）会自发 resize，一 resize 就收起会让用户
+// 刚拉开的模型列表无故消失。真要不合适，下面的页面滚动会把面板收掉。
+window.addEventListener('resize', function() {
+  if (!_comboActive) return;
+  _comboPosition(_comboActive);
+});
+// 页面滚动 → 收起（面板是 fixed 定位，页面一滚它就跟输入框脱位了）
+// 但「滚动面板自己」不算：模型列表一次拉回几十上百条，用户必须能滚着挑。
+// scroll 不冒泡，所以这里用捕获阶段，必须放行 target 落在面板内的那次滚动。
+window.addEventListener('scroll', function(e) {
+  if (!_comboActive) return;
+  var t = e && e.target;
+  if (t && t.nodeType === 1) {
+    if (t === _comboActive.panel) return;
+    if (_comboActive.panel && _comboActive.panel.contains(t)) return;
+  }
+  closeCombo();
+}, true);
+
+window.组合框HTML = 组合框HTML;
+window.attachCombo = attachCombo;
+window.openCombo = openCombo;
+window.closeCombo = closeCombo;

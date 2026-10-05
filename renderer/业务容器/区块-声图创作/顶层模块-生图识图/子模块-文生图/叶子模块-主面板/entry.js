@@ -2,20 +2,17 @@
 
 // ===== 文生图 =====
 function renderT2I(el) {
-  if (!T2I.model) T2I.model = S.settings.runninghubDefaultT2i || 'seedream-v4';
+  if (!T2I.model) T2I.model = S.settings.runninghubDefaultT2i || '';
   var models = RH.allT2iModels();
   var prefix = 't2i';
 
   var h = '';
-  // 模型选择
+  // 模型选择：不预设，候选来自官方抓取，也可直接手输模型 id
   h += '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)">';
   h += '<span style="font-size:12px;color:var(--fg2);margin-right:4px">生图模型:</span>';
-  h += '<select id="' + prefix + 'Model" style="background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:12px;max-width:200px">';
-  models.forEach(function(m) {
-    h += '<option value="' + m.id + '"' + (m.id === T2I.model ? ' selected' : '') + '>' + escHtml(m.provider) + ' · ' + escHtml(m.name) + '</option>';
-  });
-  h += '</select></div>';
-
+  h += 组合框HTML({ id: prefix + 'Model', value: T2I.model, placeholder: '点开选已获取的官方模型，或手输模型 id', style: 'max-width:300px' });
+  if (!models.length) h += '<span style="font-size:11px;color:var(--fg3)">尚未获取模型：请到 设置 → 生图 API 点「🔄 获取可用模型」</span>';
+  h += '</div>';
   // 提示词
   h += '<div style="margin-bottom:8px">';
   h += '<label style="font-size:0.8em;color:var(--fg2);display:block;margin-bottom:3px">提示词</label>';
@@ -36,12 +33,17 @@ function renderT2I(el) {
   bindInput(prefix + 'Negative', function(v) { T2I.negativePrompt = v; });
   bindModelSelect(prefix + 'Model', function(v) { T2I.model = v; });
   bindSizeInputs(T2I, prefix);
+  attachCombo(prefix + 'Model', {
+    getOptions: function() { return RH.modelOptions(RH.allT2iModels()); },
+    emptyHint: '尚未获取模型：请到 设置 → 生图 API 点「🔄 获取可用模型」，也可以直接手输模型 id',
+  });
 }
 
 function onT2IGenerate() {
   if (T2I.status === 'submitting' || T2I.status === 'waiting') return;
   var prompt = T2I.prompt.trim();
   if (!prompt) { toast('请输入提示词'); return; }
+  if (!T2I.model) { toast('请先选择或输入生图模型（设置 → 生图 API 里可点「🔄 获取可用模型」）'); return; }
   T2I.status = 'submitting'; T2I.statusText = '提交任务...';
   updateGenStatus(T2I, 't2i');
   RH.textToImage(T2I.model, { prompt: prompt, width: T2I.width, height: T2I.height, negativePrompt: T2I.negativePrompt.trim() || undefined })

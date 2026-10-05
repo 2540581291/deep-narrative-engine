@@ -11,5 +11,7 @@ var 相声 = 淫诗体模块工厂({
   默认露骨度: '粗俗荤诗', 默认诗体: '无',
   promptName: 'xiang_sheng_gen', aiFieldId: 'xiangShengGen', aiLabel: '相声生成',
   模块独有选题: { label: '包袱方向', 编辑键: 'baofu', ctx标签: '包袱方向', options: ['荤包袱', '伦理哏', '贯口艳词', '谐音梗', '方言'] },
+  语言风格选项: 语言风格选项_对白,
+  话语行: true,
 });
 Store.xiangSheng = createStore('xiangSheng');

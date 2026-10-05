@@ -91,7 +91,7 @@ function 短formatForStorage(text) {
 // ===== 章节加载 =====
 function 短loadWritingChapters() {
   var itemsEl = document.getElementById('writingChapterItems');
-  if (!itemsEl) { console.log('[Writing] itemsEl null!'); return; }
+  if (!itemsEl) return;   // 调试打印已移除：容器不存在属正常时序（未挂载），无需刷控制台
 
   itemsEl.innerHTML = '<div class="text-muted text-sm p-8">加载中...</div>';
 

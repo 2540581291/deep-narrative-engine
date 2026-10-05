@@ -14,7 +14,7 @@ var 游记文 = 锦绣文章模块工厂({
   storeKey: 'youJiWen', containerId: 'youJiWenContent', viewContentId: 'youJiWenViewContent',
   prefix: 'youJiWenEdit', windowPrefix: '游记文',
   navLabelList: '📋 游记集', navLabelEdit: '✍️ 创作',
-  formOptionsLabel: '类型', formOptions: ['成人秀游', '妓院游', '行为矫正学校游', '地下黑市游', '借种游', '原始部落游', '堕落邪教游', '色情邪教游'],
+  formOptionsLabel: '类型', formOptions: ['成人秀游', '妓院游', '行为矫正学校游', '地下黑市游', '借种游', '原始部落游', '堕落邪教游', '色情邪教游', '幼女', '正太'],
   form解释: {
     '成人秀游': '以观看成人表演为主的旅途，游程围绕秀场与艳舞展开',
     '妓院游': '以逛妓院寻欢为主的旅途，游程围绕烟花之地展开',

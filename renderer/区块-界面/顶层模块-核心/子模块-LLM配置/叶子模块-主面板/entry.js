@@ -6,7 +6,7 @@ function renderLlmConfigs(el) {
   var html = '<p class="settings-card-desc">管理你的 LLM API 配置。支持多个厂商和模型。</p>';
   if (editingLlmId !== null) {
     var editingConfig = null;
-    if (editingLlmId === 'new') { editingConfig = { provider: 'openai', id: null, name: '', model: '', apiKey: '', baseUrl: '', defaultParams: { temperature: 0.7, max_tokens: 4096, context_window: 128000 } }; }
+    if (editingLlmId === 'new') { editingConfig = { provider: 'openai', id: null, name: '', model: '', apiKey: '', baseUrl: '', thinkingMode: false, defaultParams: { temperature: 0.7, max_tokens: 4096, context_window: 128000 } }; }
     else { for (var i = 0; i < configs.length; i++) { if (configs[i].id === editingLlmId) { editingConfig = deepClone(configs[i]); break; } } }
     if (editingConfig) html += buildLlmForm(editingConfig);
   }
@@ -19,7 +19,7 @@ function renderLlmConfigs(el) {
       html += '<div class="settings-card">';
       html += '<div class="flex justify-between items-center">';
       html += '<div><div class="settings-card-title">' + escHtml(c.name || '未命名') + '</div>';
-      html += '<div style="font-size:11px;color:var(--fg2);margin-top:4px">' + (PROVIDER_NAMES[c.provider] || c.provider || '') + ' · ' + escHtml(c.model) + '</div></div>';
+      html += '<div style="font-size:11px;color:var(--fg2);margin-top:4px">' + (PROVIDER_NAMES[c.provider] || c.provider || '') + ' · ' + escHtml(c.model) + ' · 思考：' + 思考模式标签(c.thinkingMode) + '</div></div>';
       html += '<div style="display:flex;gap:6px"><button class="btn-out" style="padding:4px 12px;font-size:11px" onclick="editLLM(\'' + c.id + '\')">✏️ 编辑</button>';
       html += '<button class="btn-out" style="padding:4px 12px;font-size:11px;color:var(--error);border-color:rgba(231,76,60,.4)" onclick="deleteLLM(\'' + c.id + '\')">🗑 删除</button></div></div>';
       if (c.apiKey) html += '<div style="font-size:11px;color:var(--fg2);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">API Key: <span style="font-family:monospace;color:var(--fg3)">' + maskKey(c.apiKey) + '</span></div>';
@@ -28,6 +28,17 @@ function renderLlmConfigs(el) {
   }
   if (editingLlmId === null) html += '<div style="text-align:center;margin-top:8px"><button class="btn-new" onclick="addLLM()">＋ 添加 LLM 配置</button></div>';
   el.innerHTML = html;
+  // 模型框挂上自绘下拉（候选实时取当前厂商的已获取列表）
+  if (editingLlmId !== null && document.getElementById('f_model')) {
+    attachCombo('f_model', {
+      getOptions: function() {
+        var sel = document.getElementById('f_provider');
+        var p = sel ? sel.value : 'openai';
+        return (PROVIDER_MODELS[p] || []).map(function(m) { return { value: m.value, label: m.label || m.value }; });
+      },
+      emptyHint: '尚未获取模型：点右侧「🔄 获取模型」从厂商官方接口拉取，也可以直接在框里手输模型名',
+    });
+  }
 }
 
 function buildLlmForm(config) {
@@ -42,20 +53,14 @@ function buildLlmForm(config) {
   html += '<select id="f_provider" class="llm-input llm-select" style="width:100%" onchange="onProviderChange()">';
   for (var i = 0; i < PROVIDER_OPTIONS.length; i++) html += '<option value="' + PROVIDER_OPTIONS[i].id + '"' + (provider === PROVIDER_OPTIONS[i].id ? ' selected' : '') + '>' + PROVIDER_OPTIONS[i].name + '</option>';
   html += '</select></div>';
-  var models = PROVIDER_MODELS[provider] || [];
   html += '<div class="settings-row">' + label('模型名', FIELD_TIPS.model);
   html += '<div style="display:flex;gap:6px;align-items:center;width:100%">';
-  if (models.length > 0) {
-    html += '<select id="f_model" class="llm-input llm-select" style="flex:1">';
-    var found = false;
-    for (var mi = 0; mi < models.length; mi++) { var sel = (config.model === models[mi].value) ? ' selected' : ''; if (sel) found = true; html += '<option value="' + models[mi].value + '"' + sel + '>' + models[mi].label + '</option>'; }
-    if (config.model && !found) html += '<option value="' + escHtml(config.model) + '" selected>' + escHtml(config.model) + '（自定义）</option>';
-    html += '</select>';
-  } else { html += '<input id="f_model" type="text" class="llm-input" style="flex:1" value="' + escHtml(config.model || '') + '" placeholder="输入模型名" />'; }
-  html += '<button class="btn-out" style="white-space:nowrap" onclick="fetchProviderModels()" title="从 API 获取可用模型列表">🔄 获取模型</button>';
+  // 不预设模型：始终是可自由输入的文本框，点开即列出「🔄 获取模型」拉到的官方模型
+  html += 组合框HTML({ id: 'f_model', value: config.model || '', placeholder: modelPlaceholder(provider), style: 'flex:1' });
+  html += '<button class="btn-out" style="white-space:nowrap" onclick="fetchProviderModels()" title="从厂商官方接口获取可用模型列表">🔄 获取模型</button>';
   html += '</div></div>';
   html += '<div class="settings-row">' + label('API Key', FIELD_TIPS.apiKey);
-  html += '<input id="f_apikey" type="password" class="llm-input" style="width:100%" value="' + escHtml(config.apiKey || '') + '" placeholder="sk-..." ondblclick="this.type=\'text\'" onblur="this.type=\'password\'" /></div>';
+  html += '<input id="f_apikey" type="password" class="llm-input" style="width:100%" value="' + escHtml(config.apiKey || '') + '" placeholder="' + (provider === 'ollama' ? '本地服务无需 API Key，可留空' : 'sk-...') + '" ondblclick="this.type=\'text\'" onblur="this.type=\'password\'" /></div>';
   html += '<div class="settings-row">' + label('Base URL（可选）', FIELD_TIPS.baseUrl);
   html += '<input id="f_baseurl" type="text" class="llm-input" style="width:100%" value="' + escHtml(config.baseUrl || DEFAULT_URLS[provider] || '') + '" placeholder="https://..." /></div>';
   html += '<div class="settings-group">模型参数</div>';
@@ -71,78 +76,93 @@ function buildLlmForm(config) {
   var contextVal = (config.defaultParams && config.defaultParams.context_window) || DEFAULT_CONTEXT_WINDOWS[provider] || 128000;
   html += '<select id="f_context" class="llm-input llm-select" style="width:100%">';
   for (var ci = 0; ci < CONTEXT_WINDOW_OPTIONS.length; ci++) html += '<option value="' + CONTEXT_WINDOW_OPTIONS[ci].value + '"' + (contextVal === CONTEXT_WINDOW_OPTIONS[ci].value ? ' selected' : '') + '>' + CONTEXT_WINDOW_OPTIONS[ci].label + '</option>';
+  html += '</select></div>';
+  // 思考模式（思维链）：默认「关闭」——老配置里没有这个字段时也按关闭显示/处理
+  var 思考值 = config.thinkingMode === true ? 'on' : (config.thinkingMode === null ? 'auto' : 'off');
+  html += '<div style="flex:1;min-width:150px">' + label('思考模式', FIELD_TIPS.thinkingMode);
+  html += '<select id="f_thinking" class="llm-input llm-select" style="width:100%">';
+  for (var xi = 0; xi < 思考模式选项.length; xi++) html += '<option value="' + 思考模式选项[xi].value + '"' + (思考值 === 思考模式选项[xi].value ? ' selected' : '') + '>' + 思考模式选项[xi].label + '</option>';
   html += '</select></div></div>';
   html += '<div style="display:flex;gap:8px;margin-top:6px"><button class="btn-new" onclick="saveLLM()">💾 保存</button><button class="btn-out" onclick="cancelLLM()">取消</button></div></div>';
   return html;
 }
 
+function modelPlaceholder(provider) {
+  if (provider === 'ollama') return '点「🔄 获取模型」列出本机已装模型，或直接输入（如 qwen2.5:7b）';
+  return '点「🔄 获取模型」拉取官方模型列表，或直接输入模型名';
+}
+
 function onProviderChange() {
   var provider = document.getElementById('f_provider').value;
-  var modelSelect = document.getElementById('f_model');
-  var urlInput = document.getElementById('f_baseurl');
-  var models = PROVIDER_MODELS[provider] || [];
-  if (modelSelect && models.length > 0) {
-    modelSelect.innerHTML = '';
-    for (var mi = 0; mi < models.length; mi++) { var opt = document.createElement('option'); opt.value = models[mi].value; opt.textContent = models[mi].label; modelSelect.appendChild(opt); }
+  var modelInput = document.getElementById('f_model');
+  if (modelInput) {
+    // 换厂商＝换模型命名空间，清掉旧值，避免把 A 家的模型名留在 B 家配置里
+    modelInput.value = '';
+    modelInput.placeholder = modelPlaceholder(provider);
   }
+  // 候选由组合框的 getOptions 实时读取，这里不用重建列表
+  closeCombo();
+  var urlInput = document.getElementById('f_baseurl');
   if (urlInput && DEFAULT_URLS[provider]) urlInput.value = DEFAULT_URLS[provider];
+  var keyInput = document.getElementById('f_apikey');
+  if (keyInput) keyInput.placeholder = provider === 'ollama' ? '本地服务无需 API Key，可留空' : 'sk-...';
 }
 
 function fetchProviderModels() {
   var provider = document.getElementById('f_provider').value;
   var apiKey = document.getElementById('f_apikey').value.trim();
   var baseUrl = document.getElementById('f_baseurl').value.trim();
+  var isOllama = provider === 'ollama';
 
-  if (!apiKey) { toast('请先填写 API Key'); return; }
+  if (!isOllama && !apiKey) { toast('请先填写 API Key'); return; }
   if (!baseUrl) { toast('请先填写 Base URL'); return; }
-  if (provider === 'anthropic') { toast('Anthropic 暂不支持 API 获取模型列表，请手动输入模型名'); return; }
 
   var url, fetchOpts;
-  if (provider === 'gemini') {
+  if (isOllama) {
+    // Ollama 原生接口：GET /api/tags → { models: [{ name, model, ... }] }，本地服务无需鉴权
+    url = baseUrl.replace(/\/+$/, '').replace(/\/v1$/, '') + '/api/tags';
+    fetchOpts = {};
+  } else if (provider === 'anthropic') {
+    // Anthropic 官方模型列表；浏览器环境必须带 direct-browser-access 头
+    url = baseUrl.replace(/\/+$/, '') + '/v1/models?limit=100';
+    fetchOpts = { headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' } };
+  } else if (provider === 'gemini') {
     url = baseUrl + '/v1beta/models?key=' + encodeURIComponent(apiKey);
     fetchOpts = {};
+  } else if (provider === 'opencodezen' || provider === 'opencodego') {
+    // OpenCode Zen / Go：统一走 {根}/models，Bearer 鉴权，返回的就是 OpenAI 形状的 { data: [{ id }] }。
+    // 地址先归一化：zen 的 /go/v1 是订阅制入口，用 oc_sk_ 密钥会报 MissingSessionID。
+    url = zen根地址(baseUrl) + '/models';
+    fetchOpts = { headers: { 'Authorization': 'Bearer ' + apiKey } };
   } else {
     url = baseUrl.replace(/\/+$/, '') + '/models';
     fetchOpts = { headers: { 'Authorization': 'Bearer ' + apiKey } };
   }
 
-  toast('正在获取模型列表...');
+  toast('正在从官方接口获取模型列表...');
 
   fetch(url, fetchOpts).then(function(res) {
     if (!res.ok) return res.json().then(function(err) { throw new Error(err.error && err.error.message ? err.error.message : 'HTTP ' + res.status); });
     return res.json();
   }).then(function(data) {
-    var rawModels = provider === 'gemini' ? (data.models || []) : (data.data || []);
-    var modelIds = rawModels.map(function(m) { return (m.id || m.name || '').replace(/^models\//, ''); }).filter(Boolean);
-
-    if (!modelIds.length) { toast('API 返回的模型列表为空'); return; }
-
-    // 合并到 PROVIDER_MODELS（去重）
-    var existing = PROVIDER_MODELS[provider] || [];
-    var existingValues = {};
-    for (var ei = 0; ei < existing.length; ei++) existingValues[existing[ei].value] = true;
-    for (var fi = 0; fi < modelIds.length; fi++) {
-      if (!existingValues[modelIds[fi]]) {
-        existing.push({ value: modelIds[fi], label: modelIds[fi] });
-        existingValues[modelIds[fi]] = true;
-      }
+    var rawModels = (provider === 'gemini' || isOllama) ? (data.models || []) : (data.data || []);
+    var seen = {};
+    var modelIds = [];
+    for (var ri = 0; ri < rawModels.length; ri++) {
+      var id = (rawModels[ri].id || rawModels[ri].name || rawModels[ri].model || '').replace(/^models\//, '');
+      if (id && !seen[id]) { seen[id] = true; modelIds.push(id); }
     }
-    PROVIDER_MODELS[provider] = existing;
+    modelIds.sort();
 
-    // 重建下拉框
-    var modelSelect = document.getElementById('f_model');
-    if (modelSelect) {
-      var currentVal = modelSelect.value;
-      modelSelect.innerHTML = '';
-      for (var mi = 0; mi < existing.length; mi++) {
-        var opt = document.createElement('option');
-        opt.value = existing[mi].value;
-        opt.textContent = existing[mi].label;
-        modelSelect.appendChild(opt);
-      }
-      modelSelect.value = currentVal;
-    }
-    toast('已获取 ' + modelIds.length + ' 个模型');
+    if (!modelIds.length) { toast('官方接口返回的模型列表为空'); return; }
+
+    // 官方列表为准：整表替换当前会话缓存的候选（不预设、不累积旧结果）
+    PROVIDER_MODELS[provider] = modelIds.map(function(id) { return { value: id, label: id }; });
+
+    // 拉完直接把候选列表弹出来，省得再点一次输入框
+    var mi = document.getElementById('f_model');
+    if (mi) { mi.focus(); openCombo('f_model'); }
+    toast('已获取 ' + modelIds.length + ' 个官方模型，可直接从列表里选');
   }).catch(function(err) {
     toast('获取模型列表失败: ' + err.message);
   });
@@ -162,10 +182,13 @@ function saveLLM() {
   var temp = parseFloat(document.getElementById('f_temp').value) || 0.7;
   var maxTokens = parseInt(document.getElementById('f_maxtokens').value) || 2048;
   var contextWindow = parseInt(document.getElementById('f_context').value) || 128000;
+  var 思考下拉 = document.getElementById('f_thinking');
+  var 思考值 = 思考下拉 ? 思考下拉.value : 'off';
+  var thinkingMode = (思考值 === 'on') ? true : (思考值 === 'auto' ? null : false);
   if (!name) { toast('请输入配置名称'); return; }
   if (!model) { toast('请输入/选择模型名'); return; }
-  if (!apiKey) { toast('请输入 API Key'); return; }
-  var config = { name: name, provider: provider, model: model, apiKey: apiKey, baseUrl: baseUrl, defaultParams: { temperature: temp, max_tokens: maxTokens, context_window: contextWindow } };
+  if (!apiKey && provider !== 'ollama') { toast('请输入 API Key'); return; }
+  var config = { name: name, provider: provider, model: model, apiKey: apiKey, baseUrl: baseUrl, thinkingMode: thinkingMode, defaultParams: { temperature: temp, max_tokens: maxTokens, context_window: contextWindow } };
   if (editingLlmId === 'new') { LLMService.add(config); toast('已添加配置: ' + name); }
   else { LLMService.update(editingLlmId, config); toast('已更新配置: ' + name); }
   editingLlmId = null;

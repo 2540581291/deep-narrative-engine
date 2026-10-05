@@ -78,6 +78,8 @@ function saveRenamed(key, newTitle) {
     if (!meta) { toast('记录未找到'); return; }
     meta.title = newTitle;
     return LocalFS.saveJSON(小说提取存储基路径 + key + '/_meta.json', meta).then(function() {
+      // 角色话语库同步：bookId 未变，只刷新显示用书名
+      if (meta.id) 角色话语书名更新(meta.id, newTitle);
       var newFolderName = 本地FS.清理(newTitle);
       if (newFolderName && newFolderName !== key) {
         return LocalFS.rename(小说提取存储基路径 + key, 小说提取存储基路径 + newFolderName).then(function() {

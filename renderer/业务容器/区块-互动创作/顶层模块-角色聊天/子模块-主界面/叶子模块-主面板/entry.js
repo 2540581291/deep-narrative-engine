@@ -12,8 +12,10 @@ var 角色聊天当前会话 = null; // { id, mode, messages, ... } 实时内存
 var 角色聊天性别 = '女性';
 
 // 从角色库读取角色，按性别过滤
+// 顺序与「角色卡·角色库」同一口径：按创建时间倒序（新建在前）——不用 Store 默认的"最近更新在前"，
+// 否则编辑过一个老角色，它就会在角色聊天页跳到最前面。
 function 角色聊天读角色(性别) {
-  return Store.character.list().then(function(items) {
+  return 角色卡按创建倒序(Store.character.list()).then(function(items) {
     return (items || []).filter(function(item) {
       var g = item.identity && item.identity.basicInfo && item.identity.basicInfo.gender;
       return g === 性别;

@@ -20,6 +20,7 @@ var 角色辱骂 = 角色台本工厂({
   主题标签: '辱骂类型',
   语气选项: ['冷笑讥讽', '暴怒咆哮', '阴阳怪气', '平静恶毒', '哭着痛骂', '带笑骂人'],
   对象模式: true, 主题多选: true,
+  语言风格选项: window.语言风格选项_对白,
 });
 if (!Store.roleInsult) Store.roleInsult = createStore('roleInsult');
 // 旧「性辱骂」独立库的一次性并入（按标题去重，标 kind='性'）

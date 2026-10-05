@@ -256,7 +256,7 @@ var STCD_INSPIRE_VERSION_FILES = { normal: '正常版.json', cool: '清凉版.js
 var STCD_INSPIRE_AVATAR_FILES = { normal: 'avatar-normal.jpg', cool: 'avatar-cool.jpg', deep: 'avatar-deep.jpg' };
 
 // 递归收集「角色叶子目录」：目录里含 正常版.json/清凉版.json/深度版.json 中的任一文件即为角色目录；
-// 否则将其视为层级容器目录继续下钻。返回的是【相对 STCD_INSPIRE_DIR 的多级相对路径】数组（如 世界观/熟女仙界/.../柳寒烟）。
+// 否则将其视为层级容器目录继续下钻。返回的是【相对 STCD_INSPIRE_DIR 的多级相对路径】数组（如 世界观/幼女武界/.../柳寒烟）。
 function stcdInspireCollectRoleDirs(relPath) {
   return LocalFS.list(relPath).then(function(entries) {
     var dirs = (entries || []).filter(function(e) { return e.isDir; });
@@ -386,7 +386,7 @@ function stcdInspireNewItem() {
 
 // 角色目录名（多级层级路径）：已记录 _dirName 则用记录值；
 // 否则由 「category（世界观/世界/入口/条目/…） + 角色名」拼成真实多级目录，逐段清理（保留 / 分隔）。
-// 例：category=世界观/熟女仙界/情色行业结社/驻颜娼行 → 世界观/熟女仙界/情色行业结社/驻颜娼行/柳寒烟
+// 例：category=世界观/幼女武界/情色行业结社/驻颜娼行 → 世界观/幼女武界/情色行业结社/驻颜娼行/柳寒烟
 // 若 category 末段已等于角色名（如 典型角色/秦霜凌），则不再重复拼接，直接用作完整目录。
 function stcdInspireDirName(it) {
   if (it && it._dirName) return it._dirName;
@@ -854,22 +854,27 @@ window.stcdInspireGenDerive = stcdInspireGenDerive;
     },
   });
 
-  // 导入世界 · 势力的「级别」层级生成（走二元模板弹窗；目标由 UI 在打开前写入 STCD_INSPIRE_LVGEN）
+  // 导入世界 · 锚点的「级别」层级生成（走二元模板弹窗；目标由 UI 在打开前写入 STCD_INSPIRE_LVGEN）
+  // 锚点通用：势力 / 地理 / 种族 / 物品 都可作为锚点，由 板块·主体·释义 三个变量告诉 AI 当下是什么。
   registerAiField('stcd-inspire-level-gen', '导入世界·级别生成', function() {
     var g = (typeof STCD_INSPIRE_LVGEN !== 'undefined') ? STCD_INSPIRE_LVGEN : {};
-    return { user: '', name: (g.条目名 || ''), detail: (g.详细 || ''), context: (g.上下文 || '') };
+    var 释 = (typeof stcdInspire锚点释义 === 'function') ? stcdInspire锚点释义(g.入口) : { 板块: '势力', 主体: '势力', 释义: '' };
+    // {补充}：只有「随从 / 奴仆」有（这一条写的是人）；别的器物是空串，模板里那一行就没了。
+    // 认的是**维度**——物品是池化键，入口一律是「物品」，分不出是随从还是奴仆。
+    var 补 = (typeof stcdInspire人物补充 === 'function') ? stcdInspire人物补充(g.维度 || g.入口) : '';
+    return { user: '', name: (g.条目名 || ''), 板块: 释.板块, 主体: 释.主体, 释义: 释.释义, 补充: 补, detail: (g.详细 || ''), context: (g.上下文 || '') };
   }, {
     suggestPrompt: 'inspire_world_level_gen',
     count: true,
     defaultCount: 6,
     countLabel: '个级别（层级）',
-    countNote: '每个级别的职位数量不做限制。',
+    countNote: '每个级别的职位数量不做限制。如果这个主体里存在支配者与被支配者、玩弄者与被玩弄者这样类似的关系，那么属于被支配或者说被玩弄的一方的级别数量，至少应占全部级别的一半以上。',
     fillFn: function(d) {
       var g = (typeof STCD_INSPIRE_LVGEN !== 'undefined') ? STCD_INSPIRE_LVGEN : {};
       var list = (window.STCD_INSPIRE_IMPORT_LIST) ? window.STCD_INSPIRE_IMPORT_LIST : [];
       var imp = null;
       for (var i = 0; i < list.length; i++) if (list[i].世界名 === g.世界名) { imp = list[i]; break; }
-      if (!imp || !imp.内容 || !imp.内容[g.入口] || !imp.内容[g.入口][g.itemIdx]) { if (typeof toast === 'function') toast('找不到该势力/地点'); return; }
+      if (!imp || !imp.内容 || !imp.内容[g.入口] || !imp.内容[g.入口][g.itemIdx]) { if (typeof toast === 'function') toast('找不到该条目'); return; }
       var item = imp.内容[g.入口][g.itemIdx];
       var arr = (d && Array.isArray(d['级别'])) ? d['级别'] : (Array.isArray(d) ? d : null);
       if (!arr || !arr.length) { if (typeof toast === 'function') toast('生成结果为空'); return; }
@@ -888,7 +893,9 @@ window.stcdInspireGenDerive = stcdInspireGenDerive;
   // 导入世界 · 某个「级别」下的职位生成（走二元模板弹窗；目标由 UI 在打开前写入 STCD_INSPIRE_POSGEN）
   registerAiField('stcd-inspire-pos-gen', '导入世界·职位生成', function() {
     var g = (typeof STCD_INSPIRE_POSGEN !== 'undefined') ? STCD_INSPIRE_POSGEN : {};
-    return { user: '', name: (g.条目名 || ''), levelName: (g.levelName || ''), levelDesc: (g.levelDesc || ''), context: (g.上下文 || '') };
+    var 释 = (typeof stcdInspire锚点释义 === 'function') ? stcdInspire锚点释义(g.入口) : { 板块: '势力', 主体: '势力', 释义: '' };
+    var 补 = (typeof stcdInspire人物补充 === 'function') ? stcdInspire人物补充(g.维度 || g.入口) : '';
+    return { user: '', name: (g.条目名 || ''), 板块: 释.板块, 主体: 释.主体, 释义: 释.释义, 补充: 补, levelName: (g.levelName || ''), levelDesc: (g.levelDesc || ''), context: (g.上下文 || '') };
   }, {
     suggestPrompt: 'inspire_world_pos_gen',
     fillFn: function(d) {
@@ -896,7 +903,7 @@ window.stcdInspireGenDerive = stcdInspireGenDerive;
       var list = (window.STCD_INSPIRE_IMPORT_LIST) ? window.STCD_INSPIRE_IMPORT_LIST : [];
       var imp = null;
       for (var i = 0; i < list.length; i++) if (list[i].世界名 === g.世界名) { imp = list[i]; break; }
-      if (!imp || !imp.内容 || !imp.内容[g.入口] || !imp.内容[g.入口][g.itemIdx]) { if (typeof toast === 'function') toast('找不到该势力/地点'); return; }
+      if (!imp || !imp.内容 || !imp.内容[g.入口] || !imp.内容[g.入口][g.itemIdx]) { if (typeof toast === 'function') toast('找不到该条目'); return; }
       var item = imp.内容[g.入口][g.itemIdx];
       var lv = (item['级别'] || [])[g.级别Idx] || null;
       if (!lv) { if (typeof toast === 'function') toast('找不到该级别'); return; }
@@ -922,10 +929,11 @@ window.stcdInspireGenDerive = stcdInspireGenDerive;
     },
   });
 
-  // 导入世界 · 该势力的「台面代表人物」生成（走二元模板弹窗；目标由 UI 在打开前写入 STCD_INSPIRE_PERSONAGEN；产出与普通角色一致的灵感角色卡片）
+  // 导入世界 · 锚点的「台面代表人物」生成（走二元模板弹窗；目标由 UI 在打开前写入 STCD_INSPIRE_PERSONAGEN；产出与普通角色一致的灵感角色卡片）
   registerAiField('stcd-inspire-persona-gen', '导入世界·代表人物生成', function() {
     var g = (typeof STCD_INSPIRE_PERSONAGEN !== 'undefined') ? STCD_INSPIRE_PERSONAGEN : {};
     var 性别 = (typeof STCD_INSPIRE_GEN !== 'undefined' && STCD_INSPIRE_GEN.gender) ? STCD_INSPIRE_GEN.gender : '女';
+    var 释 = (typeof stcdInspire锚点释义 === 'function') ? stcdInspire锚点释义(g.入口) : { 板块: '势力', 主体: '势力', 释义: '' };
     // 字段结构模板：给「区块内扁平」的嵌套对象示例，让模型照正确形状输出（避免 {block,fields} 平铺段）
     var tpl = {};
     if (typeof window.stcdInspireGetFields === 'function') {
@@ -935,7 +943,7 @@ window.stcdInspireGenDerive = stcdInspireGenDerive;
         tpl[b.block] = blk;
       });
     }
-    return { user: '', name: (g.条目名 || ''), detail: (g.详细 || ''), context: (g.上下文 || ''), 性别: 性别, template: JSON.stringify(tpl) };
+    return { user: '', name: (g.条目名 || ''), 板块: 释.板块, 主体: 释.主体, 释义: 释.释义, 补充: ((typeof stcdInspire人物补充 === 'function') ? stcdInspire人物补充(g.维度 || g.入口) : ''), detail: (g.详细 || ''), context: (g.上下文 || ''), 性别: 性别, template: JSON.stringify(tpl) };
   }, {
     suggestPrompt: 'inspire_persona_gen',
     count: true,
@@ -947,7 +955,7 @@ window.stcdInspireGenDerive = stcdInspireGenDerive;
       var list = (window.STCD_INSPIRE_IMPORT_LIST) ? window.STCD_INSPIRE_IMPORT_LIST : [];
       var imp = null;
       for (var i = 0; i < list.length; i++) if (list[i].世界名 === g.世界名) { imp = list[i]; break; }
-      if (!imp || !imp.内容 || !imp.内容[g.入口] || !imp.内容[g.入口][g.itemIdx]) { if (typeof toast === 'function') toast('找不到该势力/地点'); return; }
+      if (!imp || !imp.内容 || !imp.内容[g.入口] || !imp.内容[g.入口][g.itemIdx]) { if (typeof toast === 'function') toast('找不到该条目'); return; }
       var item = imp.内容[g.入口][g.itemIdx];
       var 条目名 = item['条目'] || '未命名';
       var personaPath = '世界观/' + g.世界名 + '/' + g.入口 + '/' + 条目名 + '/代表人物';
@@ -1291,9 +1299,16 @@ window.stcdInspireGenDerive = stcdInspireGenDerive;
 })();
 
 // ============================================================
-// 灵感角色库 · 导入世界观（只导地理+势力五入口；存本库数据）
+// 灵感角色库 · 导入世界观（存本库数据）
 // 数据文件：角色卡/灵感角色库/导入世界观.json
-// 结构：[ { 世界名, 图标, 色, 内容: { 世界地理:[条目], 聚落:[条目], 奇境:[条目], 世俗政权:[条目], 超凡势力:[条目] } } ]
+// 结构：[ { 世界名, 图标, 色, 内容: { 维度名:[条目], ... } } ]
+// 内容键与世界观模块的「世界版块表」逐维度对齐，但**只取角色卡要用的几块**：
+//   势力（谁是主）/ 地理（在哪儿）/ 种族（是什么）/ 军队（谁带着哪支兵）/ 物品（拿什么）
+//   世界设定 / 文化 / 时间线**不导入**——角色卡里不出现。
+//   军队的九个维度（步兵 / 骑兵 / … / 海军）与世界观那边逐维度对齐，**没有「军势」这一说了**；
+//   兵种条目自己带「所属势力」指回势力板块，所以兵种名不作势力名（见 stcdInspire势力清单）。
+// 世界观那边的维度若有增删，这里的两处清单要同步：
+//   ① stcdInspire导入世界观() 里的抓取清单   ② inspire-ui.js 的 STCD_INSPIRE_板块表
 // ============================================================
 var STCD_INSPIRE_IMPORT_DIR = '角色卡/灵感角色库/';
 var STCD_INSPIRE_IMPORT_FILE = '角色卡/灵感角色库/导入世界观.json';
@@ -1305,7 +1320,41 @@ function stcdInspire导入世界观加载() {
   if (STCD_INSPIRE_IMPORT_LOADED) return Promise.resolve(STCD_INSPIRE_IMPORT_LIST);
   return LocalFS.readJSON(STCD_INSPIRE_IMPORT_FILE).then(function(list) {
     STCD_INSPIRE_IMPORT_LIST.length = 0;
-    (list && Array.isArray(list) ? list : []).forEach(function(w) { STCD_INSPIRE_IMPORT_LIST.push(w); });
+    (list && Array.isArray(list) ? list : []).forEach(function(w) {
+      // 兼容旧数据：早期版本把「大城名宗 + 乡镇村落」合并成一个「聚落」入口。
+      // 世界观模块已把它拆回两个维度，旧的「聚落」在库里无处挂靠——这里平移到大城名宗，
+      // 使旧导入的世界不至于整块消失（重新点一次「📥 导入世界观」即可按新维度重新拆开）。
+      if (w && w.内容 && !w.内容['大城名宗'] && w.内容['聚落']) {
+        w.内容['大城名宗'] = w.内容['聚落'];
+        delete w.内容['聚落'];
+      }
+      // 兼容旧数据（二）：军队早年是「势力」下的一个维度「军武集团」，后来变成顶层板块、
+      // 且用「军势」作唯一入口，现在又改成**九个兵种维度**（与世界观模块一致）。
+      // 旧键里的条目不能丢：把旧「军势」与旧池键「军队」（当年按 _维度 盖过戳的那一批）
+      // 一律按 _维度 落到现行维度上，认不出的落「步兵」（世界观侧的迁移也是这么兜底的）。
+      // 想按新结构重新细分，重新点一次「📥 导入世界观」即可。
+      if (w && w.内容) {
+        // 现行兵种维度（本文件先于 inspire-ui.js 加载，取不到就用手写的那一份兜底）
+        var 兵种 = (typeof stcdInspire板块定义 === 'function' && stcdInspire板块定义('军队'))
+          ? stcdInspire板块定义('军队').维度
+          : ['步兵', '骑兵', '战车', '远程', '法师', '怪兽', '炮械', '空军', '海军'];
+        var 落 = function(维度名, arr) {
+          // 认得出的兵种维度照落；认不出的（军武集团 / 军势 / 早年那些复合维度名）落「步兵」——
+          // 与世界观侧迁移的兜底一致（成建制武装的默认位）。
+          var d = (维度名 && 兵种.indexOf(维度名) >= 0) ? 维度名 : '步兵';
+          if (!w.内容[d]) w.内容[d] = [];
+          (arr || []).forEach(function(it) { w.内容[d].push(it); });
+        };
+        if (w.内容['军武集团']) { 落('军武集团', w.内容['军武集团']); delete w.内容['军武集团']; }
+        if (w.内容['军势']) { 落('军势', w.内容['军势']); delete w.内容['军势']; }
+        if (w.内容['军队']) {
+          var 池 = w.内容['军队'];
+          delete w.内容['军队'];
+          池.forEach(function(it) { 落((it && it['_维度']) || '', [it]); });
+        }
+      }
+      STCD_INSPIRE_IMPORT_LIST.push(w);
+    });
     STCD_INSPIRE_IMPORT_LOADED = true;
     return STCD_INSPIRE_IMPORT_LIST;
   }).catch(function() {
@@ -1536,35 +1585,63 @@ function stcdInspire可取世界列表() {
   }).catch(function() { return []; });
 }
 
-// 从世界观模块导入一个世界（拉地理三入口 + 势力全部类别，复制进本库数据）
+// 从世界观模块导入一个世界（按「世界版块表」逐维度抓取，复制进本库数据）
 function stcdInspire导入世界观(世界名) {
   if (typeof Store === 'undefined' || !Store.world || typeof Store.world.loadContent !== 'function') return Promise.reject(new Error('世界观模块未就绪'));
   return Store.world.loadContent(世界名).then(function(content) {
     content = content || {};
-    // 地理：固定三入口
+    // 地理：四个维度，与世界观模块的「地理」逐维度一致（旧版合并出的「聚落」已废弃）
+    var 地理 = content.地理 || {};
     var 内容 = {
-      世界地理: (content.地理 && content.地理['世界地理']) || [],
-      聚落: []
-        .concat((content.地理 && content.地理['聚落']) || [])
-        .concat((content.地理 && content.地理['大城名宗']) || [])
-        .concat((content.地理 && content.地理['乡镇村落']) || []),
-      奇境: (content.地理 && content.地理['奇境']) || [],
+      世界地理: 地理['世界地理'] || [],
+      大城名宗: 地理['大城名宗'] || [],
+      乡镇村落: 地理['乡镇村落'] || [],
+      奇境: 地理['奇境'] || [],
     };
-    // 势力：同步全部势力类别（世界观 schema 里的 8 类；content 里有的取条目，没有的预置空数组）
+    // 势力：同步全部势力类别（世界观 schema 里的 7 类；content 里有的取条目，没有的预置空数组）
+    // 注：「军队」已从势力里独立成块，不再属于这里。
     var 势力 = content.势力 || {};
-    var 势力类别 = ['世俗政权','超凡势力','地下黑道','邪教淫祠','宗教神权','情色行业结社','军武集团','民间宗族'];
+    var 势力类别 = ['世俗政权','超凡势力','地下黑道','邪教淫祠','宗教神权','情色行业结社','民间宗族'];
     势力类别.forEach(function(k) {
       内容[k] = (势力 && 势力[k]) || [];
     });
-    // 其余板块全量写入（内容较少、作为完整背景）：世界设定/种族/文化/时间线
+    // 军队：**九个维度都是兵种**（步兵 / 骑兵 / 战车 / 远程 / 法师 / 怪兽 / 炮械 / 空军 / 海军），
+    // 与世界观模块的「军队」板块逐维度对齐。这里用通用遍历照收 content.军队 的每一个键，
+    // 军队维度将来增删都不用改这一段。
+    // 注意：**没有「军势」这一说了**——军队条目自己带「所属势力」指回势力板块，
+    // 兵种不是势力（见 stcdInspire势力清单）；旧数据里那个「军势」入口已在加载时平移（见加载处）。
+    var 军队 = content.军队 || {};
+    Object.keys(军队).forEach(function(k) { 内容[k] = (军队[k] || []); });
+    // 世界设定：**界面里不出现**（角色卡只浏览 势力 / 地理 / 种族 / 物品），但要导入——
+    // 它是喂给 AI 的背景料，而且在上下文里是**唯一给原文**的一块（上下文里的先后由 UI 那边排）。
     var 设定 = content.世界设定 || {};
-    ['宇宙与法则','力量体系','情色生态','剧情种子'].forEach(function(k) { 内容[k] = (设定 && 设定[k]) || []; });
+    ['宇宙与法则','力量体系','情色生态'].forEach(function(k) { 内容[k] = (设定 && 设定[k]) || []; });
+
+    // 以下都**不作浏览入口**，只作为上下文：一律「名称 + 正文前 20 字」
     var 种族 = content.种族 || {};
-    ['种族与文明','性征与繁衍'].forEach(function(k) { 内容[k] = (种族 && 种族[k]) || []; });
+    ['种族','文明'].forEach(function(k) { 内容[k] = (种族 && 种族[k]) || []; });
     var 文化 = content.文化 || {};
-    ['文化与习俗','哲学与信仰'].forEach(function(k) { 内容[k] = (文化 && 文化[k]) || []; });
+    ['文化与习俗','哲学与信仰','性征与繁衍'].forEach(function(k) { 内容[k] = (文化 && 文化[k]) || []; });
     var 时间线 = content.时间线 || {};
-    ['历史年表'].forEach(function(k) { 内容[k] = (时间线 && 时间线[k]) || []; });
+    ['历史年表','事件链','战役','剧情种子'].forEach(function(k) { 内容[k] = (时间线 && 时间线[k]) || []; });
+    // 物品：**统一目录**——把物品板块的**全部维度**汇成单一「物品」入口。
+    // 这里用通用遍历，物品维度将来增删都不用改这一段。
+    // 世界观侧的物品条目只写器物自身的详情与相关历史，不带「持有者 / 创造者 / 毁灭者」字段；
+    // 「这件东西对应的角色是谁」由本库在生成角色时现认：持有它、创造它、毁去它的人（或曾经持有它的人）。
+    // 汇总时给每条盖一个「_维度」戳，记下它原本属于哪个维度——
+    // 这样浏览界面仍能按世界观那 12 个维度分类（神器 / 圣物 / 兵刃 …），
+    // 而「物品」这个大入口与已有角色的 category 路径都保持不变。
+    var 物品块 = content.物品 || {};
+    内容['物品'] = [];
+    Object.keys(物品块).forEach(function(k) {
+      (物品块[k] || []).forEach(function(it) {
+        var o = {};
+        Object.keys(it || {}).forEach(function(kk) { o[kk] = it[kk]; });
+        o['_维度'] = k;
+        o['_板块'] = '物品';
+        内容['物品'].push(o);
+      });
+    });
     return stcdInspire导入世界观加载().then(function(list) {
       // 若已导入同名，覆盖
       var idx = -1;

@@ -12,7 +12,7 @@
 // ⚠️「灵感角色库」已迁至「角色卡」顶层模块的子模块（子模块-灵感角色库），
 //    生图词典不再持有该 tab。其数据仍通过全局 STCD_INSPIRE / stcdInspire* 供 picker 使用。
 
-var STCD = window.STCD || { lastResult: null, currentTab: 'local', batchMode: 'multi', batchResult: [], outputMode: 'tag', localCharOpt: '', localFormOpt: '', localEventOpt: '', localStyleOpt: '', localCard: null, localOptDetail: {}, localOptSuggestList: {}, localOptSuggestSel: {}, localOptSuggestCount: 0, localOptSuggestCtx: null, localOptDeepenCtx: null };
+var STCD = window.STCD || { lastResult: null, currentTab: 'local', batchMode: 'multi', batchResult: [], outputMode: 'tag', localCharOpt: '', localChaosOpt: '', localChaosFormOpt: '', localChaosStyleOpt: '', localChaosGroupOpt: '', localSectionOpt: '', localChaosSectionOpt: '', localFormOpt: '', localGroupOpt: '', localEventOpt: '', localStyleOpt: '', localCard: null, localOptDetail: {}, localOptSuggestList: {}, localOptSuggestSel: {}, localOptSuggestCount: 0, localOptSuggestCtx: null, localOptDeepenCtx: null, localOptAddCharCtx: null };
 var STCD_TABS = [
   { id: 'local', label: '🖥 本地提示词' },
   { id: 'batch', label: '📦 本地批量提示词' },

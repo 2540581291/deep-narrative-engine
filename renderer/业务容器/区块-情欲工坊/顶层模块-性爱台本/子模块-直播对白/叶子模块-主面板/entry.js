@@ -11,5 +11,7 @@ var 直播对白 = 淫诗体模块工厂({
   默认露骨度: '粗俗荤诗', 默认诗体: '无',
   promptName: 'zhi_bo_dui_bai_gen', aiFieldId: 'zhiBoDuiBaiGen', aiLabel: '直播对白生成',
   模块独有选题: { label: '人设', 编辑键: 'renshe', ctx标签: '人设', options: ['深夜电台', '擦边舞室', '清纯反差', '御姐', '邻家'] },
+  语言风格选项: 语言风格选项_对白,
+  话语行: true,
 });
 Store.zhiBoDuiBai = createStore('zhiBoDuiBai');

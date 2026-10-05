@@ -107,6 +107,15 @@ function 小说渲染角色卡片行(c, opts) {
     }
   }
   if (hasStages) h += '<span style="font-size:10px;font-weight:500;color:var(--accent);background:rgba(255,255,255,0.05);padding:1px 6px;border-radius:3px;border:1px solid var(--accent)">' + 小说提取阶段数据[c.name].length + ' 阶段</span>';
+  // 角色话语（原话）：非阶段卡、且已提取过才显示，点击查看/编辑
+  var 话语条数 = (!isStage && Array.isArray(c.话语)) ? c.话语.length : 0;
+  if (话语条数) {
+    if (readonly) {
+      h += '<span style="font-size:10px;font-weight:500;color:var(--green);background:rgba(255,255,255,0.05);padding:1px 6px;border-radius:3px;border:1px solid var(--green)">💬 ' + 话语条数 + ' 条话语</span>';
+    } else {
+      h += '<span onclick="小说提取弹出查看话语(\'' + escHtml(c.name) + '\')" title="点击查看/编辑该角色的原话" style="font-size:10px;font-weight:500;color:var(--green);background:rgba(255,255,255,0.05);padding:1px 6px;border-radius:3px;border:1px solid var(--green);cursor:pointer">💬 ' + 话语条数 + ' 条话语</span>';
+    }
+  }
   h += '</div>';
 
   // 第二行：brief
@@ -184,6 +193,7 @@ function 小说渲染角色卡片行(c, opts) {
       h += '<button class="btn btn-sm" onclick="小说提取填入生成(\'' + escHtml(c.name) + '\')" style="font-size:10px;padding:3px 10px">🎯 填入生成</button>';
       h += '<button class="btn-out btn-sm" onclick="小说提取弹出生成单个描述(\'' + escHtml(c.name) + '\')" style="font-size:10px;padding:2px 8px">⚡ 性爱明细生成</button>';
       if (!isStage) h += '<button class="btn-out btn-sm" onclick="小说提取弹出重新提取(\'' + escHtml(c.name) + '\')" style="font-size:10px;padding:2px 8px">🔍 重新提取</button>';
+      if (!isStage) h += '<button class="btn-out btn-sm" onclick="小说提取弹出话语提取(\'' + escHtml(c.name) + '\')" style="font-size:10px;padding:2px 8px" title="从原文里摘出该角色实际说过的原话，独立存档并入库，供性爱台本/角色台本选用">💬 话语提取</button>';
       if (!isStage) h += '<button class="btn-out btn-sm" onclick="小说提取弹出全文提取(\'' + escHtml(c.name) + '\')" style="font-size:10px;padding:2px 8px">📖 全文提取</button>';
       if (!isStage) h += '<button class="btn-out btn-sm" onclick="小说提取弹出分段管理(\'' + escHtml(c.name) + '\')" style="font-size:10px;padding:2px 8px">📑 分段管理</button>';
       if (!isStage) h += '<button class="btn-out btn-sm" onclick="小说提取弹出别名输入(\'' + escHtml(c.name) + '\')" style="font-size:10px;padding:2px 8px">📌 别名</button>';
@@ -246,6 +256,18 @@ function 小说提取重命名角色(oldName, newName) {
   if (小说提取当前记录ID) {
     var _folderName = 本地FS.清理(小说提取当前记录标题) || 小说提取当前记录ID;
     LocalFS.delete(小说提取存储基路径 + _folderName + "/" + 本地FS.清理(oldName) + ".json").catch(function(e) { console.warn("文件删除失败:", e); });
+    // 角色话语库同步：键含角色名，改名后迁移该条（renamed 仍带着原 话语 字段）
+    LocalFS.delete(小说提取存储基路径 + _folderName + "/_speech/" + 本地FS.清理(oldName) + ".json").catch(function() {});
+    角色话语改名(小说提取当前记录ID, oldName, newName).then(function(ok) {
+      // 库里原本就没有该条（例如新建角色文件时已带上话语）：补一条，避免改名后丢失
+      if (!ok && Array.isArray(renamed.话语) && renamed.话语.length) {
+        角色话语保存({
+          bookId: 小说提取当前记录ID, book: 小说提取当前记录标题, char: newName,
+          gender: 小说提取规范化性别(renamed.gender), role: renamed.role || '',
+          source: '小说提取', lines: renamed.话语
+        });
+      }
+    });
   }
   小说提取保存单个角色(renamed);
   刷新视图();
