@@ -43,7 +43,10 @@ function 互动小说渲染列表(el) {
         h += '<div class="mt-6 flex gap-4">';
         h += '<span class="btn-secondary btn-sm" style="font-size:10px" onclick="event.stopPropagation();互动小说重命名(\'' + s.id + '\')">✏️ 重命名</span>';
         h += '<span class="btn-secondary btn-sm" onclick="event.stopPropagation();互动小说进入故事(\'' + s.id + '\')">🎮 继续/游玩</span>';
+        h += '<span class="btn-secondary btn-sm" style="font-size:10px" onclick="event.stopPropagation();互动小说以此重开确认(\'' + s.id + '\')">🔁 以此重开</span>';
+        h += '<span class="btn-secondary btn-sm" style="font-size:10px" onclick="event.stopPropagation();互动小说复制存档确认(\'' + s.id + '\')" title="完整继承全部剧情与进度，另存一份用来试不同分支">📄 复制存档</span>';
         h += '<span class="btn-secondary btn-sm" style="font-size:10px" onclick="event.stopPropagation();互动小说导出故事(\'' + s.id + '\')">📤 导出</span>';
+        h += '<span class="btn-secondary btn-sm" style="font-size:10px" onclick="event.stopPropagation();互动小说导出文本(\'' + s.id + '\')">📄 导出TXT</span>';
         h += '<span class="btn-secondary btn-sm c-error" onclick="event.stopPropagation();互动小说删故事2(\'' + s.id + '\')">🗑 删除</span>';
         h += '</div></div>';
       });
@@ -55,6 +58,36 @@ function 互动小说进入故事(id) { 互动小说当前游玩id = id; 互动�
 function 互动小说删故事2(id) {
   confirmDialog('确定删除这个故事？', function() { 互动小说删故事(id).then(function() { toast('已删除'); 互动小说切换视图('list'); }); });
 }
+// 以此重开：复制一份进度清零、设定保留的新档（原档保留不动）
+function 互动小说以此重开确认(id) {
+  confirmDialog('以此重开？会复制出一份新档：设定、角色、终局条件与开场都保留，进度清零；原档保留不动。', function() {
+    互动小说取故事(id).then(function(故事) {
+      if (!故事) { toast('故事不存在'); return null; }
+      return 互动小说以此重开(故事);
+    }).then(function(s) {
+      if (!s) return;
+      toast('已重开为新档');
+      互动小说当前游玩id = s.id;
+      互动小说切换视图('play');
+    }).catch(function(e) { toast('重开失败：' + (e && e.message || e)); });
+  });
+}
+// 复制存档：完整继承节点与进度，用来从同一个地方试不同分支
+function 互动小说复制存档确认(id) {
+  互动小说取故事(id).then(function(旧) {
+    if (!旧) { toast('故事不存在'); return; }
+    var 步 = (旧.历史 || []).length;
+    confirmDialog('复制「' + (旧.title || '') + '」？\n\n会生成一份独立新档，完整继承全部 ' + 步 + ' 段剧情与当前进度。\n之后可用「↩ 回退」退到任意更早的节点，另走一条分支。\n\n原档保留不动。', function() {
+      互动小说复制故事(id).then(function(新) {
+        toast('✅ 已复制为《' + 新.title + '》');
+        互动小说当前游玩id = 新.id;
+        互动小说切换视图('play');
+      }).catch(function(e) { toast('复制失败：' + ((e && e.message) || e)); });
+    });
+  });
+}
+window.互动小说复制存档确认 = 互动小说复制存档确认;
+
 // 重命名：弹窗输入新标题
 function 互动小说重命名(id) {
   互动小说取故事(id).then(function(s) {
@@ -92,11 +125,45 @@ function 互动小说导出故事(id) {
     } catch(e) { toast('导出失败：' + (e && e.message || e)); }
   });
 }
+// 导出正文为 txt（按游玩路径的历史顺序拼接，供通读/存档；带 UTF-8 BOM 便于 Windows 记事本识别）
+function 互动小说导出文本(id) {
+  互动小说取故事(id).then(function(s) {
+    if (!s) { toast('故事不存在'); return; }
+    var 行 = [];
+    行.push('《' + (s.title || '未命名') + '》');
+    var 元 = [];
+    if (s.题材) 元.push(s.题材);
+    if (s.尺度) 元.push(s.尺度);
+    if (s.文风) 元.push(s.文风);
+    if (元.length) 行.push(元.join(' ｜ '));
+    行.push('');
+    var 段 = [];
+    (s.历史 || []).forEach(function(nid) {
+      var n = (s.nodes || {})[nid];
+      if (!n) return;
+      var t = String(n.text || '').trim();
+      if (!t) return;
+      段.push(n.ending ? (t + '\n\n【结局 · ' + n.ending + '】') : t);
+    });
+    行.push(段.join('\n\n'));
+    var 文本 = 行.join('\n');
+    try {
+      var blob = new Blob([String.fromCharCode(65279) + 文本], { type: 'text/plain;charset=utf-8' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = (s.title || '互动小说') + '.txt';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      toast('✅ 已导出 txt');
+    } catch(e) { toast('导出失败：' + (e && e.message || e)); }
+  });
+}
 window.互动小说进入故事 = 互动小说进入故事;
 window.互动小说删故事2 = 互动小说删故事2;
+window.互动小说以此重开确认 = 互动小说以此重开确认;
 window.互动小说重命名 = 互动小说重命名;
 window.互动小说重命名确认 = 互动小说重命名确认;
 window.互动小说导出故事 = 互动小说导出故事;
+window.互动小说导出文本 = 互动小说导出文本;
 
 function 互动小说渲染创建(el) {
   // 主角视角默认值
@@ -129,16 +196,18 @@ function 互动小说渲染创建(el) {
   h += '</div>';
   h += '<div style="font-size:10px;color:var(--fg3);line-height:1.7;margin-top:6px">主导者=你是调教/支配/引导的一方；承受者=你被调教/被支配；平等互动=双方对等。除非选「承受者」，否则不会把你写成总被惩罚的一方。</div></div>';
 
-  // 一句话方向
+  // 剧情大纲
   h += '<div class="n-card" style="border-radius:14px;padding:16px 18px">';
   h += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">';
-  h += '<div style="font-size:13.5px;font-weight:700">🎯 一句话方向</div>';
+  h += '<div style="font-size:13.5px;font-weight:700">🎯 剧情大纲</div>';
   h += '<span style="font-size:10px;color:var(--fg3)">可留空，AI 即兴</span></div>';
   h += '<div class="flex gap-6 flex-wrap" id="inC_DirChips" style="margin-bottom:9px">';
-  ['深夜雾都的隐秘客人','修真后宫的内门小师妹','被她老师牵住的乖学生','都市夜归人的暧昧来电','学园天台的一场交易','女仆咖啡厅的深夜调教','雪夜温泉的独居老板','赛博义体诊所的艳客'].map(function(d) {
+  h += ['深夜雾都的隐秘客人','修真后宫的内门小师妹','被她老师牵住的乖学生','都市夜归人的暧昧来电','学园天台的一场交易','女仆咖啡厅的深夜调教','雪夜温泉的独居老板','赛博义体诊所的艳客'].map(function(d) {
     return '<span class="preset-chip" onclick="document.getElementById(\'inC_Direction\').value=\'' + d + '\';document.querySelectorAll(\'#inC_DirChips .preset-chip\').forEach(function(c){c.classList.remove(\'preset-active\')});this.classList.add(\'preset-active\')">' + d + '</span>';
-  }).join('') + '</div>';
-  h += '<textarea class="llm-input" id="inC_Direction" placeholder="用一句话描述你想读到的故事…" style="min-height:62px;resize:vertical;border-radius:10px"></textarea></div>';
+  }).join('');
+  h += '</div>';
+  h += '<textarea class="llm-input" id="inC_Direction" placeholder="写下这个故事的大纲：背景设定、主要人物、想看的情节走向…&#10;可留空，交给 AI 即兴构思" style="width:100%;box-sizing:border-box;min-height:92px;resize:vertical;border-radius:10px;line-height:1.7"></textarea>';
+  h += '</div>';
 
   // 生成锚点（2x2 栅格）
   h += '<div class="n-card" style="border-radius:14px;padding:16px 18px">';
@@ -156,7 +225,7 @@ function 互动小说渲染创建(el) {
   h += '<div style="font-size:12px;color:var(--fg2)">🎲 没有想法？让 AI 抛个方向：</div>';
   h += '<button class="btn-out btn-sm" style="border-radius:8px" onclick="互动小说随机方向()">🎲 随机方向</button>';
   h += '<button class="btn-out btn-sm" style="border-radius:8px" onclick="互动小说候选方向()">💡 给 3 个候选</button>';
-  h += '</div></div>';
+  h += '</div>';
 
   // ===== 右列：AI 候选区 =====
   h += '<div class="n-card" style="flex:1;min-width:300px;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column">';
@@ -165,11 +234,12 @@ function 互动小说渲染创建(el) {
   h += '<div id="inCandHint" style="font-size:11px;color:var(--accent2);margin-bottom:8px;min-height:16px"></div>';
   h += '<div id="inCandBox" style="flex:1;overflow-y:auto;max-height:340px"></div></div>';
 
-  h += '</div>'; // 主区
+  h += '</div>'; // 左列（「AI 候选构思」卡片目前也嵌在这一层内）
 
   // —— 底部生成按钮 ——
   h += '<button id="inCreateBtn" class="btn" style="height:46px;border-radius:12px;font-size:14px;font-weight:700;letter-spacing:1px">🚀 AI 生成新故事</button>';
-  h += '</div>';
+  h += '</div>'; // 主区
+  h += '</div>'; // 外层容器
   el.innerHTML = h;
   var b = document.getElementById('inCreateBtn');
   if (b) b.onclick = function() { 互动小说生成故事(); };
@@ -205,7 +275,7 @@ function 互动小说候选方向() {
   if (box) box.innerHTML = '<div style="padding:22px;text-align:center;color:var(--fg3);font-size:12px">⏳ AI 正在构思 3 个候选点子…</div>';
   if (hint) hint.textContent = '';
   var r = renderPrompt('in_create_options', { direction: 配置.direction || '（自由构思，请给 3 个差异鲜明的成人互动故事方向）', 题材: 配置.题材, 尺度: 配置.尺度, 文风: 配置.文风, 世界观: 配置.世界观, 主角性别: 配置.主角性别, 主角定位: 配置.主角定位 });
-  LLM.callJSON({ label: '互动小说·候选', system: r.system, prompt: r.user }).then(function(d) {
+  互动小说调JSON({ label: '互动小说·候选', system: r.system, prompt: r.user }, 互动小说校验候选).then(function(d) {
     var opts = (d && Array.isArray(d.options)) ? d.options : [];
     if (!opts.length) { if (box) box.innerHTML = '<div style="padding:22px;text-align:center;color:var(--fg3);font-size:12px">候选为空，请重试</div>'; return; }
     var html = opts.map(function(o, oi) {

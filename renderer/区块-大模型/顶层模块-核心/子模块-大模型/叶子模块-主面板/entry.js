@@ -865,7 +865,6 @@ function 读取错误正文(res, 前缀) {
 
 function 深拷贝(obj) { return JSON.parse(JSON.stringify(obj)); }
 function 掩码密钥(key) { return key ? key.slice(0, 6) + '••••' + key.slice(-4) : ''; }
-function escHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 function fmtTime(d) { return d.toTimeString().slice(0, 5); }
 
 // ===== AI 标题清洗：识别「无法生成」类占位/拒答标题并丢弃或抽取 =====
