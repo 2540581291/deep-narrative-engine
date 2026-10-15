@@ -881,15 +881,7 @@ function lifeDoc新增自定义活动日() {
 }
 
 // ===================== Utility =====================
-function escHtml(str) {
-  if (typeof str !== 'string') return '';
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
+// escHtml 统一由 区块-引擎/工具 提供（window.escHtml），此处不再重复定义
 
 // showToast fallback in case it's not defined globally
 if (typeof showToast !== 'function') {

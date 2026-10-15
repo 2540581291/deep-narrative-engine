@@ -21,25 +21,45 @@
     document.addEventListener('scroll', onScroll, true);
   })();
   // ===== 渲染进程全局错误捕获 =====
-  window.onerror = function(msg, url, line, col, err) {
-    try {
-      window.narrative.logCrash({
-        type: 'renderer-window-error',
-        message: msg + ' at ' + url + ':' + line + ':' + col,
-        stack: err && err.stack ? err.stack : ''
-      }).catch(function() {});
-    } catch(e) {}
-    return false;
-  };
-  window.addEventListener('unhandledrejection', function(e) {
-    try {
-      window.narrative.logCrash({
-        type: 'renderer-unhandled-rejection',
-        message: e.reason ? (e.reason.message || String(e.reason)) : 'unknown',
-        stack: e.reason && e.reason.stack ? e.reason.stack : ''
-      }).catch(function() {});
-    } catch(e) {}
-  });
+  // 原先只写 crash-logs/，那是个没人会去看的目录 —— 界面上完全没感觉，看起来就是"点了没反应"。
+  // 现在额外 ① 记进 日志/（可 grep）② 弹一次提示（同一条只弹一次，免得刷屏）。
+  (function() {
+    var 已报过 = {};
+    function 出声(类型, 详情) {
+      var 文 = String(详情 || '');
+      var 键 = 类型 + '|' + 文.slice(0, 140);
+      if (已报过[键]) return;
+      已报过[键] = 1;
+      try { if (typeof debugLog === 'function') debugLog('error', 类型, 文); } catch (e) {}
+      try { if (typeof toast === 'function') toast('⚠ ' + 类型 + '：' + 文.slice(0, 140)); } catch (e) {}
+      try { console.error('[全局错误]', 类型, 详情); } catch (e) {}
+    }
+
+    window.onerror = function(msg, url, line, col, err) {
+      var 详情 = msg + ' at ' + url + ':' + line + ':' + col;
+      try {
+        window.narrative.logCrash({
+          type: 'renderer-window-error',
+          message: 详情,
+          stack: err && err.stack ? err.stack : ''
+        }).catch(function() {});
+      } catch(e) {}
+      出声('脚本错误', 详情);
+      return false;
+    };
+
+    window.addEventListener('unhandledrejection', function(e) {
+      var 详情 = e && e.reason ? (e.reason.message || String(e.reason)) : 'unknown';
+      try {
+        window.narrative.logCrash({
+          type: 'renderer-unhandled-rejection',
+          message: 详情,
+          stack: e && e.reason && e.reason.stack ? e.reason.stack : ''
+        }).catch(function() {});
+      } catch(e) {}
+      出声('未处理的异步错误', 详情);
+    });
+  })();
 
   initState();
   initStores();

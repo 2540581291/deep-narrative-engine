@@ -115,10 +115,7 @@ var 世界版块表 = {
   ] },
 };
 
-function escHtml(s) {
-  if (!s) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
+// escHtml 统一由 区块-引擎/工具 提供（window.escHtml），此处不再重复定义
 
 // ===== 顶层 tab 导航（芯片标签栏 · 全局渲染标签栏）=====
 var 世界Api = null;
